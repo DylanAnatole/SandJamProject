@@ -34,6 +34,9 @@ namespace SandJamTest.Scene3D
             // Region outlines stay lavender in every stage theme (recordings: blue and dark themes alike).
             SandBoardTextureView.ObstacleTint=new Color(.51f,.50f,.68f);
             fillScale=LoadingFill.localScale;mascotPosition=Mascot.localPosition;
+            // Original "Superb!": the finished, zoomed-in picture stays visible through a translucent dark layer.
+            var superbBackdrop=Celebration.transform.Find("Dark backdrop");
+            if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;}}
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
             Feedback=gameObject.AddComponent<GameplayFeedbackController>();Feedback.Initialize(this);
@@ -64,12 +67,12 @@ namespace SandJamTest.Scene3D
                 if(!label)return;
                 var hint=Instantiate(label.gameObject,label.transform.parent);hint.name="Loading hint";
                 float barY=LoadingFill.position.y,labelY=label.transform.position.y;
-                hint.transform.position=new Vector3(label.transform.position.x,labelY+(barY-labelY)*3.2f,label.transform.position.z);
-                hint.transform.localScale=label.transform.localScale*.78f;
+                hint.transform.position=new Vector3(label.transform.position.x,labelY+(barY-labelY)*1.85f,label.transform.position.z);
+                hint.transform.localScale=label.transform.localScale*.62f;
                 loadingHint=hint.GetComponentsInChildren<TextMesh>(true);
                 foreach(var text in loadingHint){text.anchor=TextAnchor.UpperCenter;text.alignment=TextAlignment.Center;}
             }
-            var tip=LoadingHints.Wrap(LoadingHints.Random(),34);
+            var tip=LoadingHints.Wrap(LoadingHints.Random(),44);
             foreach(var text in loadingHint)if(text)text.text=tip;
         }
         public void Play()
