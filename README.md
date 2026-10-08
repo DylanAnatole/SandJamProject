@@ -80,7 +80,9 @@ chạy thật, gói tiền thật chỉ hiển thị (không có thanh toán).
 **HẾT CHỖ!** dải đỏ ~1 giây trước popup Hết chỗ. **Hết tim**: nút Hồi tim 600 xu. Màn khó thưởng +20.
 **Sand Quest** (`SandQuest` + `PopupScreens.SandQuest.cs`): từ màn 30, bấm rương JOIN ở Home; thắng 10 màn liên tiếp trong 24 giờ,
 số người chơi giảm theo `botProgressionList` gốc, về đích chia giải 1000 xu; thua 1 màn hoặc hết giờ là trượt.
-**Home**: nút QUÀ (quà 7 ngày, `DailyRewards`), NGÀY / TUẦN (nhiệm vụ, `TaskBoard`, dữ liệu theo
+**Shop / Gallery** là trang có thanh trên và thanh SHOP/HOME/GALLERY như bản thật (`PopupScreens.Pages.cs`).
+Gallery: mỗi bộ hiện tên, ảnh bìa và tranh của chính nó; băng chuyền ảnh bìa, 3 mốc thưởng, "Nhận tất cả".
+**Home** (tắt mặc định vì bản hiện tại không hiện, bật bằng `PopupScreens.ShowTaskWidgets`): nút QUÀ (quà 7 ngày, `DailyRewards`), NGÀY / TUẦN (nhiệm vụ, `TaskBoard`, dữ liệu theo
 Default_RemoteDailyQuestConfig gốc: mỗi kỳ chọn 1 nhiệm vụ mỗi bậc, hoàn thành nhận sao, đủ mốc sao mở rương),
 GALLERY (bộ sưu tập: ảnh bìa tô dần, 3 mốc thưởng, lưới thẻ tranh), NO MORE LIVES khi bấm PLAY lúc hết tim.
 Giao diện: `PopupScreens.Tasks.cs`, `PopupScreens.Gallery.cs`, `PopupScreens.Lives.cs`.

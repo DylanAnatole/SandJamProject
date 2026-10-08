@@ -530,6 +530,7 @@ namespace SandJamTest.Scene3D
             if (action.StartsWith("shop-")) return HandleShop(action);
             if (action.StartsWith("daily-") || action.StartsWith("tasks-")) return HandlePanels(action);
             if (action.StartsWith("gallery-")) return HandleGallery(action);
+            if (action.StartsWith("nav-")) return HandleNav(action);
             switch (action)
             {
                 case "close": Close(); return true;
@@ -570,6 +571,7 @@ namespace SandJamTest.Scene3D
                     Close();
                     if (screen.Current == VideoScreen.Page.Gameplay) { gaveUp = false; screen.Feedback.Retry(); }
                     return true;
+                case "privacy": case "restore": return true; // no store / web page in the clone
                 case "hard-play": Close(); return true;
                 case "art-style-next": Close(); return true;
                 case "congrats-continue": Close(); if (screen.Levels) screen.Levels.LoadNext(); return true;
@@ -592,6 +594,7 @@ namespace SandJamTest.Scene3D
             UpdateShop();
             UpdateNoLives();
             UpdatePanels();
+            UpdateGallery();
             if ((Open == lose.Root || (Open == failed.Root && !failedIsNoLives)) && !screen.Feedback.FailureVisible) Close();
             if (Input.GetKeyDown(KeyCode.Escape) && Open == settings.Root) Close();
         }

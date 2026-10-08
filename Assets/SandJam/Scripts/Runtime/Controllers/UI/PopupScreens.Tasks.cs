@@ -210,8 +210,12 @@ namespace SandJamTest.Scene3D
 
         // ---------- Home widgets (original RewardWidget / DailyTaskWidget / WeeklyTaskWidget) ----------
         const float HomeUnit = 10.75f / 2796f;   // main canvas 1292x2796 → world units
+        // The current build has these features switched off remotely (recording 2026-10-08: the Home screen shows
+        // only the level sign and the Sand Quest chest), so the widgets are hidden unless this is turned on.
+        public static bool ShowTaskWidgets = false;
         void BuildHomeWidgets()
         {
+            if (!ShowTaskWidgets) return;
             var home = screen.Home.transform;
             dailyBadge = HomeWidget(home, "DailyRewardWidgetActive", 1.78f, -108, "QUÀ", "daily-rewards");
             tasksBadge = HomeWidget(home, "DailyTaskWidgetActive", -1.78f, -108, "NGÀY", "daily-tasks");

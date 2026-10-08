@@ -10,14 +10,14 @@ namespace SandJamTest.Scene3D
     {
         Popup shop;
         Transform shopContent;
-        TextMesh[] shopToast, shopCoins;
+        TextMesh[] shopToast;
         float shopScroll, shopScrollMax, shopToastUntil, shopPressY, shopPressScroll;
         bool shopPressing, shopDragged;
         string shopPendingAction;
         const float ShopUnit = 5.2f / 342f;      // mockup pixels → popup units
-        const float ShopTop = 3.55f;             // where mockup row 185 (first card) sits when not scrolled
-        static readonly string[] BoosterIcons = { "Shop/icon-select", "Shop/icon-swap", "Shop/icon-flare" };
-        static readonly string[] BoosterActions = { "select", "swap", "rocket" };
+        const float ShopTop = 2.95f;             // where mockup row 185 (first card) sits when not scrolled (under the header)
+        static readonly string[] BoosterIcons = { "Shop/icon-flare", "Shop/icon-swap", "Shop/icon-select" };
+        static readonly string[] BoosterActions = { "rocket", "swap", "select" };
 
         static float ShopY(float mockupY) { return ShopTop - (mockupY - 185) * ShopUnit; }
         static float ShopX(float mockupX) { return (mockupX - 168) * ShopUnit; }
@@ -32,34 +32,39 @@ namespace SandJamTest.Scene3D
             shopContent.SetParent(shop.Root.transform, false);
 
             // Bundles: coins + one row of boosters, green price button.
-            Bundle(277, "Shop/bg-starterPack-shop", "Shop/bg-slot-starterPack-shop", "STARTER PACK", 2500, 1, "$2.99");
-            Bundle(474, "Shop/bg-smallBundle-shop", "Shop/bg-slot-smallBundle-shop", "SMALL BUNDLE", 5000, 2, "$4.99");
-            Bundle(671, "Shop/bg-mediumBundle-shop", "Shop/bg-slot-smallBundle-shop", "MEDIUM BUNDLE", 8000, 4, "$9.99");
-            Bundle(868, "Shop/bg-largeBundle-shop", "Shop/bg-slot-smallBundle-shop", "LARGE BUNDLE", 12000, 6, "$19.99");
+            // Store prices as shown in the Vietnamese store (recording 2026-10-08); the starter price was not visible.
+            Bundle(277, "Shop/bg-starterPack-shop", "Shop/bg-slot-starterPack-shop", "Starter Pack", 2500, 1, "299000 VND");
+            Bundle(474, "Shop/bg-smallBundle-shop", "Shop/bg-slot-smallBundle-shop", "Small Bundle", 5000, 2, "599000 VND");
+            Bundle(671, "Shop/bg-mediumBundle-shop", "Shop/bg-slot-smallBundle-shop", "Medium Bundle", 8000, 4, "999000 VND");
+            Bundle(868, "Shop/bg-largeBundle-shop", "Shop/bg-slot-smallBundle-shop", "Large Bundle", 12000, 6, "1199000 VND");
 
             // Coin packs (reward_coin_preset).
             SectionHeader(1013, "Shop/bg-coinSectionHeader-shop", "COINS");
             int[] coins = { 500, 2500, 5000, 12500, 25000, 50000 };
-            string[] prices = { "$0.99", "$2.99", "$4.99", "$9.99", "$19.99", "$39.99" };
+            string[] prices = { "25000 VND", "75000 VND", "125000 VND", "249000 VND", "499000 VND", "999000 VND" }; // estimates
             for (int i = 0; i < coins.Length; i++)
                 CoinCell(new[] { 63f, 167f, 270f }[i % 3], i < 3 ? 1130 : 1298, "Shop/icon-coin" + (i + 1) + "-shop", coins[i], prices[i]);
 
             // Boosters for coins and the booster bundle.
-            SectionHeader(1425, "Shop/bg-boosterSectionHeader-shop", "BOOSTER BUNDLE");
-            int[] boosterPrices = { 2000, 1300, 1000 };
+            // Recording: Flare x3 400, Swap x3 1300, Select x3 2000, all three x5 for 6000.
+            SectionHeader(1425, "Shop/bg-boosterSectionHeader-shop", "BOOSTERS");
+            int[] boosterPrices = { 400, 1300, 2000 };
             for (int i = 0; i < 3; i++) BoosterCell(new[] { 63f, 167f, 270f }[i], 1542, i, 3, boosterPrices[i]);
             BigBoosterBundle(1720, 5, 6000);
-            shopScrollMax = Mathf.Max(0, (1820 - 185) * ShopUnit - (ShopTop + 4.9f));
+            shopScrollMax = Mathf.Max(0, (1820 - 185) * ShopUnit - (ShopTop + 3.9f)); // list ends above the navbar
 
             // Fixed header drawn over the scrolling list.
-            var header = ShopArt("Shop/bg-header1-shop", 168, 0, 5.4f, -7.4f, null); header.transform.localPosition = new Vector3(0, 4.42f, -7.4f);
-            var bar = Child<SpriteRenderer>(shop, "Header bar", new Vector3(0, 4.6f, -7.3f));
+            // Fixed SAND SHOP header under the Home top bar, drawn over the scrolling list.
+            var header = ShopArt("Shop/bg-header1-shop", 168, 0, 5.4f, -7.4f, null); header.transform.localPosition = new Vector3(0, 3.7f, -7.4f);
+            var bar = Child<SpriteRenderer>(shop, "Header bar", new Vector3(0, 4.1f, -7.3f));
             var white = Texture2D.whiteTexture; bar.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
             runtimeArt.Add(bar.sprite); bar.color = new Color(.15f, .3f, .48f); bar.transform.localScale = new Vector3(8, 1.6f, 1);
-            SetText(OutlinedLabel(shop, "Shop title", new Vector3(0, 4.42f, -7.6f), .055f), "SAND SHOP");
-            CloseX(shop, new Vector3(2.15f, 4.95f, -8.6f), "shop-close");
-            shopCoins = OutlinedLabel(shop, "Shop coins", new Vector3(-1.75f, 4.95f, -7.6f), .04f);
-            shopToast = OutlinedLabel(shop, "Shop toast", new Vector3(0, -4.6f, -8.2f), .034f);
+            SetText(OutlinedLabel(shop, "Shop title", new Vector3(0, 3.7f, -7.6f), .055f), "SAND SHOP");
+            // Bottom strip behind the navbar so scrolled cards never show under it.
+            var foot = Child<SpriteRenderer>(shop, "Footer bar", new Vector3(0, -5.1f, -7.3f)); foot.sprite = bar.sprite;
+            foot.color = bar.color; foot.transform.localScale = new Vector3(8, 1.8f, 1);
+            AddPageChrome(shop, "icon-shop");
+            shopToast = OutlinedLabel(shop, "Shop toast", new Vector3(0, -3.75f, -8.2f), .034f);
             foreach (var name in new[] { "bg-currency", "button-plus_0", "icon-coin", "2040" })
             { var t = shop.Root.transform.Find(name); if (t) t.gameObject.SetActive(false); }
         }
@@ -159,15 +164,15 @@ namespace SandJamTest.Scene3D
             if (Open) return;
             shopScroll = 0; shopContent.localPosition = Vector3.zero;
             SetText(shopToast, "");
-            Show(shop); RefreshShopCoins();
+            Show(shop); RefreshPageLives(shop);
         }
-        void RefreshShopCoins() { SetText(shopCoins, Campaign.Coins + " xu"); }
+        void RefreshShopCoins() { RefreshPopupCoins(); }
         void ShopToast(string text) { SetText(shopToast, text); shopToastUntil = Time.unscaledTime + 2.2f; }
 
         // Shop buttons fire on release without a drag, so scrolling never buys anything by accident.
         bool HandleShop(string action)
         {
-            if (action == "shop-close") { Close(); return true; }
+
             shopPendingAction = action;
             return true;
         }

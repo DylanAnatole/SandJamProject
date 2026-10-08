@@ -14,6 +14,9 @@ namespace SandJamTest
             public int Index, Start, Count;      // Start/Count = the block being played
             public string Name, Cover;           // Cover = "Gallery/cover-N" or null (use RenderId)
             public string RenderId;              // first picture of the unlocked style
+            // The block's own art style, as shown on the GALLERY page (recording: "MUSICIAN" page = the
+            // Michael Jackson cover and the musician pictures of levels 241-255).
+            public string StyleName, StyleCover, StyleRenderId;
             public int Completed(int wonLevel) { return Mathf.Clamp(wonLevel - Start + 1, 0, Count); }
             public int Percent(int wonLevel) { return Count == 0 ? 0 : 100 * Completed(wonLevel) / Count; } // floor: 6%, 13%, 93%
         }
@@ -89,6 +92,14 @@ namespace SandJamTest
             {
                 string category = Collections.CategoryOf(first);
                 info.Name = category != null ? Collections.DisplayName(category) : "Collection " + index;
+            }
+            string own = levels[(start - 1) % levels.Length];
+            info.StyleRenderId = System.Text.RegularExpressions.Regex.Replace(own, "_Dupe$", "");
+            if (index >= 1 && index <= Names.Length) { info.StyleName = Names[index - 1]; info.StyleCover = "Gallery/cover-" + Covers[index - 1]; }
+            else
+            {
+                string category = Collections.CategoryOf(own);
+                info.StyleName = category != null ? Collections.DisplayName(category) : "Collection " + index;
             }
             return info;
         }
