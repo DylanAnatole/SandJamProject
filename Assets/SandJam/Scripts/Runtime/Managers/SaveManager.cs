@@ -23,6 +23,26 @@ namespace SandJamTest
         public Stats stats = new Stats();
         public string lastPlayedUtc = "";
         public SandQuestSave quest = new SandQuestSave();
+        public DailyRewardSave dailyReward = new DailyRewardSave();
+        public TaskSave dailyTasks = new TaskSave(), weeklyTasks = new TaskSave();
+        // Gallery milestone rewards already collected, as "collectionIndex:milestone".
+        public List<string> galleryClaims = new List<string>();
+    }
+
+    // 7-day login gift: next day to claim (0-6) and the UTC day number of the last claim.
+    [Serializable]
+    public sealed class DailyRewardSave { public int nextDay; public int lastClaimDay = -1; }
+
+    // One task board (daily or weekly): the period it belongs to, the chosen tasks, their progress,
+    // the stars earned and which star milestones were already paid out.
+    [Serializable]
+    public sealed class TaskSave
+    {
+        public int period = -1;
+        public List<string> ids = new List<string>();
+        public List<int> progress = new List<int>();
+        public int stars;
+        public List<int> claimedMilestones = new List<int>();
     }
 
     // Sand Quest event state (original SandQuestController: joined flag, step index, bot count, end time).

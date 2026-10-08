@@ -40,6 +40,40 @@ namespace SandJamTest
             index = Counts.Length + 1 + extra; start += extra * FallbackCount; count = FallbackCount;
         }
 
+        // Collections the player has reached (block start <= current level), in order.
+        public static System.Collections.Generic.List<Info> Unlocked()
+        {
+            var list = new System.Collections.Generic.List<Info>();
+            for (int level = TutorialLevels + 1; level <= Campaign.LevelNumber; )
+            {
+                var info = ForLevel(level); list.Add(info); level = info.Start + info.Count;
+            }
+            return list;
+        }
+
+        // Milestones at 1/3, 2/3 and the full collection (original GalleryConfig: 20/30/gift for the first three
+        // collections, 40/60/gift afterwards). Gift contents are remote in the original; estimated here.
+        public static int MilestoneCoins(Info info, int milestone)
+        {
+            if (milestone == 2) return 100;
+            return info.Index <= 3 ? (milestone == 0 ? 20 : 30) : (milestone == 0 ? 40 : 60);
+        }
+        public static bool MilestoneReached(Info info, int milestone)
+        {
+            int done = info.Completed(Campaign.LevelNumber - 1);
+            return done >= Mathf.CeilToInt(info.Count * (milestone + 1) / 3f);
+        }
+        public static bool MilestoneClaimed(Info info, int milestone) { return SaveManager.Data.galleryClaims.Contains(info.Index + ":" + milestone); }
+        public static bool ClaimMilestone(Info info, int milestone)
+        {
+            if (!MilestoneReached(info, milestone) || MilestoneClaimed(info, milestone)) return false;
+            SaveManager.Data.galleryClaims.Add(info.Index + ":" + milestone);
+            EconomyManager.Add(MilestoneCoins(info, milestone), "gallery");
+            if (milestone == 2) foreach (var b in new[] { "rocket", "swap", "select" }) EconomyManager.AddBooster(b, 1, "gallery");
+            SaveManager.Save();
+            return true;
+        }
+
         public static Info ForLevel(int level)
         {
             int index, start, count;

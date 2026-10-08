@@ -53,6 +53,8 @@ namespace SandJamTest.Scene3D
             // Navbar SHOP opens the Sand Shop page.
             var shopIcon = owner.Home.transform.Find("icon-shop");
             if (shopIcon) AddHit(shopIcon, "shop");
+            var galleryIcon = owner.Home.transform.Find("icon-cards");
+            if (galleryIcon) AddHit(galleryIcon, "gallery");
             var homeGear = owner.Home.transform.Find("icon-settings-v2");
             if (homeGear) AddHit(homeGear, "settings");
             Campaign.Changed += Refresh;

@@ -245,6 +245,7 @@ namespace SandJamTest.Scene3D
                     {
                         if(Game.Regions[shot.Region].Data.ColorType!=shot.Color)throw new InvalidOperationException("Shot colour does not match receiving region");
                         projectiles.Spawn(shooters[shot.Slot], Regions[shot.Region], shot.Color, shot.Slot);
+                        GameEvents.RaiseSandPoured(shot.Color, shot.Amount, Mathf.Max(1, level.uiDivider));
                     }
                     if (previousState != GameState.Won && Game.State == GameState.Won) Play(VictorySound, .45f);
                     else if (completed < Game.Regions.Count(r => r.Remaining == 0)) Play(CompleteSound, .3f);

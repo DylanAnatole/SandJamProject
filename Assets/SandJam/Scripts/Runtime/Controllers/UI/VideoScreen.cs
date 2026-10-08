@@ -139,6 +139,10 @@ namespace SandJamTest.Scene3D
                     else if(button && button.Action=="home")Show(Page.Home);
                     else if(button && button.Action=="sand-quest" && Popups)Popups.OpenSandQuest();
                     else if(button && button.Action=="shop" && Popups)Popups.OpenShop();
+                    else if(button && button.Action=="gallery" && Popups)Popups.OpenGallery();
+                    else if(button && button.Action=="daily-rewards" && Popups)Popups.OpenDailyRewards();
+                    else if(button && button.Action=="daily-tasks" && Popups)Popups.OpenTasks(TaskBoard.Kind.Daily);
+                    else if(button && button.Action=="weekly-tasks" && Popups)Popups.OpenTasks(TaskBoard.Kind.Weekly);
                     // Original: the collection card (CONGRATS · category · % completed) comes before the next level.
                     else if(button && button.Action=="next-level" && Levels){if(!(Popups && Popups.ShowCongrats()))Levels.LoadNext();}
                     else if(button && button.Action=="double" && Levels)Levels.DoubleReward();

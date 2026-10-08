@@ -16,6 +16,7 @@ namespace SandJamTest
         public static event Action<int, int, string> CoinsChanged; // balance, delta, reason
         public static event Action<string> ButtonClicked;          // button action id
         public static event Action SettingsChanged;
+        public static event Action<int, int, int> SandPoured;      // colour type, sand units, level uiDivider (units per board number)
 
         public static void RaiseLevelStarted(int level) { if (LevelStarted != null) LevelStarted(level); }
         public static void RaiseLevelWon(int level) { if (LevelWon != null) LevelWon(level); }
@@ -27,5 +28,6 @@ namespace SandJamTest
         public static void RaiseCoinsChanged(int balance, int delta, string reason) { if (CoinsChanged != null) CoinsChanged(balance, delta, reason); }
         public static void RaiseButtonClicked(string action) { if (ButtonClicked != null) ButtonClicked(action); }
         public static void RaiseSettingsChanged() { if (SettingsChanged != null) SettingsChanged(); }
+        public static void RaiseSandPoured(int color, int amount, int divider) { if (SandPoured != null) SandPoured(color, amount, divider); }
     }
 }

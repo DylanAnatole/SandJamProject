@@ -71,6 +71,11 @@ namespace SandJamTest.Scene3D
             BuildOutOfSpaceBanner();
             BuildSandQuest();
             BuildShop();
+            BuildNoLives();
+            BuildRewardsPanel();
+            BuildTasksPanel();
+            BuildHomeWidgets();
+            BuildGallery();
             BuildSettings();
             intro = Build("Feature intro popup");
             intro.Big.text = "";
@@ -297,8 +302,8 @@ namespace SandJamTest.Scene3D
             Show(failed);
         }
 
-        // Home PLAY with no hearts left.
-        public void ShowNoLives() { ShowFailed(false, true); }
+        // Home PLAY with no hearts left: the big NO MORE LIVES popup (original canvas_nolives).
+        public void ShowNoLives() { ShowNoLivesPopup(); }
 
         // Original "OUT OF SPACE!" banner: a red band across the board for about a second before the popup.
         GameObject banner; float bannerShownAt = -1;
@@ -523,6 +528,8 @@ namespace SandJamTest.Scene3D
             if (!Open || Time.unscaledTime - shownAt < .15f) return Open;
             if (action.StartsWith("quest-")) return HandleSandQuest(action);
             if (action.StartsWith("shop-")) return HandleShop(action);
+            if (action.StartsWith("daily-") || action.StartsWith("tasks-")) return HandlePanels(action);
+            if (action.StartsWith("gallery-")) return HandleGallery(action);
             switch (action)
             {
                 case "close": Close(); return true;
@@ -533,6 +540,7 @@ namespace SandJamTest.Scene3D
                     SaveManager.Data.hapticsOn = !SaveManager.Data.hapticsOn; SaveManager.Save();
                     RefreshSettings(); return true;
                 case "retry":
+                    // In a level the current build keeps the Level Failed card ("You Have No Lives!" + Refill).
                     if (!LivesManager.CanPlay) { ShowFailed(false, true); return true; }
                     Close(); screen.Feedback.Retry(); return true;
                 case "home": Close(); gaveUp = false; screen.Feedback.GoHome(); return true;
@@ -552,7 +560,12 @@ namespace SandJamTest.Scene3D
                     if (!failedIsNoLives) { gaveUp = false; screen.Feedback.GoHome(); }
                     return true;
                 case "refill-lives":
-                    if (!EconomyManager.TrySpend(EconomyManager.RefillLivesPrice, "refill-lives")) { Configure(null, failed.Caption, null, "Không đủ xu · cần " + EconomyManager.RefillLivesPrice, 18f); return true; }
+                    if (!EconomyManager.TrySpend(EconomyManager.RefillLivesPrice, "refill-lives"))
+                    {
+                        string need = "Không đủ xu · cần " + EconomyManager.RefillLivesPrice;
+                        if (Open == noLives.Root) SetText(noLivesInfo, need); else Configure(null, failed.Caption, null, need, 18f);
+                        return true;
+                    }
                     LivesManager.Refill();
                     Close();
                     if (screen.Current == VideoScreen.Page.Gameplay) { gaveUp = false; screen.Feedback.Retry(); }
@@ -577,6 +590,8 @@ namespace SandJamTest.Scene3D
             if (Open == congrats.Root && congratsRays) congratsRays.localRotation = Quaternion.Euler(0, 0, Time.unscaledTime * 12f);
             UpdateSandQuest();
             UpdateShop();
+            UpdateNoLives();
+            UpdatePanels();
             if ((Open == lose.Root || (Open == failed.Root && !failedIsNoLives)) && !screen.Feedback.FailureVisible) Close();
             if (Input.GetKeyDown(KeyCode.Escape) && Open == settings.Root) Close();
         }
