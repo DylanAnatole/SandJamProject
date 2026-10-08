@@ -23,6 +23,7 @@ namespace SandJamTest
 
         readonly Func<Region, bool> isCovered;
         readonly bool useSlotUnlocks;
+        int openStep; // advances on every opening pass; regions opened in one pass share it (see Target)
         public SandGame(LevelData data, int capacity = 5, Func<Region, bool> coverageCheck = null, bool enableSlotUnlocks = false)
         {
             Validate(data);
@@ -160,7 +161,18 @@ namespace SandJamTest
         {
             // Sleeping halves never pour; key cubes pour only into padlocks, ordinary cubes never do.
             if (shooter == null || shooter.IsFrozen || shooter.Ammo <= 0 || shooter.Half) return -1;
-            return Array.FindIndex(Regions, p => p.Open && p.Remaining > 0 && p.Data.ColorType == shooter.Color && p.Data.IsUnlockerPart == shooter.Key);
+            // Pour order seen in the current build (level 268 recording): the region that opened first is painted
+            // first; regions that opened together are painted from the bottom of the picture upwards.
+            int best = -1;
+            for (int i = 0; i < Regions.Length; i++)
+            {
+                var p = Regions[i];
+                if (!p.Open || p.Remaining <= 0 || p.Data.ColorType != shooter.Color || p.Data.IsUnlockerPart != shooter.Key) continue;
+                if (best < 0) { best = i; continue; }
+                var b = Regions[best];
+                if (p.OpenedOrder < b.OpenedOrder || (p.OpenedOrder == b.OpenedOrder && p.LowestRow < b.LowestRow)) best = i;
+            }
+            return best;
         }
 
         // Two same-colour halves resting in the stash merge into one full cube in the earlier slot.
@@ -212,6 +224,7 @@ namespace SandJamTest
 
         void OpenNeighbours()
         {
+            Region.OpenStamp = ++openStep;
             // A region opens only when one of its prerequisite regions is completely covered with sand
             // (confirmed in play: neighbours stay locked while the previous region is still filling).
             var finished = new HashSet<string>(Regions.Where(p => p.Remaining == 0 && (isCovered == null || isCovered(p))).Select(p => p.Data.name));
