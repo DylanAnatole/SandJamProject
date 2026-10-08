@@ -1,0 +1,5 @@
+PASS: Fill follows remaining ammo
+PASS: Empty interior and original colour rim
+PASS: Character leaves screen without shrinking
+PASS: Completed region brightens without checkmark
+PASS: Restart restores colour, scale and state

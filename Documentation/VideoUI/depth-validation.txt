@@ -1,0 +1,12 @@
+PASS: All five screens captured
+PASS: Perspective stage and orthographic HUD
+PASS: Toon shader supported and all character submeshes have materials
+PASS: Inclined pose survives restart
+PASS: Recovered Walk clip changes the leg bone pose
+PASS: Walking-to-slot screenshot captured
+PASS: Level 147 reference has 18 regions, amounts 45/42, divider 10
+PASS: Exactly five slots; fifth unlocks after 300 units
+PASS: Booster UI has no actions
+PASS: Purple selection pours sand
+PASS: Full 24-move replay wins with all 18 regions settled
+PASS: Replay restores level

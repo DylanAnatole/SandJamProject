@@ -1,0 +1,3 @@
+source,copy,sha256,identical
+Assets/AnimationClip/Take 001.anim,CoreGameplayTest/Assets/Resources/CharacterAnimation/WalkOriginal.anim,ac59d2be16b79fea6f33ad05cfda92d10cb58f436a700892a75a3056bbad6556,True
+Assets/AnimationClip/Sit.anim,CoreGameplayTest/Assets/Resources/CharacterAnimation/SitOriginal.anim,cd98ab792514ff7c447cc322f468579ab5a70f2cedfea9c9d6c5bf49ca9b69da,True

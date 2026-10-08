@@ -1,0 +1,6 @@
+PASS: Frozen clicks blocked
+PASS: Ice shader and counters visible
+PASS: Successful admission thaws one layer
+PASS: Shell dissolves and original colour/amount return
+PASS: Six-box replay wins all regions
+PASS: Restart restores ice

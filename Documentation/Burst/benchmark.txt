@@ -1,0 +1,5 @@
+PASS: Identical grain positions/fill across 13 regions and four request phases
+PASS: Burst compiler executed job
+4800 cells, 5000 steps, 8 steps/job; editor CPU-only benchmark (not mobile FPS)
+Managed ms: 18.68
+Burst Jobs ms: 9.00

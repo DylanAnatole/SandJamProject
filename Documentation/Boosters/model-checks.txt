@@ -1,0 +1,7 @@
+PASS: Reveal shows information without unlocking or accepting sand
+PASS: Swap first two rows in all lanes, preserving deeper rows and ammo
+PASS: Short lanes preserved
+PASS: Deep matching shooter extracted without reordering others
+PASS: Locked colors and full stash rejected without mutation
+PASS: Priority selection preserves linked pairs
+PASS: New game resets reveal

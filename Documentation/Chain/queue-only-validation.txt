@@ -1,0 +1,7 @@
+PASS: Chain visible only in queue
+PASS: Chain hidden immediately on selection, during movement and at pouring slots
+PASS: Either endpoint selects both
+PASS: Both move before pouring
+PASS: Full board completed
+PASS: Slots released together
+PASS: Restart restores one visible queue chain

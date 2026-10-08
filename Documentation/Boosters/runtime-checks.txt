@@ -1,0 +1,7 @@
+PASS: All three HUD button hit areas work
+PASS: Rocket reveals one region without unlocking
+PASS: Counter appears on revealed locked region
+PASS: First two rows swap across three lanes
+PASS: Priority picker opens and lists deep matching colors
+PASS: Selected deep shooter enters stash
+PASS: Cancel and restart clear booster state

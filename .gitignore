@@ -1,0 +1,57 @@
+/Library/
+/Temp/
+/Logs/
+/Obj/
+/UserSettings/
+/Build/
+/BuildAssets/
+/BuildScene3D/
+/Build*/
+/TestResults/
+/Tools/
+/.vs/
+/.idea/
+/.vscode/
+/.env
+/.env.*
+*.user
+*.pdb
+*.log
+*.tmp
+*.pidb
+*.opendb
+*.VC.db
+*.unitypackage
+*.apk
+*.aab
+*.mp4
+*.pfx
+*.keystore
+*.jks
+Thumbs.db
+.DS_Store
+*.csproj
+*.sln
+
+# Content taken from the original game (Voodoo) stays local: decompiled code, ripped assets,
+# original configs/scenes, and every Resources subfolder (sprites, audio, levels, configs).
+/SourceData/
+/OriginalReference/
+/Assets/RecoveredOriginal/
+/Assets/RecoveredOriginal.meta
+/Assets/SandJam/Resources/*/
+/Assets/SandJam/Resources/*.meta
+!/Assets/SandJam/Resources/*.shader.meta
+!/Assets/SandJam/Resources/Inter.ttf.meta
+/Assets/SandJam/Resources/Tutorial.json
+/recovered-assets-*.log
+# Data derived from the original levels/art: region meshes, picture previews, level JSON copies,
+# meshes/poses extracted from the original, and screenshots showing the original pictures.
+/Assets/SandJam/Generated/**/PaintalbePart_*
+/Assets/SandJam/Generated/**/Region_*
+/Assets/SandJam/Generated/**/Obstacles.asset*
+/Assets/SandJam/Generated/**/*BoardPreview.png*
+/Assets/SandJam/Generated/**/*Playable.json*
+/Assets/SandJam/Generated/**/Original*
+/Documentation/**/*.png
+/Documentation/**/*.jpg

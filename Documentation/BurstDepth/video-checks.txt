@@ -1,0 +1,6 @@
+PASS: Level 201 board and exported queues
+PASS: Initial 9/6 regions and 150/250 locks
+PASS: Two same-lane linked pairs
+PASS: Real pouring and full winning replay (24 moves)
+PASS: All regions settled and both pads unlocked
+PASS: Restart restored stage

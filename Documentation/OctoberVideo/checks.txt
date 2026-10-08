@@ -1,0 +1,5 @@
+PASS: One continuous reusable stream per shooter
+PASS: Restart clears streams
+PASS: Independent fourth and fifth slot locks
+PASS: Exactly five slots
+PASS: Failure popup, retry and home

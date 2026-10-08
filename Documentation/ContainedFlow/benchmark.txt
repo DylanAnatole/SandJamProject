@@ -1,0 +1,5 @@
+PASS: Identical managed/Burst routes across all shipped levels and four request phases; every grain stays in its region; top-center inlet
+PASS: Burst compiler executed job
+4800 cells, 5000 steps, 8 steps/job; editor CPU-only benchmark (not mobile FPS)
+Managed ms: 12.87
+Burst Jobs ms: 11.55

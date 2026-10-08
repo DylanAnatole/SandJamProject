@@ -1,0 +1,557 @@
+﻿File,Regions,Characters,Divider,RequiredSand,SuppliedSand,MechanicFlags,Compatibility
+112x84_Accessories_1.json,45,21,20,7660,7660,,Candidate - runtime validation required
+112x84_Accessories_10.json,26,22,20,7840,7840,IsSecret,Needs mechanics
+112x84_Accessories_11.json,34,23,20,7940,7940,IsSecret,Needs mechanics
+112x84_Accessories_12.json,41,23,20,7720,7720,,Candidate - runtime validation required
+112x84_Accessories_13.json,19,25,20,8020,8020,,Candidate - runtime validation required
+112x84_Accessories_14.json,38,25,20,7540,7540,IsSecret,Needs mechanics
+112x84_Accessories_15.json,32,23,20,7740,7740,IsSecret,Needs mechanics
+112x84_Accessories_2.json,34,22,20,7660,7660,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Accessories_3.json,66,21,20,7380,7380,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Accessories_4.json,37,24,20,7700,7700,IsSecret,Needs mechanics
+112x84_Accessories_5.json,29,24,20,7860,7860,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Accessories_6.json,17,24,20,8220,8220,IsSecret,Needs mechanics
+112x84_Accessories_7.json,20,24,20,8020,8020,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Accessories_8.json,47,22,20,7620,7620,IsChain IsSecret,Needs mechanics
+112x84_Accessories_9.json,48,22,20,7560,7560,,Candidate - runtime validation required
+112x84_AnimalPortrait_1.json,9,24,20,8120,8120,IsFreeze,Candidate - runtime validation required
+112x84_AnimalPortrait_10.json,18,21,20,7940,7940,IsFreeze,Candidate - runtime validation required
+112x84_AnimalPortrait_11.json,26,23,20,7860,7860,IsChain IsSecret,Needs mechanics
+112x84_AnimalPortrait_12.json,13,24,20,8420,8420,IsChain IsChainSameLane IsFreeze IsSecret,Needs mechanics
+112x84_AnimalPortrait_13.json,14,24,20,8340,8340,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_AnimalPortrait_14.json,15,25,20,8160,8160,IsChain IsFreeze IsSecret,Needs mechanics
+112x84_AnimalPortrait_15.json,16,24,20,8120,8120,IsFreeze,Candidate - runtime validation required
+112x84_AnimalPortrait_2.json,13,23,20,7900,7900,IsFreeze,Candidate - runtime validation required
+112x84_AnimalPortrait_3.json,20,24,20,8100,8100,IsFreeze IsSecret,Needs mechanics
+112x84_AnimalPortrait_4.json,13,24,20,8080,8080,,Candidate - runtime validation required
+112x84_AnimalPortrait_5.json,19,24,20,7860,7860,IsFreeze,Candidate - runtime validation required
+112x84_AnimalPortrait_6.json,18,23,20,7940,7940,IsFreeze IsSecret,Needs mechanics
+112x84_AnimalPortrait_7.json,15,23,20,8160,8160,,Candidate - runtime validation required
+112x84_AnimalPortrait_8.json,12,22,20,8200,8200,,Candidate - runtime validation required
+112x84_AnimalPortrait_9.json,14,24,20,8080,8080,IsFreeze IsSecret,Needs mechanics
+112x84_Cartoon_1.json,21,24,20,8180,8180,,Candidate - runtime validation required
+112x84_Cartoon_10.json,23,26,10,7980,7980,,Candidate - runtime validation required
+112x84_Cartoon_10_Dupe.json,23,26,10,7980,7980,IsSecret,Needs mechanics
+112x84_Cartoon_11.json,23,25,10,8110,8110,,Candidate - runtime validation required
+112x84_Cartoon_12.json,23,23,10,8030,8030,IsChain IsSecret,Needs mechanics
+112x84_Cartoon_12_Dupe.json,23,23,10,8030,8030,IsChain IsSecret,Needs mechanics
+112x84_Cartoon_13.json,14,25,10,8280,8280,,Candidate - runtime validation required
+112x84_Cartoon_14.json,29,26,10,8000,8000,IsChain IsSecret,Needs mechanics
+112x84_Cartoon_15.json,26,25,10,7940,7940,,Candidate - runtime validation required
+112x84_Cartoon_15_Dupe.json,26,25,10,7940,7940,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Cartoon_2.json,27,25,10,7860,7860,,Candidate - runtime validation required
+112x84_Cartoon_2_Dupe.json,27,25,10,7860,7860,,Candidate - runtime validation required
+112x84_Cartoon_3.json,21,24,10,8080,8080,,Candidate - runtime validation required
+112x84_Cartoon_4.json,17,23,10,8240,8240,,Candidate - runtime validation required
+112x84_Cartoon_4_Dupe.json,17,23,10,8240,8240,IsChain IsSecret,Needs mechanics
+112x84_Cartoon_5.json,28,24,10,8030,8030,,Candidate - runtime validation required
+112x84_Cartoon_6.json,17,24,10,8250,8250,,Candidate - runtime validation required
+112x84_Cartoon_6_Dupe.json,17,24,10,8250,8250,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Cartoon_7.json,30,24,10,7820,7820,,Candidate - runtime validation required
+112x84_Cartoon_7_Dupe.json,30,24,10,7820,7820,IsSecret,Needs mechanics
+112x84_Cartoon_8.json,19,24,10,8180,8180,,Candidate - runtime validation required
+112x84_Cartoon_8_Dupe.json,19,24,10,8180,8180,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Cartoon_9.json,23,22,10,8040,8040,,Candidate - runtime validation required
+112x84_Celebs_1.json,30,24,20,7980,7980,,Candidate - runtime validation required
+112x84_Celebs_2.json,16,24,10,8240,8240,,Candidate - runtime validation required
+112x84_Celebs_3.json,14,24,10,8270,8270,,Candidate - runtime validation required
+112x84_Celebs_4.json,18,26,10,8340,8340,,Candidate - runtime validation required
+112x84_Celebs_4_Dupe.json,18,26,10,8340,8340,,Candidate - runtime validation required
+112x84_Celebs_5.json,17,23,10,8300,8300,IsSecret,Needs mechanics
+112x84_Celebs_6.json,19,26,10,8080,8080,,Candidate - runtime validation required
+112x84_Celebs_7.json,19,25,10,8300,8300,,Candidate - runtime validation required
+112x84_Celebs_7_Dupe.json,19,25,10,8300,8300,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Dance_1.json,16,25,20,8200,8200,,Candidate - runtime validation required
+112x84_Dance_10.json,26,22,20,7780,7780,IsFreeze IsSecret,Needs mechanics
+112x84_Dance_11.json,18,25,20,8240,8240,,Candidate - runtime validation required
+112x84_Dance_12.json,15,26,20,8420,8420,IsFreeze,Candidate - runtime validation required
+112x84_Dance_13.json,30,25,20,7780,7780,,Candidate - runtime validation required
+112x84_Dance_14.json,19,24,20,8240,8240,IsFreeze IsSecret,Needs mechanics
+112x84_Dance_15.json,15,23,20,8300,8300,IsChain IsChainSameLane IsFreeze,Candidate - runtime validation required
+112x84_Dance_2.json,9,24,20,8600,8600,IsFreeze IsSecret,Needs mechanics
+112x84_Dance_3.json,18,25,20,8400,8400,IsFreeze IsSecret,Needs mechanics
+112x84_Dance_4.json,23,24,20,8060,8060,,Candidate - runtime validation required
+112x84_Dance_5.json,24,24,20,8160,8160,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Dance_6.json,21,24,20,8180,8180,IsFreeze,Candidate - runtime validation required
+112x84_Dance_7.json,18,23,20,8100,8100,,Candidate - runtime validation required
+112x84_Dance_8.json,14,24,20,8600,8600,IsChain IsChainSameLane IsFreeze,Candidate - runtime validation required
+112x84_Dance_9.json,10,24,20,8540,8540,IsFreeze IsSecret,Needs mechanics
+112x84_EventFigures_1.json,20,25,20,8220,8220,IsHalf,Needs mechanics
+112x84_EventFigures_10.json,23,24,20,7840,7840,,Candidate - runtime validation required
+112x84_EventFigures_11.json,19,24,20,8080,8080,IsHalf,Needs mechanics
+112x84_EventFigures_12.json,28,26,20,7920,7920,IsHalf,Needs mechanics
+112x84_EventFigures_13.json,14,24,20,8340,8340,IsChain IsChainSameLane IsHalf IsSecret,Needs mechanics
+112x84_EventFigures_14.json,14,24,20,7800,7800,,Candidate - runtime validation required
+112x84_EventFigures_15.json,16,25,20,8100,8100,,Candidate - runtime validation required
+112x84_EventFigures_2.json,17,25,20,8280,8280,IsHalf,Needs mechanics
+112x84_EventFigures_3.json,12,25,20,8420,8420,IsHalf,Needs mechanics
+112x84_EventFigures_4.json,13,26,20,8320,8320,IsHalf,Needs mechanics
+112x84_EventFigures_5.json,16,23,20,8180,8180,,Candidate - runtime validation required
+112x84_EventFigures_6.json,24,24,20,7800,7800,IsHalf,Needs mechanics
+112x84_EventFigures_7.json,13,25,20,8320,8320,IsHalf IsSecret,Needs mechanics
+112x84_EventFigures_8.json,15,24,20,8240,8240,IsChain IsChainSameLane IsHalf,Needs mechanics
+112x84_EventFigures_9.json,18,23,20,7940,7940,IsHalf IsSecret,Needs mechanics
+112x84_Family_1.json,23,26,10,8150,8150,,Candidate - runtime validation required
+112x84_Family_10.json,13,24,10,8470,8470,,Candidate - runtime validation required
+112x84_Family_11.json,17,25,10,8340,8340,,Candidate - runtime validation required
+112x84_Family_11_Dupe.json,17,25,10,8340,8340,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Family_12.json,15,25,10,8390,8390,,Candidate - runtime validation required
+112x84_Family_12_Dupe.json,15,25,10,8390,8390,IsChain IsSecret,Needs mechanics
+112x84_Family_13.json,17,25,10,8360,8360,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Family_14.json,30,26,10,8040,8040,,Candidate - runtime validation required
+112x84_Family_14_Dupe.json,30,26,10,8040,8040,,Candidate - runtime validation required
+112x84_Family_15.json,26,24,10,7930,7930,,Candidate - runtime validation required
+112x84_Family_1_Dupe.json,23,26,10,8150,8150,IsSecret,Needs mechanics
+112x84_Family_2.json,20,24,10,8370,8370,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Family_2_Dupe.json,20,24,10,8370,8370,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Family_3.json,19,26,10,8420,8420,IsChain IsSecret,Needs mechanics
+112x84_Family_3_Dupe.json,19,26,10,8420,8420,IsChain IsSecret,Needs mechanics
+112x84_Family_4.json,34,25,10,7870,7870,,Candidate - runtime validation required
+112x84_Family_4_Dupe.json,34,25,10,7870,7870,IsSecret,Needs mechanics
+112x84_Family_5.json,31,26,10,7990,7990,,Candidate - runtime validation required
+112x84_Family_5_Dupe.json,31,26,10,7990,7990,IsSecret,Needs mechanics
+112x84_Family_6.json,19,26,10,8120,8120,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Family_6_Dupe.json,19,26,10,8120,8120,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Family_7.json,27,26,10,8060,8060,IsChain IsSecret,Needs mechanics
+112x84_Family_7_Dupe.json,27,26,10,8060,8060,IsChain IsSecret,Needs mechanics
+112x84_Family_8.json,36,24,10,7960,7960,IsSecret,Needs mechanics
+112x84_Family_8_Dupe.json,36,24,10,7960,7960,IsSecret,Needs mechanics
+112x84_Family_9.json,27,24,10,8020,8020,,Candidate - runtime validation required
+112x84_Family_9_Dupe.json,27,24,10,8020,8020,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Flower_10.json,13,24,20,7980,7980,,Candidate - runtime validation required
+112x84_Flower_10_Dupe.json,13,24,20,7980,7980,IsSecret,Needs mechanics
+112x84_Flower_11.json,12,24,20,8480,8480,,Candidate - runtime validation required
+112x84_Flower_11_Dupe.json,12,24,20,8480,8480,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Flower_12.json,22,24,20,8140,8140,IsSecret,Needs mechanics
+112x84_Flower_13.json,23,22,20,7880,7880,,Candidate - runtime validation required
+112x84_Flower_13_Dupe.json,23,22,20,7880,7880,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Flower_14.json,17,25,10,8240,8240,IsChain IsSecret,Needs mechanics
+112x84_Flower_15.json,20,25,20,8260,8260,,Candidate - runtime validation required
+112x84_Flower_2.json,20,22,20,8060,8060,IsSecret,Needs mechanics
+112x84_Flower_3.json,26,24,20,7980,7980,,Candidate - runtime validation required
+112x84_Flower_3_Dupe.json,26,24,20,7980,7980,IsSecret,Needs mechanics
+112x84_Flower_4.json,24,25,20,8080,8080,,Candidate - runtime validation required
+112x84_Flower_5.json,26,24,20,7920,7920,IsSecret,Needs mechanics
+112x84_Flower_6.json,23,23,20,8040,8040,IsSecret,Needs mechanics
+112x84_Flower_7.json,22,23,20,7960,7960,,Candidate - runtime validation required
+112x84_Flower_7_Dupe.json,22,23,20,7960,7960,,Candidate - runtime validation required
+112x84_Flower_8.json,22,23,20,7560,7560,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Flower_9.json,29,23,20,7700,7700,,Candidate - runtime validation required
+112x84_Flower_9_Dupe.json,29,23,20,7700,7700,,Candidate - runtime validation required
+112x84_FoodAndDrinks_1.json,27,22,20,7620,7620,IsChain IsHalf IsSecret,Needs mechanics
+112x84_FoodAndDrinks_10.json,17,24,20,8020,8020,IsHalf IsSecret,Needs mechanics
+112x84_FoodAndDrinks_11.json,20,25,20,8200,8200,IsHalf,Needs mechanics
+112x84_FoodAndDrinks_12.json,19,24,20,7860,7860,,Candidate - runtime validation required
+112x84_FoodAndDrinks_13.json,24,23,20,7820,7820,IsChain IsChainSameLane IsHalf IsSecret,Needs mechanics
+112x84_FoodAndDrinks_14.json,23,24,20,8200,8200,IsHalf,Needs mechanics
+112x84_FoodAndDrinks_15.json,14,23,20,8280,8280,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_FoodAndDrinks_2.json,24,23,20,7940,7940,IsHalf IsSecret,Needs mechanics
+112x84_FoodAndDrinks_3.json,15,24,20,8240,8240,IsHalf IsSecret,Needs mechanics
+112x84_FoodAndDrinks_4.json,21,23,20,8140,8140,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_FoodAndDrinks_5.json,14,25,20,8180,8180,,Candidate - runtime validation required
+112x84_FoodAndDrinks_6.json,11,24,20,8500,8500,IsHalf,Needs mechanics
+112x84_FoodAndDrinks_7.json,21,24,20,7840,7840,IsHalf,Needs mechanics
+112x84_FoodAndDrinks_8.json,13,24,20,8220,8220,IsChain IsChainSameLane IsHalf IsSecret,Needs mechanics
+112x84_FoodAndDrinks_9.json,10,24,20,8420,8420,,Candidate - runtime validation required
+112x84_Halloween_1.json,19,27,20,8900,8900,IsUnlocker,Needs mechanics
+112x84_Halloween_10.json,27,32,20,11360,11360,IsUnlocker,Needs mechanics
+112x84_Halloween_11.json,34,35,20,11580,11580,IsUnlocker,Needs mechanics
+112x84_Halloween_12.json,25,30,20,10380,10380,IsUnlocker,Needs mechanics
+112x84_Halloween_13.json,31,25,20,7920,7920,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Halloween_14.json,35,31,20,10460,10460,IsUnlocker,Needs mechanics
+112x84_Halloween_15.json,27,23,20,7720,7720,,Candidate - runtime validation required
+112x84_Halloween_2.json,21,30,20,9700,9700,IsUnlocker,Needs mechanics
+112x84_Halloween_3.json,29,33,20,10080,10080,IsUnlocker,Needs mechanics
+112x84_Halloween_4.json,17,26,20,7760,7760,,Candidate - runtime validation required
+112x84_Halloween_5.json,35,29,20,9100,9100,IsUnlocker,Needs mechanics
+112x84_Halloween_6.json,31,29,20,9780,9780,IsSecret IsUnlocker,Needs mechanics
+112x84_Halloween_7.json,36,29,20,9720,9720,IsUnlocker,Needs mechanics
+112x84_Halloween_8.json,12,25,20,7960,7960,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Halloween_9.json,36,22,20,7660,7660,IsSecret,Needs mechanics
+112x84_Level10_C.json,15,23,10,8670,8670,,Candidate - runtime validation required
+112x84_Level11_D.json,26,25,20,7850,7850,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level11_D_Dupe.json,26,25,20,7850,7850,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level12_D.json,23,25,40,8130,8130,,Candidate - runtime validation required
+112x84_Level13_D.json,16,23,20,8400,8400,,Candidate - runtime validation required
+112x84_Level14_E.json,27,23,10,8200,8200,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level14_E_Dupe.json,27,23,20,8200,8200,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level15_D.json,29,24,20,8040,8040,IsSecret,Needs mechanics
+112x84_Level16_F.json,17,23,10,8080,8080,,Candidate - runtime validation required
+112x84_Level17_G.json,36,25,10,8280,8280,,Candidate - runtime validation required
+112x84_Level18_H.json,35,23,10,7640,7640,IsSecret,Needs mechanics
+112x84_Level18_H_Dupe.json,35,23,10,7640,7640,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level19_G.json,11,24,20,8480,8480,,Candidate - runtime validation required
+112x84_Level19_G_Dupe.json,11,24,20,8480,8480,,Candidate - runtime validation required
+112x84_Level20_G.json,11,24,10,8280,8280,,Candidate - runtime validation required
+112x84_Level20_G_Dupe.json,11,24,20,8280,8280,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level21_G.json,10,23,20,8400,8400,,Candidate - runtime validation required
+112x84_Level21_G_Dupe.json,10,23,20,8400,8400,,Candidate - runtime validation required
+112x84_Level22_D.json,16,26,40,8280,8280,,Candidate - runtime validation required
+112x84_Level24_A.json,25,24,10,8000,8000,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level25_A.json,19,24,20,8160,8160,,Candidate - runtime validation required
+112x84_Level26_A.json,36,21,20,7520,7520,,Candidate - runtime validation required
+112x84_Level26_A_Dupe.json,36,21,20,7520,7520,,Candidate - runtime validation required
+112x84_Level27_A.json,22,22,10,8000,8000,,Candidate - runtime validation required
+112x84_Level27_A_Dupe.json,22,22,10,8000,8000,IsSecret,Needs mechanics
+112x84_Level28_A.json,15,24,10,8560,8560,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level29_A.json,26,23,20,7280,7280,,Candidate - runtime validation required
+112x84_Level29_A_Dupe.json,26,23,20,7280,7280,,Candidate - runtime validation required
+112x84_Level2_B.json,18,25,10,8440,8440,,Candidate - runtime validation required
+112x84_Level2_B_Dupe.json,18,25,40,8440,8440,,Candidate - runtime validation required
+112x84_Level30_A.json,9,25,10,8640,8960,,Candidate - runtime validation required
+112x84_Level31_ArtDrawing.json,28,21,40,7680,7680,,Candidate - runtime validation required
+112x84_Level31_Bird 1.json,12,25,10,8630,8630,,Candidate - runtime validation required
+112x84_Level31_Bird 1_Dupe.json,12,25,10,8630,8630,,Candidate - runtime validation required
+112x84_Level31_Bird.json,23,24,10,8010,8010,,Candidate - runtime validation required
+112x84_Level31_Bird_Dupe.json,23,24,20,8010,8010,,Candidate - runtime validation required
+112x84_Level31_Charlie.json,24,13,40,7520,7520,,Candidate - runtime validation required
+112x84_Level31_Charlie_Dupe.json,24,13,10,7520,7520,IsSecret,Needs mechanics
+112x84_Level31_Cubist.json,12,24,10,8650,8650,,Candidate - runtime validation required
+112x84_Level31_Cubist2.json,18,14,40,8160,8160,,Candidate - runtime validation required
+112x84_Level31_Cubist2_Dupe.json,18,14,20,8160,8160,,Candidate - runtime validation required
+112x84_Level31_D.json,15,24,20,8240,8240,,Candidate - runtime validation required
+112x84_Level31_Desert.json,7,24,10,8800,8800,,Candidate - runtime validation required
+112x84_Level31_Desert_Dupe.json,7,24,10,8800,8800,IsSecret,Needs mechanics
+112x84_Level31_Drum.json,22,13,20,7840,7840,,Candidate - runtime validation required
+112x84_Level31_Einstein.json,31,13,40,7680,7680,,Candidate - runtime validation required
+112x84_Level31_Einstein_Dupe.json,31,13,20,7680,7680,IsSecret,Needs mechanics
+112x84_Level31_ElonMusk.json,25,15,10,7520,7520,,Candidate - runtime validation required
+112x84_Level31_ElonMusk_Dupe.json,25,15,20,7520,7520,,Candidate - runtime validation required
+112x84_Level31_EyeDost.json,17,14,20,8080,8080,,Candidate - runtime validation required
+112x84_Level31_EyeDost_Dupe.json,17,14,20,8080,8080,,Candidate - runtime validation required
+112x84_Level31_Fish.json,23,13,20,7840,7840,,Candidate - runtime validation required
+112x84_Level31_Fish_Dupe.json,23,13,20,7840,7840,,Candidate - runtime validation required
+112x84_Level31_GirlFlower.json,26,25,10,8330,8330,,Candidate - runtime validation required
+112x84_Level31_GirlFlower_Dupe.json,26,25,10,8330,8330,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level31_GreenGirl.json,18,26,10,8290,8290,,Candidate - runtime validation required
+112x84_Level31_Heros 1.json,25,24,10,7960,7960,,Candidate - runtime validation required
+112x84_Level31_Heros 1_Dupe.json,25,24,10,7960,7960,,Candidate - runtime validation required
+112x84_Level31_Heros 2.json,37,22,10,7540,7540,IsSecret,Needs mechanics
+112x84_Level31_Heros 3.json,24,25,10,7820,7820,,Candidate - runtime validation required
+112x84_Level31_Heros.json,35,22,10,7790,7790,,Candidate - runtime validation required
+112x84_Level31_Heros_Dupe.json,35,22,10,7790,7790,,Candidate - runtime validation required
+112x84_Level31_Land.json,8,24,40,8390,8390,,Candidate - runtime validation required
+112x84_Level31_Lotus.json,22,25,10,8440,8440,,Candidate - runtime validation required
+112x84_Level31_Mandala.json,31,24,10,8120,8120,,Candidate - runtime validation required
+112x84_Level31_Mandala_Dupe.json,31,24,20,8120,8120,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level31_Mantar.json,18,22,10,7190,7190,,Candidate - runtime validation required
+112x84_Level31_Owl.json,19,23,10,8240,8240,,Candidate - runtime validation required
+112x84_Level31_Owl_Dupe.json,19,23,20,8240,8240,,Candidate - runtime validation required
+112x84_Level31_Plant 1.json,44,22,10,7370,7370,,Candidate - runtime validation required
+112x84_Level31_Plant 1_Dupe.json,44,22,10,7370,7370,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level31_Plant 2.json,40,24,10,7880,7880,,Candidate - runtime validation required
+112x84_Level31_Plant 2_Dupe.json,40,24,10,7880,7880,,Candidate - runtime validation required
+112x84_Level31_Plant.json,34,22,10,7990,7990,,Candidate - runtime validation required
+112x84_Level31_RedWoman.json,15,23,20,8400,8400,,Candidate - runtime validation required
+112x84_Level31_Saksafon.json,13,16,20,8560,8560,,Candidate - runtime validation required
+112x84_Level31_Saksafon_Dupe.json,13,16,20,8560,8560,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level31_Strawberry.json,20,23,10,8230,8230,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level31_Strawberry_Dupe.json,20,23,10,8230,8230,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level31_Sunview.json,23,22,10,8190,8190,IsSecret,Needs mechanics
+112x84_Level31_Sunview_Dupe.json,23,22,20,8190,8190,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level31_TeaPot.json,15,14,20,8240,8240,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level31_TeaPot_Dupe.json,15,14,20,8240,8240,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level31_Tutorial.json,5,13,40,9000,9000,,Candidate - runtime validation required
+112x84_Level31_ViewColor.json,10,26,10,8520,8520,,Candidate - runtime validation required
+112x84_Level31_ViewColor_Dupe.json,10,26,10,8520,8520,IsSecret,Needs mechanics
+112x84_Level31_violin.json,15,13,10,8160,8160,,Candidate - runtime validation required
+112x84_Level31_violin_Dupe.json,15,13,20,8160,8160,,Candidate - runtime validation required
+112x84_Level31_vWomanBlack.json,24,12,10,7760,7760,,Candidate - runtime validation required
+112x84_Level31_vWomanBlack_Dupe.json,24,12,10,7760,7760,IsSecret,Needs mechanics
+112x84_Level32_D.json,17,23,20,8120,8120,,Candidate - runtime validation required
+112x84_Level32_D_Dupe.json,17,23,20,8120,8120,,Candidate - runtime validation required
+112x84_Level33_D.json,19,21,20,7360,7360,IsSecret,Needs mechanics
+112x84_Level34_C.json,4,23,40,8920,8920,,Candidate - runtime validation required
+112x84_Level35_C.json,4,23,20,9000,9000,,Candidate - runtime validation required
+112x84_Level36_C.json,5,23,40,9040,9040,,Candidate - runtime validation required
+112x84_Level37_C.json,4,23,40,9000,9000,,Candidate - runtime validation required
+112x84_Level38_F.json,10,23,20,8040,8040,,Candidate - runtime validation required
+112x84_Level38_F_Dupe.json,10,23,20,8040,8040,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_Level3_B.json,13,25,40,8790,8790,,Candidate - runtime validation required
+112x84_Level4_B.json,14,24,10,8520,8520,,Candidate - runtime validation required
+112x84_Level5_B.json,11,26,10,8680,8680,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level5_B_Dupe.json,11,26,20,8680,8680,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Level6_B.json,13,25,10,8460,8460,,Candidate - runtime validation required
+112x84_Level6_B_Dupe.json,13,25,20,8460,8460,,Candidate - runtime validation required
+112x84_Level7_B.json,9,24,10,8510,8510,,Candidate - runtime validation required
+112x84_Level8_B.json,19,25,10,8480,8480,,Candidate - runtime validation required
+112x84_Level8_B_Dupe.json,19,25,20,8480,8480,,Candidate - runtime validation required
+112x84_Level9_B.json,10,26,20,8740,8740,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_ModernPosters_1.json,20,34,20,10920,10920,IsUnlocker,Needs mechanics
+112x84_ModernPosters_10.json,34,31,20,9700,9700,IsChain IsChainSameLane IsSecret IsUnlocker,Needs mechanics
+112x84_ModernPosters_11.json,21,25,20,8080,8080,IsSecret,Needs mechanics
+112x84_ModernPosters_12.json,24,32,20,10940,10940,IsUnlocker,Needs mechanics
+112x84_ModernPosters_13.json,19,25,20,8240,8240,,Candidate - runtime validation required
+112x84_ModernPosters_14.json,21,29,20,9480,9480,IsUnlocker,Needs mechanics
+112x84_ModernPosters_15.json,25,32,20,10200,10200,IsUnlocker,Needs mechanics
+112x84_ModernPosters_2.json,35,30,20,10340,10340,IsUnlocker,Needs mechanics
+112x84_ModernPosters_3.json,14,23,20,8280,8280,IsChain IsSecret,Needs mechanics
+112x84_ModernPosters_4.json,20,31,20,10260,10260,IsUnlocker,Needs mechanics
+112x84_ModernPosters_5.json,21,32,20,11120,11120,IsUnlocker,Needs mechanics
+112x84_ModernPosters_6.json,25,24,20,8000,8000,,Candidate - runtime validation required
+112x84_ModernPosters_7.json,18,28,20,8380,8380,,Candidate - runtime validation required
+112x84_ModernPosters_8.json,32,30,20,10060,10060,IsUnlocker,Needs mechanics
+112x84_ModernPosters_9.json,29,31,20,9820,9820,IsUnlocker,Needs mechanics
+112x84_musicians_1.json,25,23,20,7700,7700,,Candidate - runtime validation required
+112x84_musicians_10.json,19,26,10,8320,8320,IsSecret,Needs mechanics
+112x84_musicians_11.json,21,25,10,8280,8280,,Candidate - runtime validation required
+112x84_musicians_11_Dupe.json,21,25,10,8280,8280,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_musicians_12.json,18,26,10,8420,8420,IsSecret,Needs mechanics
+112x84_musicians_13.json,19,24,10,8130,8130,,Candidate - runtime validation required
+112x84_musicians_14.json,21,25,20,8040,8040,,Candidate - runtime validation required
+112x84_musicians_15.json,24,25,20,7940,7940,,Candidate - runtime validation required
+112x84_musicians_15_Dupe.json,24,25,20,7940,7940,,Candidate - runtime validation required
+112x84_musicians_1_Dupe.json,25,23,20,7700,7700,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_musicians_2.json,18,23,10,8250,8250,,Candidate - runtime validation required
+112x84_musicians_2_Dupe.json,18,23,10,8250,8250,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_musicians_3.json,14,25,10,8560,8560,IsSecret,Needs mechanics
+112x84_musicians_4.json,14,24,10,8400,8400,,Candidate - runtime validation required
+112x84_musicians_5.json,22,24,10,8090,8090,,Candidate - runtime validation required
+112x84_musicians_6.json,18,25,10,8310,8310,,Candidate - runtime validation required
+112x84_musicians_6_Dupe.json,18,25,10,8310,8310,IsSecret,Needs mechanics
+112x84_musicians_7.json,22,25,10,8250,8250,,Candidate - runtime validation required
+112x84_musicians_8.json,30,24,10,7970,7970,IsSecret,Needs mechanics
+112x84_musicians_9.json,17,24,10,8420,8420,,Candidate - runtime validation required
+112x84_musicians_9_Dupe.json,17,24,10,8420,8420,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_New_Level10-wildlife.json,18,24,20,8220,8220,,Candidate - runtime validation required
+112x84_New_Level10-wildlife_Dupe.json,18,24,20,8220,8220,IsSecret,Needs mechanics
+112x84_New_Level11-wildlife.json,19,24,20,8140,8140,,Candidate - runtime validation required
+112x84_New_Level11-wildlife_Dupe.json,19,24,20,8140,8140,,Candidate - runtime validation required
+112x84_New_Level18-womeninart.json,18,23,20,8260,8260,IsSecret,Needs mechanics
+112x84_New_Level19-abstract.json,20,23,20,8400,8400,,Candidate - runtime validation required
+112x84_New_Level19-abstract_Dupe.json,20,23,20,8400,8400,,Candidate - runtime validation required
+112x84_New_Level20-landscape_portrait.json,31,26,20,7540,7540,IsChain,Candidate - runtime validation required
+112x84_New_Level20-landscape_portrait_Dupe.json,31,26,20,7540,7540,IsChain,Candidate - runtime validation required
+112x84_New_Level21-womeninart.json,20,24,20,8440,8440,,Candidate - runtime validation required
+112x84_New_Level21-womeninart_Dupe.json,20,24,20,8440,8440,,Candidate - runtime validation required
+112x84_New_Level23-summervibes.json,50,21,20,7740,7740,,Candidate - runtime validation required
+112x84_New_Level23-summervibes_Dupe.json,50,21,20,7740,7740,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Level25-summervibes.json,17,24,20,8300,8300,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Level4-flower.json,13,24,20,8340,8340,,Candidate - runtime validation required
+112x84_New_Level4-flower_Dupe.json,13,24,20,8340,8340,IsChain IsSecret,Needs mechanics
+112x84_New_Level5-wildlife.json,30,23,20,8080,8080,,Candidate - runtime validation required
+112x84_New_Level5-wildlife_Dupe.json,30,23,20,8080,8080,IsSecret,Needs mechanics
+112x84_New_Level7-summervibes.json,33,25,20,7780,7780,IsSecret,Needs mechanics
+112x84_New_Level9-womeninart.json,25,26,20,7960,7960,IsSecret,Needs mechanics
+112x84_New_Level9-womeninart_Dupe.json,25,26,20,7960,7960,IsSecret,Needs mechanics
+112x84_New_Magic_1.json,34,23,20,7520,7520,,Candidate - runtime validation required
+112x84_New_Magic_10.json,21,24,20,8000,8000,IsSecret,Needs mechanics
+112x84_New_Magic_10_Dupe.json,21,24,20,8000,8000,IsSecret,Needs mechanics
+112x84_New_Magic_11.json,44,22,20,7300,7300,,Candidate - runtime validation required
+112x84_New_Magic_11_Dupe.json,44,22,20,7300,7300,IsSecret,Needs mechanics
+112x84_New_Magic_12.json,21,23,20,8000,8000,,Candidate - runtime validation required
+112x84_New_Magic_13.json,31,21,20,7460,7460,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Magic_13_Dupe.json,31,21,20,7460,7460,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Magic_14.json,42,20,20,7200,7200,,Candidate - runtime validation required
+112x84_New_Magic_14_Dupe.json,42,20,20,7200,7200,IsSecret,Needs mechanics
+112x84_New_Magic_15.json,27,23,20,7860,7860,,Candidate - runtime validation required
+112x84_New_Magic_1_Dupe.json,34,23,20,7520,7520,,Candidate - runtime validation required
+112x84_New_Magic_2.json,27,24,20,7740,7740,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Magic_3.json,42,22,20,7580,7580,,Candidate - runtime validation required
+112x84_New_Magic_3_Dupe.json,42,22,20,7580,7580,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Magic_4.json,22,23,20,7620,7620,,Candidate - runtime validation required
+112x84_New_Magic_4_Dupe.json,22,23,20,7620,7620,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_New_Magic_5.json,28,25,20,7700,7700,,Candidate - runtime validation required
+112x84_New_Magic_5_Dupe.json,28,25,20,7700,7700,,Candidate - runtime validation required
+112x84_New_Magic_6.json,31,21,20,7520,7520,,Candidate - runtime validation required
+112x84_New_Magic_7.json,31,24,20,7560,7560,,Candidate - runtime validation required
+112x84_New_Magic_8.json,38,22,20,7480,7480,IsChain IsSecret,Needs mechanics
+112x84_New_Magic_8_Dupe.json,38,22,20,7480,7480,IsChain IsSecret,Needs mechanics
+112x84_New_Magic_9.json,26,22,20,7740,7740,,Candidate - runtime validation required
+112x84_New_Magic_9_Dupe.json,26,22,20,7740,7740,,Candidate - runtime validation required
+112x84_New_PopArt_1.json,21,24,10,8250,8250,,Candidate - runtime validation required
+112x84_New_PopArt_10.json,14,25,10,8290,8290,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_PopArt_10_Dupe.json,14,25,10,8290,8290,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_New_PopArt_11.json,23,24,10,8170,8170,,Candidate - runtime validation required
+112x84_New_PopArt_12.json,33,25,10,7780,7780,,Candidate - runtime validation required
+112x84_New_PopArt_12_Dupe.json,33,25,10,7780,7780,,Candidate - runtime validation required
+112x84_New_PopArt_13.json,18,24,10,8170,8170,,Candidate - runtime validation required
+112x84_New_PopArt_13_Dupe.json,18,24,10,8170,8170,IsSecret,Needs mechanics
+112x84_New_PopArt_14.json,22,26,20,8160,8160,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_PopArt_14_Dupe.json,22,26,20,8160,8160,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_PopArt_15.json,29,24,20,8560,8560,,Candidate - runtime validation required
+112x84_New_PopArt_15_Dupe.json,29,24,20,8560,8560,,Candidate - runtime validation required
+112x84_New_PopArt_1_Dupe.json,21,24,10,8250,8250,,Candidate - runtime validation required
+112x84_New_PopArt_2.json,22,24,20,8020,8020,,Candidate - runtime validation required
+112x84_New_PopArt_3.json,15,23,20,8000,8000,IsSecret,Needs mechanics
+112x84_New_PopArt_4.json,26,24,10,8170,8170,IsSecret,Needs mechanics
+112x84_New_PopArt_5.json,19,23,10,8000,8000,,Candidate - runtime validation required
+112x84_New_PopArt_5_Dupe.json,19,23,10,8000,8000,,Candidate - runtime validation required
+112x84_New_PopArt_6.json,16,25,10,8290,8290,,Candidate - runtime validation required
+112x84_New_PopArt_6_Dupe.json,16,25,10,8290,8290,,Candidate - runtime validation required
+112x84_New_PopArt_7.json,18,24,10,8390,8390,IsSecret,Needs mechanics
+112x84_New_PopArt_8.json,24,23,10,8000,8000,,Candidate - runtime validation required
+112x84_New_PopArt_8_Dupe.json,24,23,10,8000,8000,IsSecret,Needs mechanics
+112x84_New_PopArt_9.json,16,25,10,8010,8010,IsSecret,Needs mechanics
+112x84_New_PopArt_9_Dupe.json,16,25,10,8010,8010,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_New_Sport_1.json,26,23,20,7840,7840,,Candidate - runtime validation required
+112x84_New_Sport_10.json,36,23,20,7760,7760,IsSecret,Needs mechanics
+112x84_New_Sport_10_Dupe.json,36,23,20,7760,7760,,Candidate - runtime validation required
+112x84_New_Sport_11.json,31,24,20,7920,7920,,Candidate - runtime validation required
+112x84_New_Sport_11_Dupe.json,31,24,20,7920,7920,,Candidate - runtime validation required
+112x84_New_Sport_12.json,27,23,20,7780,7780,IsSecret,Needs mechanics
+112x84_New_Sport_13.json,31,23,20,7820,7820,,Candidate - runtime validation required
+112x84_New_Sport_14.json,30,25,20,7920,7920,,Candidate - runtime validation required
+112x84_New_Sport_14_Dupe.json,30,25,20,7920,7920,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Sport_15.json,32,23,20,7880,7880,IsSecret,Needs mechanics
+112x84_New_Sport_1_Dupe.json,26,23,20,7840,7840,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Sport_2.json,23,27,20,8240,8240,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Sport_3.json,21,23,20,8160,8160,,Candidate - runtime validation required
+112x84_New_Sport_3_Dupe.json,21,23,20,8160,8160,IsSecret,Needs mechanics
+112x84_New_Sport_4.json,30,25,20,7840,7840,,Candidate - runtime validation required
+112x84_New_Sport_5.json,28,23,20,7800,7800,,Candidate - runtime validation required
+112x84_New_Sport_6.json,28,26,20,8060,8060,,Candidate - runtime validation required
+112x84_New_Sport_6_Dupe.json,28,26,20,8060,8060,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Sport_7.json,30,23,20,7760,7760,,Candidate - runtime validation required
+112x84_New_Sport_7_Dupe.json,30,23,20,7760,7760,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_Sport_8.json,54,23,20,7240,7240,IsChain IsSecret,Needs mechanics
+112x84_New_Sport_8_Dupe.json,54,23,20,7240,7240,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_New_Sport_9.json,29,24,20,7760,7760,,Candidate - runtime validation required
+112x84_New_Sport_9_Dupe.json,29,24,20,7760,7760,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_New_WomenInArt_11.json,14,23,20,8320,8320,,Candidate - runtime validation required
+112x84_New_WomenInArt_12.json,12,24,20,8400,8400,,Candidate - runtime validation required
+112x84_New_WomenInArt_13.json,30,21,20,7640,7640,IsChain,Candidate - runtime validation required
+112x84_New_WomenInArt_14.json,11,24,20,8540,8540,IsChain,Candidate - runtime validation required
+112x84_New_WomenInArt_15.json,17,25,20,8340,8340,,Candidate - runtime validation required
+112x84_New_WomenInArt_3.json,21,24,10,8220,8220,,Candidate - runtime validation required
+112x84_New_WomenInArt_3_Dupe.json,21,24,10,8220,8220,,Candidate - runtime validation required
+112x84_New_WomenInArt_4.json,21,24,10,8230,8230,,Candidate - runtime validation required
+112x84_New_WomenInArt_4_Dupe.json,21,24,10,8230,8230,,Candidate - runtime validation required
+112x84_New_WomenInArt_5.json,19,24,10,8270,8270,,Candidate - runtime validation required
+112x84_New_WomenInArt_5_Dupe.json,19,24,10,8270,8270,,Candidate - runtime validation required
+112x84_New_WomenInArt_6.json,29,25,10,8150,8150,,Candidate - runtime validation required
+112x84_New_WomenInArt_6_Dupe.json,29,25,10,8150,8150,,Candidate - runtime validation required
+112x84_New_WomenInArt_7.json,15,23,10,8410,8410,,Candidate - runtime validation required
+112x84_New_WomenInArt_8.json,34,24,10,7760,7760,,Candidate - runtime validation required
+112x84_New_WomenInArt_8_Dupe.json,34,24,10,7760,7760,,Candidate - runtime validation required
+112x84_New_WomenInArt_9.json,22,23,10,7660,7660,,Candidate - runtime validation required
+112x84_New_WomenInArt_9_Dupe.json,22,23,10,7660,7660,,Candidate - runtime validation required
+112x84_NewLevel_Princess_1.json,22,23,20,8180,8180,,Candidate - runtime validation required
+112x84_NewLevel_Princess_10.json,10,25,20,8520,8520,IsSecret,Needs mechanics
+112x84_NewLevel_Princess_11.json,14,25,20,8300,8300,IsChain,Candidate - runtime validation required
+112x84_NewLevel_Princess_11_Dupe.json,14,25,20,8300,8300,IsChain IsSecret,Needs mechanics
+112x84_NewLevel_Princess_12.json,17,24,20,8380,8380,IsSecret,Needs mechanics
+112x84_NewLevel_Princess_13.json,13,24,20,8200,8200,,Candidate - runtime validation required
+112x84_NewLevel_Princess_13_Dupe.json,13,24,20,8200,8200,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_NewLevel_Princess_14.json,20,24,20,8120,8120,IsChain IsSecret,Needs mechanics
+112x84_NewLevel_Princess_14_Dupe.json,20,24,20,8120,8120,IsChain IsSecret,Needs mechanics
+112x84_NewLevel_Princess_15.json,18,25,20,8360,8360,,Candidate - runtime validation required
+112x84_NewLevel_Princess_15_Dupe.json,18,25,20,8360,8360,,Candidate - runtime validation required
+112x84_NewLevel_Princess_2.json,16,25,20,8320,8320,IsSecret,Needs mechanics
+112x84_NewLevel_Princess_3.json,15,23,20,8440,8440,,Candidate - runtime validation required
+112x84_NewLevel_Princess_3_Dupe.json,15,23,20,8440,8440,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_NewLevel_Princess_4.json,18,25,20,8280,8280,,Candidate - runtime validation required
+112x84_NewLevel_Princess_5.json,15,25,20,8400,8400,IsChain,Candidate - runtime validation required
+112x84_NewLevel_Princess_5_Dupe.json,15,25,20,8400,8400,IsChain IsSecret,Needs mechanics
+112x84_NewLevel_Princess_6.json,21,24,20,8120,8120,,Candidate - runtime validation required
+112x84_NewLevel_Princess_6_Dupe.json,21,24,20,8120,8120,,Candidate - runtime validation required
+112x84_NewLevel_Princess_7.json,25,26,20,8040,8040,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_NewLevel_Princess_7_Dupe.json,25,26,20,8040,8040,IsChain IsSecret,Needs mechanics
+112x84_NewLevel_Princess_8.json,17,24,20,8340,8340,,Candidate - runtime validation required
+112x84_NewLevel_Princess_8_Dupe.json,17,24,20,8340,8340,,Candidate - runtime validation required
+112x84_NewLevel_Princess_9.json,16,23,20,8360,8360,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_10.json,24,25,10,8260,8260,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_10_Dupe.json,24,25,10,8260,8260,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_11.json,15,26,10,8440,8440,IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_11_Dupe.json,15,26,10,8440,8440,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_12.json,14,25,10,8590,8590,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_12_Dupe.json,14,25,10,8590,8590,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_13.json,8,24,10,8630,8630,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_13_Dupe.json,8,24,10,8630,8630,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_14.json,25,24,10,8190,8190,IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_3.json,20,24,20,8100,8100,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_4.json,26,26,20,8160,8160,IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_5.json,19,24,20,8100,8100,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_5_Dupe.json,19,24,20,8100,8100,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_6.json,27,26,20,8040,8040,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_7.json,11,26,20,8480,8480,IsChain,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_7_Dupe.json,11,26,20,8480,8480,IsChain,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_8.json,8,24,10,8440,8440,IsSecret,Needs mechanics
+112x84_NewLevel_SummerVibe_9.json,29,23,10,7840,7840,,Candidate - runtime validation required
+112x84_NewLevel_SummerVibe_9_Dupe.json,29,23,10,7840,7840,,Candidate - runtime validation required
+112x84_Travel_1.json,32,23,20,7580,7580,,Candidate - runtime validation required
+112x84_Travel_10.json,22,24,20,7860,7860,,Candidate - runtime validation required
+112x84_Travel_10_Dupe.json,22,24,20,7860,7860,,Candidate - runtime validation required
+112x84_Travel_11.json,22,25,20,8040,8040,,Candidate - runtime validation required
+112x84_Travel_11_Dupe.json,22,25,20,8040,8040,,Candidate - runtime validation required
+112x84_Travel_12.json,41,25,20,7540,7540,,Candidate - runtime validation required
+112x84_Travel_13.json,22,23,20,8100,8100,IsChain IsSecret,Needs mechanics
+112x84_Travel_13_Dupe.json,22,23,20,8100,8100,IsChain IsSecret,Needs mechanics
+112x84_Travel_14.json,30,26,20,7840,7840,IsSecret,Needs mechanics
+112x84_Travel_15.json,27,23,20,7660,7660,,Candidate - runtime validation required
+112x84_Travel_2.json,33,23,20,7600,7600,,Candidate - runtime validation required
+112x84_Travel_3.json,26,21,20,7560,7560,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Travel_3_Dupe.json,26,21,20,7560,7560,IsChain IsChainSameLane,Candidate - runtime validation required
+112x84_Travel_4.json,35,23,20,7840,7840,,Candidate - runtime validation required
+112x84_Travel_5.json,39,23,20,7680,7680,,Candidate - runtime validation required
+112x84_Travel_5_Dupe.json,39,23,20,7680,7680,,Candidate - runtime validation required
+112x84_Travel_6.json,33,22,20,7700,7700,,Candidate - runtime validation required
+112x84_Travel_7.json,26,24,20,8000,8000,,Candidate - runtime validation required
+112x84_Travel_7_Dupe.json,26,24,20,8000,8000,,Candidate - runtime validation required
+112x84_Travel_8.json,29,26,20,7980,7980,IsChain,Candidate - runtime validation required
+112x84_Travel_8_Dupe.json,29,26,20,7980,7980,IsChain,Candidate - runtime validation required
+112x84_Travel_9.json,30,24,20,7860,7860,,Candidate - runtime validation required
+112x84_Travel_9_Dupe.json,30,24,20,7860,7860,,Candidate - runtime validation required
+112x84_wildlife_1.json,19,23,10,8160,8160,,Candidate - runtime validation required
+112x84_wildlife_10.json,23,23,10,8000,8000,,Candidate - runtime validation required
+112x84_wildlife_10_Dupe.json,23,23,10,8000,8000,,Candidate - runtime validation required
+112x84_wildlife_11.json,39,22,20,7440,7440,,Candidate - runtime validation required
+112x84_wildlife_11_Dupe.json,39,22,20,7440,7440,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_wildlife_12.json,47,23,20,7840,7840,,Candidate - runtime validation required
+112x84_wildlife_12_Dupe.json,47,23,20,7840,7840,IsSecret,Needs mechanics
+112x84_wildlife_1_Dupe.json,19,23,10,8160,8160,,Candidate - runtime validation required
+112x84_wildlife_2.json,22,23,10,8110,8110,IsSecret,Needs mechanics
+112x84_wildlife_3.json,16,24,20,8300,8300,,Candidate - runtime validation required
+112x84_wildlife_3_Dupe.json,16,24,20,8300,8300,IsSecret,Needs mechanics
+112x84_wildlife_4.json,22,24,20,8020,8020,,Candidate - runtime validation required
+112x84_wildlife_5.json,31,25,10,7930,7930,,Candidate - runtime validation required
+112x84_wildlife_5_Dupe.json,31,25,10,7930,7930,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_wildlife_6.json,19,28,10,8340,8340,,Candidate - runtime validation required
+112x84_wildlife_7.json,17,23,10,8230,8230,IsChain IsChainSameLane IsSecret,Needs mechanics
+112x84_wildlife_8.json,25,23,10,8070,8070,,Candidate - runtime validation required
+112x84_wildlife_9.json,20,24,10,8330,8330,IsSecret,Needs mechanics
+MakeUp_1.json,16,23,20,8160,8160,IsSecret,Needs mechanics
+MakeUp_10.json,19,25,20,8260,8260,,Candidate - runtime validation required
+MakeUp_11.json,21,23,20,7980,7980,IsChain IsChainSameLane IsSecret,Needs mechanics
+MakeUp_12.json,23,24,20,8000,8000,IsSecret,Needs mechanics
+MakeUp_13.json,12,24,20,8500,8500,IsChain IsSecret,Needs mechanics
+MakeUp_14.json,14,25,20,8240,8240,IsSecret,Needs mechanics
+MakeUp_15.json,21,24,20,8060,8060,,Candidate - runtime validation required
+MakeUp_2.json,18,23,20,8020,8020,IsChain IsChainSameLane IsSecret,Needs mechanics
+MakeUp_3.json,17,24,20,8260,8260,IsSecret,Needs mechanics
+MakeUp_4.json,21,25,20,8120,8120,IsChain IsChainSameLane IsSecret,Needs mechanics
+MakeUp_5.json,14,24,20,8160,8160,IsSecret,Needs mechanics
+MakeUp_6.json,19,25,20,8100,8100,IsSecret,Needs mechanics
+MakeUp_7.json,11,24,20,8680,8680,,Candidate - runtime validation required
+MakeUp_8.json,16,25,20,8260,8260,,Candidate - runtime validation required
+MakeUp_9.json,19,23,20,8020,8020,IsSecret,Needs mechanics
+Perfumes_1.json,23,24,20,7920,7920,,Candidate - runtime validation required
+Perfumes_10.json,21,24,20,8160,8160,IsSecret,Needs mechanics
+Perfumes_11.json,18,25,20,8300,8300,IsChain IsChainSameLane IsSecret,Needs mechanics
+Perfumes_12.json,25,25,20,7920,7920,IsSecret,Needs mechanics
+Perfumes_13.json,18,24,20,8000,8000,IsChain IsChainSameLane IsSecret,Needs mechanics
+Perfumes_14.json,19,22,20,7940,7940,IsChain IsSecret,Needs mechanics
+Perfumes_15.json,21,24,20,8140,8140,IsChain IsSecret,Needs mechanics
+Perfumes_2.json,14,23,20,8220,8220,IsChain IsChainSameLane IsSecret,Needs mechanics
+Perfumes_3.json,13,22,20,8400,8400,IsChain IsChainSameLane IsSecret,Needs mechanics
+Perfumes_4.json,20,22,20,7960,7960,IsChain IsChainSameLane IsSecret,Needs mechanics
+Perfumes_5.json,14,25,20,8360,8360,,Candidate - runtime validation required
+Perfumes_6.json,25,26,20,8120,8120,IsSecret,Needs mechanics
+Perfumes_7.json,21,24,20,8100,8100,IsChain IsSecret,Needs mechanics
+Perfumes_8.json,26,25,20,8240,8240,IsSecret,Needs mechanics
+Perfumes_9.json,19,24,20,8080,8080,,Candidate - runtime validation required
+School_1.json,12,25,20,8500,8500,IsSecret,Needs mechanics
+School_10.json,22,24,20,8160,8160,,Candidate - runtime validation required
+School_11.json,31,22,20,7740,7740,,Candidate - runtime validation required
+School_12.json,14,23,20,8260,8260,,Candidate - runtime validation required
+School_13.json,14,25,20,8200,8200,,Candidate - runtime validation required
+School_14.json,22,22,20,7740,7740,IsChain IsChainSameLane IsSecret,Needs mechanics
+School_15.json,17,25,20,8160,8160,,Candidate - runtime validation required
+School_2.json,26,23,20,7720,7720,,Candidate - runtime validation required
+School_3.json,12,24,20,8120,8120,,Candidate - runtime validation required
+School_4.json,21,24,20,7940,7940,,Candidate - runtime validation required
+School_5.json,20,24,20,8120,8120,,Candidate - runtime validation required
+School_6.json,24,25,20,7920,7920,,Candidate - runtime validation required
+School_7.json,25,24,20,8120,8120,,Candidate - runtime validation required
+School_8.json,25,24,20,8100,8100,,Candidate - runtime validation required
+School_9.json,26,22,20,7560,7560,IsSecret,Needs mechanics

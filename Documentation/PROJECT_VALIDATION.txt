@@ -1,0 +1,13 @@
+PASS: All three original levels render and win
+PASS: Home offers three level buttons
+PASS: Unfinished levels cannot advance/save
+PASS: Invalid selection rejected
+PASS: Next loads levels 2 and 3
+PASS: Completion persists across scene loads
+PASS: Last level returns Home
+PASS: Restart preserves completed progress
+
+PASS: Fresh Unity import and Windows build
+PASS: Shader and Burst checks
+PASS: No missing serialized asset GUIDs or duplicate GUIDs
+556 original level JSON files retained in SourceData/Levels; not all are playable yet.
