@@ -10,7 +10,7 @@ namespace SandJamTest.Scene3D
     // can reach (pockets above the mouth) are settled from the bottom once the mouth is buried.
     public sealed class BurstSandSimulation : IDisposable
     {
-        public const int MaxFallSpeed = 3;   // cells per step
+        public const int MaxFallSpeed = 2;   // cells per step (gentle fall)
         public const int SeepPerStep = 2;    // pocket cells settled per step once the mouth is buried
         public readonly int[] Rows,Cols;
         public readonly int Width,InletX,InletY;

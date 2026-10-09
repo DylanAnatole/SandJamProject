@@ -111,8 +111,6 @@ namespace SandJamTest.Scene3D
         {
             ConfigureFiveSlots();
             Application.targetFrameRate = 60;
-            // Smaller, more frequent shots (same 500 units/s) keep counters and the pile moving continuously.
-            if (ShotInterval > .03f) { float rate = AmmoPerShot / ShotInterval; ShotInterval = .02f; AmmoPerShot = Mathf.Max(1, Mathf.RoundToInt(rate * ShotInterval)); }
             FitCamera();
             sound = GetComponent<AudioSource>();
             var args = Environment.GetCommandLineArgs();
@@ -150,6 +148,9 @@ namespace SandJamTest.Scene3D
 
         public void Restart()
         {
+            // Relaxed, unbroken pour: many small shots at ~60% of the original rate (one displayed unit per 0.08 s).
+            // Done here because the dynamic level sets AmmoPerShot from the level data while it builds.
+            if (ShotInterval > .03f) { float rate = AmmoPerShot / ShotInterval * .6f; ShotInterval = .02f; AmmoPerShot = Mathf.Max(1, Mathf.RoundToInt(rate * ShotInterval)); }
             Game = new SandGame(level, StashSlots.Length, r => Regions[Array.IndexOf(level.parts, r.Data)].SettledCount == r.Data.rows.Length, EnableSlotUnlocks);
             foreach (var region in Regions) { region.Divider = level.uiDivider; region.ResetFlow(); }
             regionReported = new bool[Game.Regions.Length];

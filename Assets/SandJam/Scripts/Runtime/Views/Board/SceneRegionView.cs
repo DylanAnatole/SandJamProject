@@ -40,7 +40,7 @@ namespace SandJamTest.Scene3D
         bool lastOpen, lastVisible;
         float stepTime, completionGlow;
         // One grain enters per step; the original pours roughly 550-600 cells per second.
-        const float StepSeconds=1f/600f;
+        const float StepSeconds=1f/420f; // calm, continuous trickle (one grain enters per step)
         // Fresh-sand highlight: newly settled grains start this much lighter and fade over ~0.3 s.
         const int FreshSteps=180; const float FreshLift=.32f;
         int idleSteps, lastSettleStep; bool freshPainted;
@@ -212,10 +212,10 @@ namespace SandJamTest.Scene3D
             beforeStep=sand.Settled;
             stepTime+=delta;
             int steps=0;while(stepTime>=StepSeconds){stepTime-=StepSeconds;steps++;}
-            // Catch up when grains are queued behind the mouth, so the picture keeps pace with the pouring cube
-            // instead of trickling on long after it emptied.
+            // Only a gentle catch-up when many grains queue at the mouth: the stream should stay one calm, unbroken
+            // trickle rather than surging.
             int backlog=sand.Requested-sand.Emitted;
-            if(backlog>60) steps=Mathf.RoundToInt(steps*Mathf.Min(3f,1f+(backlog-60)/240f));
+            if(backlog>240) steps=Mathf.RoundToInt(steps*Mathf.Min(1.4f,1f+(backlog-240)/600f));
             sand.ScheduleSteps(steps);advancing=true;
         }
         public void FinishAdvance()
