@@ -72,6 +72,7 @@ namespace SandJamTest.Scene3D
             float last;
             if (lastFire.TryGetValue(slot, out last) && clock - last < FireInterval) return;
             lastFire[slot] = clock;
+            actor.Punch(.05f); // small kick on every shot
             var p = Take();
             p.Region = region; p.From = actor.AimPoint; p.Age = 0; p.Live = true;
             int index = Array.IndexOf(colorIds, color);

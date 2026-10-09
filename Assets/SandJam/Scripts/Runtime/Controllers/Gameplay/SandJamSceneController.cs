@@ -204,7 +204,7 @@ namespace SandJamTest.Scene3D
                 return SelectLane(actor.SourceLane);
             if (lane.Count == 0 || lane.Peek() != actor.Shooter)
             {
-                Notify("Only the cube at the front of a lane can be picked."); return false;
+                actor.Shake(); Notify("Only the cube at the front of a lane can be picked."); return false;
             }
             return SelectLane(actor.SourceLane);
         }
@@ -220,6 +220,7 @@ namespace SandJamTest.Scene3D
                 bool linked = lane >= 0 && lane < Game.Lanes.Length && Game.Lanes[lane].Count > 0 && Game.Lanes[lane].Peek().Partner != null;
                 selectionFeedback = frozen != null ? "" + frozen.FreezeRemaining + " ice layers left · send other cubes first" : linked ? "Not enough space, or the pair is not at the front" : "The stash is full";
                 selectionFeedbackUntil = Time.unscaledTime + 3;
+                if (first != null) characterQueue.ViewFor(first).Shake();
                 Notify(selectionFeedback); return false;
             }
             selectionFeedback = "";

@@ -16,7 +16,12 @@ namespace SandJamTest.Scene3D
         public bool Departing { get; private set; }
         public float DisplayedFill { get; private set; } = 1;
         public Vector3 AimPoint { get { return Visual ? Visual.TransformPoint(new Vector3(0,.81f,0)) : transform.position + Vector3.up * .70f; } }
-        Vector3 from, destination, baseScale;
+        Vector3 from, destination, baseScale, basePosition;
+        // Juice: a damped spring for squash & stretch (+ = stretch up) and a short sideways shake.
+        float squash, squashVelocity, shakeTime;
+        bool wasRunning;
+        public void Punch(float strength) { squashVelocity += strength * 18f; }
+        public void Shake() { shakeTime = .28f; }
         Quaternion baseRotation;
         float travel, duration, exitDelay;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
@@ -44,7 +49,8 @@ namespace SandJamTest.Scene3D
         {
             Shooter = shooter;
             gameObject.SetActive(true);
-            if (baseScale == Vector3.zero) { baseScale = Visual.localScale;baseRotation=Visual.localRotation; }
+            if (baseScale == Vector3.zero) { baseScale = Visual.localScale;baseRotation=Visual.localRotation;basePosition=Visual.localPosition; }
+            squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = basePosition;
             Visual.localScale = baseScale;
             Visual.localRotation = baseRotation;
             transform.position = destination = from = position;
@@ -73,6 +79,8 @@ namespace SandJamTest.Scene3D
             if (Departing || (destination - position).sqrMagnitude < .00001f) return;
             from = transform.position; destination = position;
             gait = kind; travel = 0; duration = seconds;
+            // Picked: a quick stretch as it jumps off.
+            if (kind == Gait.Run && !Departing) Punch(.22f);
             if(Motion)Motion.SetWalking(kind == Gait.Run);
         }
 
@@ -154,9 +162,26 @@ namespace SandJamTest.Scene3D
                 if(Motion){Motion.SetWalking(false); if(Motion.Animator) Motion.Animator.speed = 1;}
                 if (Departing) { gameObject.SetActive(false); return; }
             }
+            // Landed in the slot after running: squash on touchdown.
+            bool runningNow = gait == Gait.Run && !AtRest;
+            if (wasRunning && !runningNow && !Departing) Punch(-.3f);
+            wasRunning = runningNow;
+            ApplyJuice(delta);
             string ammo = DisplayAmount.Units(Shooter.Ammo, Divider).ToString();
             if (AmmoLabel.text != ammo) AmmoLabel.text = ammo;
         }
+        void ApplyJuice(float delta)
+        {
+            if (baseScale == Vector3.zero || delta <= 0) return;
+            // Critically-damped-ish spring: snappy overshoot, settles in ~0.3 s.
+            float accel = -260f * squash - 16f * squashVelocity;
+            squashVelocity += accel * delta; squash += squashVelocity * delta;
+            squash = Mathf.Clamp(squash, -.35f, .35f);
+            if (Mathf.Abs(squash) < .0005f && Mathf.Abs(squashVelocity) < .01f) { squash = 0; squashVelocity = 0; }
+            Visual.localScale = new Vector3(baseScale.x * (1 - squash * .5f), baseScale.y * (1 + squash), baseScale.z * (1 - squash * .5f));
+            float shake = 0;
+            if (shakeTime > 0) { shakeTime = Mathf.Max(0, shakeTime - delta); shake = Mathf.Sin(shakeTime * 70f) * .06f * (shakeTime / .28f); }
+            Visual.localPosition = basePosition + new Vector3(shake, 0, 0);
+        }
     }
 }
-
