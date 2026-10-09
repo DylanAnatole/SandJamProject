@@ -32,7 +32,7 @@ namespace SandJamTest.Scene3D
         public bool Complete {get{return Settled==Requested;}}
         public bool UsedBurst {get{return state[4]==1;}}
         public int StepCount {get{return state[8];}}
-        // Column and row the stream currently falls from (the mouth sweeps left and right across the top).
+        // Column and row the stream currently falls from.
         public int MouthX {get{return state[9];}}
         public int MouthY {get{int c=topCell[state[9]];return c<0?InletY:Rows[c];}}
         public BurstSandSimulation(int[] sourceRows,int[] sourceCols):this(sourceRows,sourceCols,false){}
@@ -74,7 +74,7 @@ namespace SandJamTest.Scene3D
         public void ScheduleSteps(int steps)
         {
             CompleteSteps();if(steps<=0 || Complete)return;
-            var job=new StepJob{TopCell=topCell,MinX=minX,MaxX=maxX,Rows=rows,Cols=cols,CellAt=cellAt,Spawns=spawns,Seep=seep,State=state,Filled=Filled,Moving=Moving,Occupied=occupied,SettleStep=SettleStep,Width=Width,Height=height,Steps=steps};
+            var job=new StepJob{TopCell=topCell,MinX=minX,MaxX=maxX,InletX=InletX,Rows=rows,Cols=cols,CellAt=cellAt,Spawns=spawns,Seep=seep,State=state,Filled=Filled,Moving=Moving,Occupied=occupied,SettleStep=SettleStep,Width=Width,Height=height,Steps=steps};
             if(managed){job.Execute();return;}
             handle=job.Schedule();pending=true;
         }
@@ -102,7 +102,7 @@ namespace SandJamTest.Scene3D
         public struct StepJob : IJob
         {
             [ReadOnly] public NativeArray<int> Rows,Cols,CellAt,Spawns,Seep,TopCell;
-            public int MinX,MaxX;
+            public int MinX,MaxX,InletX;
             public NativeArray<int> State;
             public NativeArray<byte> Filled,Occupied;
             public NativeArray<int> SettleStep;
@@ -153,14 +153,10 @@ namespace SandJamTest.Scene3D
                     }
                     State[3]=write;
                     // Pour new grains through every free mouth cell.
-                    // The mouth sweeps slowly left and right along the top of the region (triangle wave), so the
-                    // stream visibly rains across the area instead of drilling one spot.
+                    // Original: one fixed pour column (top-centre of the region). When that column is full the
+                    // nearest open column takes over.
                     int range=MaxX-MinX;
-                    int period=range<4?1:range*28;
-                    int phase=(State[8]+period/2)%(2*period); // start in the middle of the region
-                    // Eased sweep: slows down and turns smoothly at both ends instead of bouncing.
-                    float tri=.5f-.5f*math.cos(math.PI*phase/period);
-                    int target=MinX+(int)(tri*range+.5f);
+                    int target=InletX;
                     bool mouthBuried=true;int chosen=-1;
                     for(int d=0;d<=range && chosen<0;d++)
                         for(int sgn=-1;sgn<=1 && chosen<0;sgn+=2)

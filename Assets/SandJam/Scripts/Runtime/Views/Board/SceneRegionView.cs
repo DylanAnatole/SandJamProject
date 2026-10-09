@@ -40,7 +40,7 @@ namespace SandJamTest.Scene3D
         bool lastOpen, lastVisible;
         float stepTime, completionGlow;
         // One grain enters per step; the original pours roughly 550-600 cells per second.
-        const float StepSeconds=1f/360f; // calm, continuous trickle (one grain enters per step)
+        const float StepSeconds=1f/520f; // calm, continuous trickle (one grain enters per step)
         // Fresh-sand highlight: newly settled grains start this much lighter and fade over ~0.3 s.
         const int FreshSteps=180; const float FreshLift=.32f;
         int idleSteps, lastSettleStep; bool freshPainted;
@@ -154,11 +154,12 @@ namespace SandJamTest.Scene3D
             if(sand.MovingCount>0 || sand.Requested>sand.Emitted)
             {
                 int mx=sand.MouthX,land=sand.LandingRow();
-                var threadColor=(Color32)Color.Lerp((Color)solid,Color.white,.12f);
+                // Original thread: a 1-px line a shade darker than the sand.
+                var threadColor=(Color32)((Color)solid*.78f);
                 for(int y=sand.MouthY;y>=land;y--)
                 {
                     if(!sand.Inside(mx,y) || IsFilledCell(mx,y)) break;
-                    Board.SetGrain(mx,y,(Color32)Color.Lerp((Color)SandShade(threadColor,mx,y+Time.frameCount),(Color)threadColor,.5f));
+                    Board.SetGrain(mx,y,new Color32(threadColor.r,threadColor.g,threadColor.b,255));
                     previousMoving.Add(new Vector2Int(mx,y));
                 }
             }
@@ -242,7 +243,7 @@ namespace SandJamTest.Scene3D
         {
             if(!advancing)return;advancing=false;sand.CompleteSteps();
             if(beforeStep!=sand.Settled) lastSettleStep=sand.StepCount+idleSteps;
-            // The stream and the cube's beam follow the sweeping mouth.
+            // Pellets aim at the current pour column.
             if(sand.MovingCount>0) Target.position=Board.transform.TransformPoint(new Vector3((sand.MouthX+.5f)*SandBoardTextureView.CellSize,(sand.MouthY+.5f)*SandBoardTextureView.CellSize,0));
             if(beforeStep!=sand.Settled || freshPainted) PaintBase();
             PaintMoving();
