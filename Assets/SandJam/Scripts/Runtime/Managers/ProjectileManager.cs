@@ -35,7 +35,7 @@ namespace SandJamTest.Scene3D
                 line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;
                 var shotObject=new GameObject("Sand shot slot "+(slot+1));shotObject.transform.SetParent(root,false);
                 var shot=shotObject.AddComponent<LineRenderer>();shot.useWorldSpace=true;shot.positionCount=ShotPoints;
-                shot.startWidth=.035f;shot.endWidth=.018f;shot.numCapVertices=2;shot.sortingOrder=2;
+                shot.startWidth=.04f;shot.endWidth=.03f;shot.numCapVertices=2;shot.sortingOrder=2;
                 shot.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;shot.receiveShadows=false;
                 stream=new Stream{Line=line,Shot=shot,Phase=slot*1.73f};streams.Add(slot,stream);
             }
@@ -58,19 +58,8 @@ namespace SandJamTest.Scene3D
             var from=stream.Actor.AimPoint;var to=stream.Region.Target.position;
             // The pour mouth sweeps along the region, so the falling segment follows it.
             var drop=stream.To-stream.From;stream.From=to;stream.To=to+drop;
-            // Arc: the sand jets up from the cube, curves over and drops into the mouth from above, instead of a
-            // straight line cutting across the picture.
-            float lift=Mathf.Max(.35f,(to.y-from.y)*.25f);
-            var p1=new Vector3(from.x,to.y+lift,from.z);
-            var p2=new Vector3(to.x,to.y+lift*.8f,to.z);
-            float wobble=Mathf.Sin(stream.Phase*.7f)*.015f;
-            for(int i=0;i<ShotPoints;i++)
-            {
-                float t=i/(ShotPoints-1f),u=1-t;
-                var p=u*u*u*from+3*u*u*t*p1+3*u*t*t*p2+t*t*t*to;
-                p.x+=wobble*Mathf.Sin(t*Mathf.PI);
-                stream.Shot.SetPosition(i,p);
-            }
+            // Straight beam from the cube to the pour mouth.
+            for(int i=0;i<ShotPoints;i++) stream.Shot.SetPosition(i,Vector3.Lerp(from,to,i/(ShotPoints-1f)));
             stream.Line.SetPosition(0,stream.From);
             stream.Line.SetPosition(1,Vector3.Lerp(stream.From,stream.To,.5f));
             stream.Line.SetPosition(2,stream.To);

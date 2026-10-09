@@ -22,9 +22,10 @@ Shader "SandJamTest/SandStream"
                 clip(i.boardUV.x);clip(i.boardUV.y);clip(1-i.boardUV.x);clip(1-i.boardUV.y);
                 clip(tex2D(_RegionMask,i.boardUV).a-.5);
                 }
+                // Solid, unbroken stream: grains only vary the shade (moving down the stream), never the opacity.
                 float grain=frac(sin(floor(i.uv.x*180-_Time.y*110)*12.9898)*43758.5453);
                 float edge=saturate(1-abs(i.uv.y*2-1));
-                return fixed4(_Color.rgb*(.85+grain*.3),edge*(.35+grain*.6));
+                return fixed4(_Color.rgb*(.88+grain*.24),saturate(edge*2.2)*.95);
             }
             ENDCG
         }
