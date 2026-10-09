@@ -136,6 +136,8 @@ namespace SandJamTest.Scene3D
                 if(!GetComponent<OriginalLookStyler>()) gameObject.AddComponent<OriginalLookStyler>().Apply(this);
                 if(!GetComponent<SandFx>()) gameObject.AddComponent<SandFx>().Bind(this);
                 if(!GetComponent<WinZoom>()) gameObject.AddComponent<WinZoom>().Bind(this);
+                // The picture (board texture + region counters) bumps when a region completes.
+                var picture=boardTexture.transform.parent; if(picture && !picture.GetComponent<BoardPunch>()) picture.gameObject.AddComponent<BoardPunch>().Pivot=boardTexture.Renderer.bounds.center;
             }
             catch (Exception ex) { error = ex.Message; Debug.LogException(ex); }
         }
