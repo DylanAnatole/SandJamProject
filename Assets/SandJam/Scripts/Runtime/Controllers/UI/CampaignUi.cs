@@ -88,7 +88,6 @@ namespace SandJamTest.Scene3D
             bool doubled = screen.Levels && screen.Levels.RewardDoubled;
             if (coins == shownCoins && level == shownLevel && doubled == shownDoubled) return;
             shownCoins = coins; shownLevel = level; shownDoubled = doubled;
-            foreach (var label in coinLabels) if (label) label.text = coins.ToString();
             if (homeNumber) homeNumber.text = Campaign.LevelNumber.ToString();
             if (hudLevel) hudLevel.text = "Level " + level;
             // Original EasyHardLevelConfig: hard levels get a red badge + skull, bonus ("easy") levels a green one + coins.
@@ -150,9 +149,40 @@ namespace SandJamTest.Scene3D
                 hudLevel.transform.position = labelPosition + (icon ? Vector3.right * levelBadge.bounds.size.y * .3f : Vector3.zero);
             }
         }
+        // The coin balance rolls up instead of jumping (reward on the Result screen / Home), with a little pop.
+        float rollingCoins = -1, coinPop; int shownRolling = -1;
+        readonly Dictionary<TextMesh, Vector3> coinScales = new Dictionary<TextMesh, Vector3>();
+        void RollCoins()
+        {
+            int target = Campaign.Coins;
+            bool canRoll = screen.Current == VideoScreen.Page.Result || screen.Current == VideoScreen.Page.Home;
+            if (rollingCoins < 0 || target < rollingCoins) rollingCoins = target; // spending is instant
+            else if (rollingCoins < target && canRoll)
+            {
+                float speed = Mathf.Max(12, (target - rollingCoins) * 2.2f);
+                rollingCoins = Mathf.MoveTowards(rollingCoins, target, speed * Time.unscaledDeltaTime);
+                coinPop = 1;
+            }
+            int shown = Mathf.FloorToInt(rollingCoins + .0001f);
+            if (shown != shownRolling)
+            {
+                shownRolling = shown;
+                foreach (var label in coinLabels) if (label) label.text = shown.ToString();
+            }
+            coinPop = Mathf.MoveTowards(coinPop, 0, Time.unscaledDeltaTime * 4);
+            foreach (var label in coinLabels)
+            {
+                if (!label) continue;
+                Vector3 baseScale;
+                if (!coinScales.TryGetValue(label, out baseScale)) coinScales[label] = baseScale = label.transform.localScale;
+                label.transform.localScale = baseScale * (1 + .14f * coinPop * coinPop);
+            }
+        }
+
         void Update()
         {
             Refresh();
+            RollCoins();
             // Hearts: "Full" when full, otherwise the countdown to the next heart (original Home HUD).
             if (Time.unscaledTime < nextLivesRefresh) return;
             nextLivesRefresh = Time.unscaledTime + .5f;

@@ -161,6 +161,7 @@ namespace SandJamTest.Scene3D
                 if(Physics.Raycast((UiCamera?UiCamera:Controller.GameCamera).ScreenPointToRay(Input.mousePosition),out hit,100,1<<9))
                 {
                     var button=hit.collider.GetComponent<VideoUiButton>();
+                    if(button)button.Press();
                     if(button && !button.Action.StartsWith("booster:"))GameEvents.RaiseButtonClicked(button.Action);
                     // While a popup is open only its own buttons respond.
                     if(Popups && (Popups.Open || (Feedback && Feedback.FailureVisible))){if(Popups.Owns(button))Popups.Handle(button.Action);return;}
