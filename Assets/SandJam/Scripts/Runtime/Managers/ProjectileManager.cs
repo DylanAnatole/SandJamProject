@@ -9,7 +9,7 @@ namespace SandJamTest.Scene3D
     // mouth in ~0.08 s, trailing a short pale streak. The falling thread inside the region is drawn by the region.
     public sealed class ProjectileManager
     {
-        const float FireInterval = .07f, FlightTime = .08f, PelletSize = .075f, TrailLength = .9f;
+        const float FireInterval = .1f, FlightTime = .08f, PelletSize = .075f, TrailLength = .9f;
         readonly Transform root;
         readonly Color[] colors;
         readonly int[] colorIds;

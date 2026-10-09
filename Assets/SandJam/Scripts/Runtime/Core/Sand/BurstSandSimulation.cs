@@ -141,15 +141,14 @@ namespace SandJamTest.Scene3D
                         // Blocked by a grain that is still falling: wait instead of settling mid-air.
                         int below=Cell(g.X,g.Y-1);
                         if(below>=0 && Filled[below]==0){Moving[write++]=g;continue;}
-                        // 2. Roll off a slope; keep rolling the same way once committed.
-                        int side=g.Dir!=0?g.Dir:((NextRandom()&1)==0?-1:1);
-                        if(Free(g.X+side,g.Y-1)){Move(ref g,g.X+side,g.Y-1);g.Dir=side;Moving[write++]=g;continue;}
-                        if(Free(g.X-side,g.Y-1)){Move(ref g,g.X-side,g.Y-1);g.Dir=-side;Moving[write++]=g;continue;}
-                        // 3. Spread along the surface (original sand levels out flat), never reversing, so motion terminates.
-                        if(Free(g.X+side,g.Y)){Move(ref g,g.X+side,g.Y);g.Dir=side;Moving[write++]=g;continue;}
-                        if(g.Dir==0 && Free(g.X-side,g.Y)){Move(ref g,g.X-side,g.Y);g.Dir=-side;Moving[write++]=g;continue;}
-                        // 4. Settle.
-                        int settledCell=CellAt[g.Y*Width+g.X];Filled[settledCell]=1;SettleStep[settledCell]=State[8];State[1]++;
+                        // Landed: the grain joins the pile as a level layer (original look): it fills the lowest
+                        // empty cell of the region, spreading out from the pour column, so the surface stays flat.
+                        int own=CellAt[g.Y*Width+g.X];
+                        while(State[6]<Seep.Length && Filled[Seep[State[6]]]!=0)State[6]++;
+                        int dest=own;
+                        for(int k=State[6];k<Seep.Length;k++){int c=Seep[k];if(Filled[c]!=0 || (Occupied[c]!=0 && c!=own))continue;dest=c;break;}
+                        if(dest!=own){Occupied[own]=0;Occupied[dest]=1;}
+                        Filled[dest]=1;SettleStep[dest]=State[8];State[1]++;
                     }
                     State[3]=write;
                     // Pour new grains through every free mouth cell.
@@ -174,9 +173,10 @@ namespace SandJamTest.Scene3D
                     if(mouthBuried)
                         for(int k=0;k<SeepPerStep && State[0]<State[2];k++)
                         {
-                            while(State[6]<Seep.Length && Occupied[Seep[State[6]]]!=0)State[6]++;
-                            if(State[6]>=Seep.Length)break;
-                            int cell=Seep[State[6]];
+                            while(State[6]<Seep.Length && Filled[Seep[State[6]]]!=0)State[6]++;
+                            int cell=-1;
+                            for(int q=State[6];q<Seep.Length;q++)if(Filled[Seep[q]]==0 && Occupied[Seep[q]]==0){cell=Seep[q];break;}
+                            if(cell<0)break;
                             Occupied[cell]=1;Filled[cell]=1;SettleStep[cell]=State[8];State[0]++;State[1]++;State[7]++;
                         }
                 }

@@ -40,7 +40,7 @@ namespace SandJamTest.Scene3D
         bool lastOpen, lastVisible;
         float stepTime, completionGlow;
         // One grain enters per step; the original pours roughly 550-600 cells per second.
-        const float StepSeconds=1f/520f; // calm, continuous trickle (one grain enters per step)
+        const float StepSeconds=1f/320f; // calm, continuous trickle (one grain enters per step)
         // Fresh-sand highlight: newly settled grains start this much lighter and fade over ~0.3 s.
         const int FreshSteps=180; const float FreshLift=.32f;
         int idleSteps, lastSettleStep; bool freshPainted;
