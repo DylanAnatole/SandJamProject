@@ -11,6 +11,7 @@ namespace SandJamTest.Scene3D
         readonly Material[] materials;
         readonly int[] colorIds;
         readonly Dictionary<int, Stream> streams = new Dictionary<int, Stream>();
+        const int ShotPoints = 18;
         sealed class Stream { public LineRenderer Line, Shot; public SceneActorView Actor; public SceneRegionView Region; public Vector3 From, To; public float Remaining, Phase; public MaterialPropertyBlock Properties=new MaterialPropertyBlock(); }
         public ProjectileManager(Transform root, GameObject prefab, Material[] materials, int[] colorIds)
         {
@@ -33,7 +34,7 @@ namespace SandJamTest.Scene3D
                 line.startWidth=.028f;line.endWidth=.02f;line.numCapVertices=0;line.sortingOrder=2;
                 line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;
                 var shotObject=new GameObject("Sand shot slot "+(slot+1));shotObject.transform.SetParent(root,false);
-                var shot=shotObject.AddComponent<LineRenderer>();shot.useWorldSpace=true;shot.positionCount=3;
+                var shot=shotObject.AddComponent<LineRenderer>();shot.useWorldSpace=true;shot.positionCount=ShotPoints;
                 shot.startWidth=.035f;shot.endWidth=.018f;shot.numCapVertices=2;shot.sortingOrder=2;
                 shot.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;shot.receiveShadows=false;
                 stream=new Stream{Line=line,Shot=shot,Phase=slot*1.73f};streams.Add(slot,stream);
@@ -57,7 +58,19 @@ namespace SandJamTest.Scene3D
             var from=stream.Actor.AimPoint;var to=stream.Region.Target.position;
             // The pour mouth sweeps along the region, so the falling segment follows it.
             var drop=stream.To-stream.From;stream.From=to;stream.To=to+drop;
-            stream.Shot.SetPosition(0,from);stream.Shot.SetPosition(1,Vector3.Lerp(from,to,.5f));stream.Shot.SetPosition(2,to);
+            // Arc: the sand jets up from the cube, curves over and drops into the mouth from above, instead of a
+            // straight line cutting across the picture.
+            float lift=Mathf.Max(.35f,(to.y-from.y)*.25f);
+            var p1=new Vector3(from.x,to.y+lift,from.z);
+            var p2=new Vector3(to.x,to.y+lift*.8f,to.z);
+            float wobble=Mathf.Sin(stream.Phase*.7f)*.015f;
+            for(int i=0;i<ShotPoints;i++)
+            {
+                float t=i/(ShotPoints-1f),u=1-t;
+                var p=u*u*u*from+3*u*u*t*p1+3*u*t*t*p2+t*t*t*to;
+                p.x+=wobble*Mathf.Sin(t*Mathf.PI);
+                stream.Shot.SetPosition(i,p);
+            }
             stream.Line.SetPosition(0,stream.From);
             stream.Line.SetPosition(1,Vector3.Lerp(stream.From,stream.To,.5f));
             stream.Line.SetPosition(2,stream.To);

@@ -2,6 +2,7 @@ using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 namespace SandJamTest.Scene3D
 {
     // Falling-sand cellular automaton for one region. Row 0 is the bottom of the board.
@@ -156,8 +157,9 @@ namespace SandJamTest.Scene3D
                     // stream visibly rains across the area instead of drilling one spot.
                     int range=MaxX-MinX;
                     int period=range<4?1:range*28;
-                    int phase=State[8]%(2*period);
-                    float tri=phase<period?(float)phase/period:2f-(float)phase/period;
+                    int phase=(State[8]+period/2)%(2*period); // start in the middle of the region
+                    // Eased sweep: slows down and turns smoothly at both ends instead of bouncing.
+                    float tri=.5f-.5f*math.cos(math.PI*phase/period);
                     int target=MinX+(int)(tri*range+.5f);
                     bool mouthBuried=true;int chosen=-1;
                     for(int d=0;d<=range && chosen<0;d++)
