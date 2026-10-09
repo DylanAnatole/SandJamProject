@@ -205,8 +205,7 @@ namespace SandJamTest.Scene3D
                 }
                 if (!actor.gameObject.activeInHierarchy) continue;
                 Color color = ColorPalette.Of(actor.Shooter.Color);
-                // Recoil each time the character pours a batch of sand.
-                if (actor.Shooter.Ammo < state.Ammo) state.Pulse = 1;
+                // Recoil / landing squash now live in SceneActorView (Punch); only particles here.
                 state.Ammo = actor.Shooter.Ammo;
                 // Landing puff when a character reaches its waiting slot.
                 bool inSlot = System.Array.IndexOf(game.Slots, actor.Shooter) >= 0;
@@ -215,7 +214,6 @@ namespace SandJamTest.Scene3D
                     var p = actor.transform.position + new Vector3(0, -.05f, Front);
                     for (int i = 0; i < 12; i++)
                         Emit(puff, p, new Vector3(Random.Range(-1.2f, 1.2f), Random.Range(.1f, .6f), 0), new Color(1, 1, 1, .85f), Random.Range(.08f, .16f), Random.Range(.25f, .4f));
-                    state.Pulse = Mathf.Max(state.Pulse, .8f);
                 }
                 state.AtRest = actor.AtRest;
                 // Empty character leaves with a coloured poof.
@@ -229,9 +227,6 @@ namespace SandJamTest.Scene3D
                     }
                 }
                 state.Departing = actor.Departing;
-                state.Pulse = Mathf.MoveTowards(state.Pulse, 0, dt * 7);
-                float s = state.Pulse * state.Pulse;
-                actor.transform.localScale = Vector3.Scale(state.BaseScale, new Vector3(1 + .10f * s, 1 - .12f * s, 1 + .10f * s));
             }
         }
 

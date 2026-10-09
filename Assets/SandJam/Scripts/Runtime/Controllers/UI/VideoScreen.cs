@@ -51,6 +51,7 @@ namespace SandJamTest.Scene3D
         public void Show(Page page)
         {
             if (Boosters && page != Page.Gameplay) Boosters.Cancel();
+            if(page!=Current && Current!=Page.Loading && !smoke) StartFade(page==Page.Celebration?.18f:.3f);
             Current=page;elapsed=0;
             if(page==Page.Loading)ShowLoadingHint();
             if(page==Page.Home && Popups)Popups.ShowSandQuestOnHome();
@@ -85,8 +86,37 @@ namespace SandJamTest.Scene3D
             if(Levels)GameEvents.RaiseLevelStarted(Levels.PlayedNumber>0?Levels.PlayedNumber:Campaign.LevelNumber);
             if(Popups && Levels)Popups.ShowIntrosFor(Levels.PlayedNumber>0?Levels.PlayedNumber:Campaign.LevelNumber);
         }
+        // Page transition: the new page appears out of a quick dark veil instead of a hard cut.
+        SpriteRenderer fade; float fadeTime, fadeDuration;
+        void StartFade(float seconds)
+        {
+            if(!fade)
+            {
+                var go=new GameObject("Page fade"){layer=Result.layer};
+                go.transform.SetParent(Result.transform.parent,false);
+                var origin=Result.transform.parent?Result.transform.parent.position:Vector3.zero;
+                go.transform.position=new Vector3(origin.x,origin.y,-10.6f); // above pages (z -5..-8), below popups (z -11..-14)
+                fade=go.AddComponent<SpriteRenderer>();
+                var t=Texture2D.whiteTexture;
+                fade.sprite=Sprite.Create(t,new Rect(0,0,t.width,t.height),new Vector2(.5f,.5f),t.width);
+                fade.sortingOrder=0; // same order as page and popup art, so depth decides
+                var ps=go.transform.parent?go.transform.parent.lossyScale:Vector3.one;
+                go.transform.localScale=new Vector3(30/Mathf.Max(.0001f,ps.x),40/Mathf.Max(.0001f,ps.y),1); // covers the whole screen
+            }
+            fadeDuration=seconds;fadeTime=0;fade.gameObject.SetActive(true);
+            fade.color=new Color(.08f,.06f,.16f,.85f);
+        }
+        void UpdateFade()
+        {
+            if(!fade || !fade.gameObject.activeSelf)return;
+            fadeTime+=Time.unscaledDeltaTime;
+            float t=Mathf.Clamp01(fadeTime/fadeDuration);
+            fade.color=new Color(.08f,.06f,.16f,.85f*(1-t)*(1-t));
+            if(t>=1)fade.gameObject.SetActive(false);
+        }
         void Update()
         {
+            UpdateFade();
             if(viewWidth!=Screen.width || viewHeight!=Screen.height)
             {
                 viewWidth=Screen.width;viewHeight=Screen.height;

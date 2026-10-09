@@ -19,7 +19,7 @@ namespace SandJamTest.Scene3D
         Vector3 from, destination, baseScale, basePosition;
         // Juice: a damped spring for squash & stretch (+ = stretch up) and a short sideways shake.
         float squash, squashVelocity, shakeTime;
-        bool wasRunning;
+        bool wasRunning, wasSliding;
         public void Punch(float strength) { squashVelocity += strength * 18f; }
         public void Shake() { shakeTime = .28f; }
         Quaternion baseRotation;
@@ -165,6 +165,9 @@ namespace SandJamTest.Scene3D
             // Landed in the slot after running: squash on touchdown.
             bool runningNow = gait == Gait.Run && !AtRest;
             if (wasRunning && !runningNow && !Departing) Punch(-.3f);
+            // Queue advance: a small settle bounce when the slide ends.
+            if (wasSliding && AtRest && !Departing) Punch(-.12f);
+            wasSliding = gait == Gait.Slide && !AtRest;
             wasRunning = runningNow;
             ApplyJuice(delta);
             string ammo = DisplayAmount.Units(Shooter.Ammo, Divider).ToString();
