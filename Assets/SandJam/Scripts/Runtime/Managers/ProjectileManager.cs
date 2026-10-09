@@ -55,6 +55,8 @@ namespace SandJamTest.Scene3D
         static void Draw(Stream stream)
         {
             var from=stream.Actor.AimPoint;var to=stream.Region.Target.position;
+            // The pour mouth sweeps along the region, so the falling segment follows it.
+            var drop=stream.To-stream.From;stream.From=to;stream.To=to+drop;
             stream.Shot.SetPosition(0,from);stream.Shot.SetPosition(1,Vector3.Lerp(from,to,.5f));stream.Shot.SetPosition(2,to);
             stream.Line.SetPosition(0,stream.From);
             stream.Line.SetPosition(1,Vector3.Lerp(stream.From,stream.To,.5f));

@@ -40,7 +40,7 @@ namespace SandJamTest.Scene3D
         bool lastOpen, lastVisible;
         float stepTime, completionGlow;
         // One grain enters per step; the original pours roughly 550-600 cells per second.
-        const float StepSeconds=1f/420f; // calm, continuous trickle (one grain enters per step)
+        const float StepSeconds=1f/360f; // calm, continuous trickle (one grain enters per step)
         // Fresh-sand highlight: newly settled grains start this much lighter and fade over ~0.3 s.
         const int FreshSteps=180; const float FreshLift=.32f;
         int idleSteps, lastSettleStep; bool freshPainted;
@@ -59,7 +59,7 @@ namespace SandJamTest.Scene3D
             world=Vector3.zero;
             if(sand==null || sand.MovingCount==0 || !Board) return false;
             int y=sand.LandingRow();
-            world=Board.transform.TransformPoint(new Vector3((sand.InletX+.5f)*SandBoardTextureView.CellSize,y*SandBoardTextureView.CellSize,0));
+            world=Board.transform.TransformPoint(new Vector3((sand.MouthX+.5f)*SandBoardTextureView.CellSize,y*SandBoardTextureView.CellSize,0));
             return true;
         }
         void ClearMoving()
@@ -149,9 +149,29 @@ namespace SandJamTest.Scene3D
         {
             // Restore previous pixel positions before drawing the current frame.
             ClearMoving();
+            // While the region is being fed, draw one unbroken thread from the mouth down to the pile, so supply
+            // pauses between shots never read as a dotted, broken stream.
+            if(sand.MovingCount>0 || sand.Requested>sand.Emitted)
+            {
+                int mx=sand.MouthX,land=sand.LandingRow();
+                var threadColor=(Color32)Color.Lerp((Color)solid,Color.white,.12f);
+                for(int y=sand.MouthY;y>=land;y--)
+                {
+                    if(!sand.Inside(mx,y) || IsFilledCell(mx,y)) break;
+                    Board.SetGrain(mx,y,(Color32)Color.Lerp((Color)SandShade(threadColor,mx,y+Time.frameCount),(Color)threadColor,.5f));
+                    previousMoving.Add(new Vector2Int(mx,y));
+                }
+            }
             for(int i=0;i<sand.MovingCount;i++){var g=sand.Moving[i];
-                if(sand.Inside(g.X,g.Y)) { Board.SetGrain(g.X,g.Y,(Color32)Color.Lerp((Color)SandShade(solid,g.X,g.Y+g.Index),Color.white,.12f)); previousMoving.Add(new Vector2Int(g.X,g.Y)); }}
+                if(!sand.Inside(g.X,g.Y)) continue;
+                var c=(Color32)Color.Lerp((Color)SandShade(solid,g.X,g.Y+g.Index),Color.white,.12f);
+                Board.SetGrain(g.X,g.Y,c); previousMoving.Add(new Vector2Int(g.X,g.Y));
+                // Motion trail: fill the cells a fast grain skipped this step, so the stream reads as one
+                // unbroken thread instead of a dotted line.
+                for(int k=1;k<g.Speed+1;k++){int y=g.Y+k; if(!sand.Inside(g.X,y) || IsFilledCell(g.X,y)) break;
+                    Board.SetGrain(g.X,y,c); previousMoving.Add(new Vector2Int(g.X,y));}}
         }
+        bool IsFilledCell(int x,int y){int i=sand.CellIndex(x,y);return i>=0 && sand.Filled[i]!=0;}
         // Settled sand in the original is speckled: mostly base colour with darker and lighter grains.
         public static Color32 SandShade(Color32 baseColor,int x,int y)
         {
@@ -222,6 +242,8 @@ namespace SandJamTest.Scene3D
         {
             if(!advancing)return;advancing=false;sand.CompleteSteps();
             if(beforeStep!=sand.Settled) lastSettleStep=sand.StepCount+idleSteps;
+            // The stream and the cube's beam follow the sweeping mouth.
+            if(sand.MovingCount>0) Target.position=Board.transform.TransformPoint(new Vector3((sand.MouthX+.5f)*SandBoardTextureView.CellSize,(sand.MouthY+.5f)*SandBoardTextureView.CellSize,0));
             if(beforeStep!=sand.Settled || freshPainted) PaintBase();
             PaintMoving();
             if(IsSettled && lastRemaining==0) { Counter.text="";Counter.gameObject.SetActive(false); }

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace SandJamTest.Scene3D
@@ -25,6 +26,15 @@ namespace SandJamTest.Scene3D
             ThemeIndex = levels ? OriginalThemes.IndexForLevel(levels.PlayedNumber > 0 ? levels.PlayedNumber : Campaign.LevelNumber) : OriginalThemes.Lavender;
             top = BackdropTop; middle = BackdropMiddle; bottom = BackdropBottom;
             if (ThemeIndex != OriginalThemes.Lavender) ApplyTheme(controller, OriginalThemes.All[ThemeIndex]);
+            // The light "Inset rim" plate behind the picture is a bit larger than the picture and showed as a pale
+            // seam along the frame. Paint it with the frame's own shadow tone so the picture meets the frame cleanly.
+            foreach (var r in controller.GetComponentsInChildren<SpriteRenderer>(true))
+                if (r.name == "Inset rim")
+                {
+                    var frame = controller.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(f => f.name == "Raised board frame");
+                    r.color = Color.Lerp(frame ? frame.color : new Color(.37f, .29f, .5f), Color.black, .35f);
+                }
+            BuildBoardBacking(controller);
             var cam = controller.GameCamera;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = middle;
@@ -39,6 +49,32 @@ namespace SandJamTest.Scene3D
                 foreach (Transform child in stash)
                     if (child.name.StartsWith("Solid waiting pad"))
                         child.localRotation = Quaternion.Euler(PadTilt, 0, 0);
+        }
+
+        // Dark plate right behind the picture, slightly larger than it: the frame opening is a little wider than the
+        // picture on some sides, and the light backdrop used to show through as a pale seam along the edge.
+        void BuildBoardBacking(SandJamSceneController controller)
+        {
+            var board = controller.Board ? controller.Board.Renderer : null;
+            if (!board) return;
+            var frame = controller.GetComponentsInChildren<Renderer>(true).FirstOrDefault(f => f.name == "Solid board frame" || f.name == "Raised board frame");
+            Color tone = new Color(.37f, .29f, .5f);
+            if (frame is SpriteRenderer) tone = ((SpriteRenderer)frame).color;
+            else if (frame && frame.sharedMaterial && frame.sharedMaterial.HasProperty("_Color")) tone = frame.sharedMaterial.color;
+            var go = new GameObject("Board backing") { layer = board.gameObject.layer };
+            go.transform.SetParent(board.transform.parent, true);
+            var b = board.bounds;
+            go.transform.position = new Vector3(b.center.x, b.center.y, b.max.z + .04f);
+            var r = go.AddComponent<SpriteRenderer>();
+            var white = Texture2D.whiteTexture;
+            r.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
+            r.color = Color.Lerp(tone, Color.black, .45f);
+            r.sortingOrder = board.sortingOrder - 1;
+            go.transform.localScale = Vector3.one;
+            var world = new Vector3(b.size.x + .14f, b.size.y + .14f, 1);
+            var parentScale = go.transform.parent ? go.transform.parent.lossyScale : Vector3.one;
+            go.transform.localScale = new Vector3(world.x / parentScale.x, world.y / parentScale.y, 1);
+            go.transform.rotation = board.transform.rotation;
         }
 
         void ApplyTheme(SandJamSceneController controller, StageTheme theme)

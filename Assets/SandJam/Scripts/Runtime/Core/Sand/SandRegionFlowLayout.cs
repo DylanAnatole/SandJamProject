@@ -9,6 +9,9 @@ namespace SandJamTest.Scene3D
     {
         public const int MouthHalfWidth = 0; // original pours a one-pixel stream
         public readonly int[] Rows, Cols, CellAt, Spawns, SeepOrder;
+        // Topmost cell of every column (-1 = no cell); the pour mouth sweeps along these.
+        public readonly int[] TopCell;
+        public readonly int MinX, MaxX;
         public readonly int InletIndex, Width, Height, InletX, InletY;
         public SandRegionFlowLayout(int[] rows, int[] cols)
         {
@@ -31,6 +34,9 @@ namespace SandJamTest.Scene3D
             Spawns=Enumerable.Range(-MouthHalfWidth,MouthHalfWidth*2+1).OrderBy(Math.Abs)
                 .Select(d=>InletX+d).Where(x=>x>=0 && x<Width)
                 .Select(x=>CellAt[InletY*Width+x]).Where(i=>i>=0).ToArray();
+            MinX=cols.Min();MaxX=cols.Max();
+            TopCell=Enumerable.Repeat(-1,Width).ToArray();
+            for(int i=0;i<rows.Length;i++){int t=TopCell[cols[i]];if(t<0 || rows[i]>rows[t])TopCell[cols[i]]=i;}
             int inletX=InletX;
             SeepOrder=Enumerable.Range(0,rows.Length)
                 .OrderBy(i=>rows[i]).ThenBy(i=>Math.Abs(cols[i]-inletX)).ThenBy(i=>cols[i]).ToArray();
