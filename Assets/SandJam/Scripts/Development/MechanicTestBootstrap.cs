@@ -47,7 +47,7 @@ namespace SandJamTest.Scene3D
 
         SandJamSceneController Controller { get { return holder ? holder.GetComponentInChildren<SandJamSceneController>() : null; } }
 
-        // "Tự giải": replays the solver's winning move list (falls back to the hint if no solution is found).
+        // "Auto solve": replays the solver's winning move list (falls back to the hint if no solution is found).
         void SetAutoPlay(bool on)
         {
             autoPlay = on;
@@ -75,17 +75,17 @@ namespace SandJamTest.Scene3D
         string Status()
         {
             var c = Controller;
-            if (c == null || c.Game == null) return "Đang tải…";
+            if (c == null || c.Game == null) return "Loading…";
             var g = c.Game;
             var all = g.Lanes.SelectMany(l => l).Concat(g.Slots.Where(s => s != null)).ToArray();
             int frozen = all.Count(s => s.IsFrozen), halves = g.Slots.Count(s => s != null && s.Half), keys = all.Count(s => s.Key && s.Ammo > 0);
             int chained = all.Count(s => s.Partner != null) / 2;
             var locks = g.Regions.Where(r => r.Data.IsUnlockerPart).Select(r => DisplayAmount.Units(r.Remaining, g.Data.uiDivider)).ToArray();
-            string state = g.State == GameState.Won ? "THẮNG" : g.State == GameState.Lost ? "THUA (hết chỗ)" : "Đang chơi";
-            return state + " · lượt " + g.Moves + " · còn " + DisplayAmount.Units(g.Remaining, g.Data.uiDivider) +
-                   "\nBăng: " + frozen + (frozen > 0 ? " (" + string.Join(",", all.Where(s => s.IsFrozen).Select(s => s.FreezeRemaining.ToString()).ToArray()) + ")" : "") +
-                   " · Nửa đang ngủ: " + halves + " · Cặp nối: " + chained +
-                   "\nKhối chìa khóa: " + keys + " · Ổ khóa: " + (locks.Length == 0 ? "-" : string.Join(", ", locks));
+            string state = g.State == GameState.Won ? "WON" : g.State == GameState.Lost ? "LOST (out of space)" : "Playing";
+            return state + " · moves " + g.Moves + " · left " + DisplayAmount.Units(g.Remaining, g.Data.uiDivider) +
+                   "\nIce: " + frozen + (frozen > 0 ? " (" + string.Join(",", all.Where(s => s.IsFrozen).Select(s => s.FreezeRemaining.ToString()).ToArray()) + ")" : "") +
+                   " · Sleeping halves: " + halves + " · Chained pairs: " + chained +
+                   "\nKey cubes: " + keys + " · Padlocks: " + (locks.Length == 0 ? "-" : string.Join(", ", locks));
         }
 
         void OnGUI()
@@ -110,10 +110,10 @@ namespace SandJamTest.Scene3D
             GUILayout.Label(Status(), body);
             GUILayout.FlexibleSpace();
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("◀ Màn trước", button)) Load(index - 1);
-            if (GUILayout.Button("Chơi lại", button)) Load(index);
-            if (GUILayout.Button("Màn sau ▶", button)) Load(index + 1);
-            if (GUILayout.Button(autoPlay ? "Tự giải: BẬT" : "Tự giải: TẮT", button)) SetAutoPlay(!autoPlay);
+            if (GUILayout.Button("◀ Previous", button)) Load(index - 1);
+            if (GUILayout.Button("Try Again", button)) Load(index);
+            if (GUILayout.Button("Next ▶", button)) Load(index + 1);
+            if (GUILayout.Button(autoPlay ? "Auto solve: ON" : "Auto solve: OFF", button)) SetAutoPlay(!autoPlay);
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }

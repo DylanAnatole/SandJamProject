@@ -35,7 +35,7 @@ namespace SandJamTest
         public static Color Palette(int color) { return ColorPalette.Of(color); }
         static string ColorName(int c)
         {
-            switch (c) { case 1: return "ĐỎ"; case 2: return "XANH LÁ"; case 3: return "XANH DƯƠNG"; case 4: return "VÀNG"; case 7: return "TÍM"; default: return "MÀU"; }
+            switch (c) { case 1: return "RED"; case 2: return "GREEN"; case 3: return "BLUE"; case 4: return "YELLOW"; case 7: return "PURPLE"; default: return "MÀU"; }
         }
 
         void Awake()
@@ -165,9 +165,9 @@ namespace SandJamTest
             Box(new Rect(0, 0, Width, Height), Paper, false);
             Text(new Rect(22, 22, 280, 44), "SAND JAM", 30, Ink);
             Text(new Rect(24, 65, 370, 20), "MÀN 01  /  THỬ NHÂN VẬT GỐC", 11, Accent);
-            if (Button(new Rect(349, 25, 99, 39), muted ? "Âm: Tắt" : "Âm: Bật", Color.white, Ink))
+            if (Button(new Rect(349, 25, 99, 39), muted ? "Sound: Off" : "Sound: On", Color.white, Ink))
             { muted = !muted; audioSource.mute = muted; }
-            if (Button(new Rect(459, 25, 117, 39), "Chơi lại  ↻", Color.white, Ink)) Restart();
+            if (Button(new Rect(459, 25, 117, 39), "Retry  ↻", Color.white, Ink)) Restart();
             if (error != null) { Text(new Rect(30, 120, 540, 200), error, 20, Ink); return; }
             if (game == null) return;
             float progress = 1 - (float)game.Remaining / game.TotalRequired;
@@ -179,14 +179,14 @@ namespace SandJamTest
             Box(new Rect(164, 142, 272, 351), Hex("D8E3E8"));
             Box(new Rect(167, 140, 266, 349), Color.white);
             GUI.DrawTexture(boardRect, board);
-            Text(new Rect(25, 157, 131, 22), "BẢNG MÀU", 11, Muted);
+            Text(new Rect(25, 157, 131, 22), "PALETTE", 11, Muted);
             for (int i = 0; i < game.Regions.Length; i++)
             {
                 var region = game.Regions[i];
                 float y = 195 + i * 56;
                 Dot(new Vector2(34, y + 10), 7, Palette(region.Data.ColorType));
                 Text(new Rect(48, y, 105, 18), ColorName(region.Data.ColorType), 10, Ink);
-                Text(new Rect(48, y + 19, 109, 19), region.Remaining == 0 ? "Đã hoàn tất" : region.Open ? "Đang mở" : "Chưa mở", 10, region.Open ? Accent : Muted);
+                Text(new Rect(48, y + 19, 109, 19), region.Remaining == 0 ? "Đã hoàn tất" : region.Open ? "Open" : "Locked", 10, region.Open ? Accent : Muted);
                 var pos = BoardPoint(centers[i]);
                 Box(new Rect(pos.x - 25, pos.y - 12, 50, 24), new Color(.08f, .16f, .23f, .86f));
                 Text(new Rect(pos.x - 25, pos.y - 12, 50, 24), region.Remaining == 0 ? "✓" : region.Remaining.ToString(), 11, Color.white, TextAnchor.MiddleCenter);
@@ -194,13 +194,13 @@ namespace SandJamTest
             Text(new Rect(453, 162, 120, 20), "CÒN LẠI", 10, Muted);
             Text(new Rect(453, 185, 130, 32), game.Remaining.ToString("N0"), 23, Ink);
             Text(new Rect(453, 217, 119, 30), "đơn vị màu", 10, Muted);
-            Text(new Rect(453, 300, 122, 60), "Lấp đầy vùng đang mở để mở thêm màu.", 12, Ink);
+            Text(new Rect(453, 300, 122, 60), "Fill the open areas to unlock more colors.", 12, Ink);
             Text(new Rect(453, 410, 123, 58), "Đúng màu.\nĐúng thứ tự.", 13, Accent);
 
             string info = Time.unscaledTime < messageUntil ? message : "Chọn đầu hàng → vào ô chờ → tự bắn đúng màu.";
             Box(new Rect(24, 503, 552, 43), Hex("E1EEED"));
             Text(new Rect(38, 509, 524, 31), info, 12, Accent, TextAnchor.MiddleCenter);
-            Text(new Rect(24, 566, 370, 22), "Ô CHỜ", 13, Ink);
+            Text(new Rect(24, 566, 370, 22), "STASH", 13, Ink);
             Text(new Rect(435, 566, 141, 22), game.Slots.Count(s => s != null) + " / 6 vị trí", 11, Muted, TextAnchor.MiddleRight);
             for (int i = 0; i < game.Slots.Length; i++)
             {
@@ -235,7 +235,7 @@ namespace SandJamTest
                     Text(new Rect(x + 63, 753, 105, 25), queue[0].Ammo.ToString(), 22, Ink);
                     Text(new Rect(x + 63, 782, 110, 22), ColorName(queue[0].Color), 9, Muted);
                 }
-                Text(new Rect(x, 825, 176, 17), "HÀNG " + (lane + 1) + "  ·  " + queue.Length + " nhân vật", 9, Muted);
+                Text(new Rect(x, 825, 176, 17), "LANE " + (lane + 1) + "  ·  " + queue.Length + " nhân vật", 9, Muted);
                 for (int q = 1; q < queue.Length; q++)
                 {
                     float qx = x + 10 + (q - 1) * 42;
@@ -243,14 +243,14 @@ namespace SandJamTest
                     Text(new Rect(qx - 10, 875, 35, 16), queue[q].Ammo.ToString(), 9, Muted, TextAnchor.MiddleCenter);
                 }
             }
-            if (Button(new Rect(24, 907, 137, 32), "Gợi ý", Color.white, Accent))
+            if (Button(new Rect(24, 907, 137, 32), "Hint", Color.white, Accent))
             {
                 hint = game.HintLane(); hintUntil = Time.unscaledTime + 4;
                 message = hint >= 0 ? "Thử nhân vật ở hàng " + (hint + 1) + "." : "Đợi nhân vật trong ô chờ hoàn thành.";
                 messageUntil = hintUntil;
             }
-            if (Button(new Rect(174, 907, 104, 32), fast ? "Tốc độ ×2" : "Tốc độ ×1", Color.white, Ink)) fast = !fast;
-            if (Button(new Rect(290, 907, 126, 32), paused ? "Tiếp tục" : "Tạm dừng", Color.white, Ink)) paused = !paused;
+            if (Button(new Rect(174, 907, 104, 32), fast ? "Speed ×2" : "Speed ×1", Color.white, Ink)) fast = !fast;
+            if (Button(new Rect(290, 907, 126, 32), paused ? "Continue" : "Pause", Color.white, Ink)) paused = !paused;
             Text(new Rect(430, 911, 147, 23), "Phím 1 / 2 / 3 · R", 9, Muted, TextAnchor.MiddleRight);
 
             foreach (var p in particles)
@@ -264,8 +264,8 @@ namespace SandJamTest
             else if (paused)
             {
                 Box(new Rect(0, 140, 600, 752), new Color(.07f, .14f, .2f, .65f), false);
-                Text(new Rect(60, 350, 480, 80), "ĐÃ TẠM DỪNG", 30, Color.white, TextAnchor.MiddleCenter);
-                if (Button(new Rect(210, 450, 180, 48), "Tiếp tục", Color.white, Accent)) paused = false;
+                Text(new Rect(60, 350, 480, 80), "PAUSED", 30, Color.white, TextAnchor.MiddleCenter);
+                if (Button(new Rect(210, 450, 180, 48), "Continue", Color.white, Accent)) paused = false;
             }
         }
 
@@ -274,12 +274,12 @@ namespace SandJamTest
             bool won = game.State == GameState.Won;
             Box(new Rect(0, 0, Width, Height), new Color(.06f, .13f, .19f, .72f), false);
             Box(new Rect(73, 310, 454, 318), Color.white);
-            Text(new Rect(100, 335, 400, 32), won ? "BỨC TRANH ĐÃ HOÀN THÀNH" : "CẦN MỘT THỨ TỰ KHÁC", 11, Accent, TextAnchor.MiddleCenter);
-            Text(new Rect(100, 379, 400, 60), won ? "Tuyệt vời!" : "Hết chỗ chờ", 36, Ink, TextAnchor.MiddleCenter);
-            Text(new Rect(107, 449, 386, 68), won ? "Bạn đã dùng " + game.SpentAmmo.ToString("N0") + " đạn màu qua " + game.Moves + " lượt chọn." : "Các nhân vật đang chờ màu chưa mở.\nThử ưu tiên màu của vùng đang mở.", 16, Muted, TextAnchor.MiddleCenter);
+            Text(new Rect(100, 335, 400, 32), won ? "PICTURE COMPLETE" : "CẦN MỘT THỨ TỰ KHÁC", 11, Accent, TextAnchor.MiddleCenter);
+            Text(new Rect(100, 379, 400, 60), won ? "Superb!" : "Out of Space", 36, Ink, TextAnchor.MiddleCenter);
+            Text(new Rect(107, 449, 386, 68), won ? "Bạn đã dùng " + game.SpentAmmo.ToString("N0") + " đạn màu qua " + game.Moves + " picks." : "Các nhân vật đang chờ màu chưa mở.\nThử ưu tiên màu của vùng đang mở.", 16, Muted, TextAnchor.MiddleCenter);
             var playRect = new Rect(160, 535, 280, 73);
             GUI.DrawTexture(playRect, originalAssets.PlayButton, ScaleMode.StretchToFill);
-            Text(new Rect(160, 534, 280, 65), "Chơi lại màn này", 15, Ink, TextAnchor.MiddleCenter);
+            Text(new Rect(160, 534, 280, 65), "Retry this level", 15, Ink, TextAnchor.MiddleCenter);
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && playRect.Contains(Event.current.mousePosition))
             { Event.current.Use(); Restart(); }
         }

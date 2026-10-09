@@ -20,7 +20,7 @@ namespace SandJamTest.Scene3D
         { Characters = characters; LaneStarts = lanes; StashSlots = slots; QueueSpacing = spacing; }
         public SceneActorView ViewFor(Shooter shooter) { return actors[shooter]; }
         public bool CanShoot(SandGame game, int slot)
-        { var shooter = game.Slots[slot]; return shooter != null && actors[shooter].AtRest && (shooter.Partner == null || actors[shooter.Partner].AtRest); }
+        { var shooter = game.Slots[slot]; return shooter != null && actors[shooter].AtRest; }
         public void Bind(SandGame Game, LevelData level)
         {
             actors.Clear();
@@ -73,7 +73,7 @@ namespace SandJamTest.Scene3D
                     pair.Value.Advance(delta, false);
                     continue;
                 }
-                if (pair.Key.Ammo == 0 && (pair.Key.Partner == null || pair.Key.Partner.Ammo == 0))
+                if (pair.Key.Ammo == 0)
                 {
                     bool wasLeaving = pair.Value.Departing || !pair.Value.gameObject.activeSelf;
                     pair.Value.Leave();

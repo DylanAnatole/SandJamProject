@@ -17,6 +17,8 @@ namespace SandJamTest.Scene3D
         public NativeArray<byte> Filled;
         public NativeArray<SandPourSimulation.Grain> Moving;
         NativeArray<int> rows,cols,cellAt,spawns,seep,state;
+        // Simulation step at which each cell settled (-1 = empty); drives the fresh-sand highlight.
+        public NativeArray<int> SettleStep;
         NativeArray<byte> occupied;
         readonly int height;
         readonly bool managed;
@@ -27,6 +29,7 @@ namespace SandJamTest.Scene3D
         public int MovingCount {get{return state[3];}}
         public bool Complete {get{return Settled==Requested;}}
         public bool UsedBurst {get{return state[4]==1;}}
+        public int StepCount {get{return state[8];}}
         public BurstSandSimulation(int[] sourceRows,int[] sourceCols):this(sourceRows,sourceCols,false){}
         internal BurstSandSimulation(int[] sourceRows,int[] sourceCols,bool runManaged)
         {
@@ -37,12 +40,14 @@ namespace SandJamTest.Scene3D
             cellAt=new NativeArray<int>(layout.CellAt,Allocator.Persistent);
             spawns=new NativeArray<int>(layout.Spawns,Allocator.Persistent);
             seep=new NativeArray<int>(layout.SeepOrder,Allocator.Persistent);
-            state=new NativeArray<int>(8,Allocator.Persistent);
+            state=new NativeArray<int>(9,Allocator.Persistent);
             // Deterministic seed so replays and editor checks are reproducible.
             state[5]=unchecked((int)(0x9E3779B9u^(uint)(Rows.Length*7919+InletX*131+InletY)));if(state[5]==0)state[5]=1;
             Filled=new NativeArray<byte>(Rows.Length,Allocator.Persistent);
             occupied=new NativeArray<byte>(Rows.Length,Allocator.Persistent);
             Moving=new NativeArray<SandPourSimulation.Grain>(Rows.Length,Allocator.Persistent);
+            SettleStep=new NativeArray<int>(Rows.Length,Allocator.Persistent);
+            for(int i=0;i<Rows.Length;i++)SettleStep[i]=-1;
         }
         public bool Inside(int x,int y){return x>=0 && x<Width && y>=0 && y<height && cellAt[y*Width+x]>=0;}
         // Row where the pour stream lands: first cell below the mouth that is settled sand or outside the region.
@@ -60,7 +65,7 @@ namespace SandJamTest.Scene3D
         public void ScheduleSteps(int steps)
         {
             CompleteSteps();if(steps<=0 || Complete)return;
-            var job=new StepJob{Rows=rows,Cols=cols,CellAt=cellAt,Spawns=spawns,Seep=seep,State=state,Filled=Filled,Moving=Moving,Occupied=occupied,Width=Width,Height=height,Steps=steps};
+            var job=new StepJob{Rows=rows,Cols=cols,CellAt=cellAt,Spawns=spawns,Seep=seep,State=state,Filled=Filled,Moving=Moving,Occupied=occupied,SettleStep=SettleStep,Width=Width,Height=height,Steps=steps};
             if(managed){job.Execute();return;}
             handle=job.Schedule();pending=true;
         }
@@ -81,15 +86,16 @@ namespace SandJamTest.Scene3D
         public void Dispose()
         {
             if(disposed)return;CompleteSteps();disposed=true;
-            rows.Dispose();cols.Dispose();cellAt.Dispose();spawns.Dispose();seep.Dispose();state.Dispose();Filled.Dispose();Moving.Dispose();occupied.Dispose();
+            SettleStep.Dispose();rows.Dispose();cols.Dispose();cellAt.Dispose();spawns.Dispose();seep.Dispose();state.Dispose();Filled.Dispose();Moving.Dispose();occupied.Dispose();
         }
-        // State: 0 emitted, 1 settled, 2 requested, 3 moving count, 4 burst flag, 5 rng, 6 seep cursor, 7 next grain id
+        // State: 0 emitted, 1 settled, 2 requested, 3 moving count, 4 burst flag, 5 rng, 6 seep cursor, 7 next grain id, 8 step count
         [BurstCompile(CompileSynchronously=true)]
         public struct StepJob : IJob
         {
             [ReadOnly] public NativeArray<int> Rows,Cols,CellAt,Spawns,Seep;
             public NativeArray<int> State;
             public NativeArray<byte> Filled,Occupied;
+            public NativeArray<int> SettleStep;
             public NativeArray<SandPourSimulation.Grain> Moving;
             public int Width,Height,Steps;
             [BurstDiscard] static void MarkManaged(ref int enabled){enabled=0;}
@@ -108,6 +114,7 @@ namespace SandJamTest.Scene3D
                 int burst=1;MarkManaged(ref burst);State[4]=burst;
                 for(int step=0;step<Steps && State[1]<State[2];step++)
                 {
+                    State[8]++;
                     int write=0;
                     for(int n=0;n<State[3];n++)
                     {
@@ -132,7 +139,7 @@ namespace SandJamTest.Scene3D
                         if(Free(g.X+side,g.Y)){Move(ref g,g.X+side,g.Y);g.Dir=side;Moving[write++]=g;continue;}
                         if(g.Dir==0 && Free(g.X-side,g.Y)){Move(ref g,g.X-side,g.Y);g.Dir=-side;Moving[write++]=g;continue;}
                         // 4. Settle.
-                        Filled[CellAt[g.Y*Width+g.X]]=1;State[1]++;
+                        int settledCell=CellAt[g.Y*Width+g.X];Filled[settledCell]=1;SettleStep[settledCell]=State[8];State[1]++;
                     }
                     State[3]=write;
                     // Pour new grains through every free mouth cell.
@@ -152,7 +159,7 @@ namespace SandJamTest.Scene3D
                             while(State[6]<Seep.Length && Occupied[Seep[State[6]]]!=0)State[6]++;
                             if(State[6]>=Seep.Length)break;
                             int cell=Seep[State[6]];
-                            Occupied[cell]=1;Filled[cell]=1;State[0]++;State[1]++;State[7]++;
+                            Occupied[cell]=1;Filled[cell]=1;SettleStep[cell]=State[8];State[0]++;State[1]++;State[7]++;
                         }
                 }
             }

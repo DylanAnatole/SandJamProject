@@ -24577,7 +24577,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 814118876}
-  m_Text: "\u0110\u01B0a h\u1ED9p l\xEAn: gi\u1EA3m 1 l\u1EDBp b\u0103ng"
+  m_Text: "Send a cube: -1 ice layer"
   m_OffsetZ: 0
   m_CharacterSize: 0.022857143
   m_LineSpacing: 1
@@ -34824,7 +34824,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1173457100}
-  m_Text: "\u0110\u01B0a h\u1ED9p l\xEAn: gi\u1EA3m 1 l\u1EDBp b\u0103ng"
+  m_Text: "Send a cube: -1 ice layer"
   m_OffsetZ: 0
   m_CharacterSize: 0.022857143
   m_LineSpacing: 1
@@ -35400,7 +35400,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1187659577}
-  m_Text: "\u0110\u01B0a h\u1ED9p l\xEAn: gi\u1EA3m 1 l\u1EDBp b\u0103ng"
+  m_Text: "Send a cube: -1 ice layer"
   m_OffsetZ: 0
   m_CharacterSize: 0.022857143
   m_LineSpacing: 1
@@ -61940,7 +61940,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2016010783}
-  m_Text: "\u0110\u01B0a h\u1ED9p l\xEAn: gi\u1EA3m 1 l\u1EDBp b\u0103ng"
+  m_Text: "Send a cube: -1 ice layer"
   m_OffsetZ: 0
   m_CharacterSize: 0.022857143
   m_LineSpacing: 1
@@ -64792,7 +64792,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2107256093}
-  m_Text: "\u0110\u01B0a h\u1ED9p l\xEAn: gi\u1EA3m 1 l\u1EDBp b\u0103ng"
+  m_Text: "Send a cube: -1 ice layer"
   m_OffsetZ: 0
   m_CharacterSize: 0.022857143
   m_LineSpacing: 1

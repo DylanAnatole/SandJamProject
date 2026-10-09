@@ -41,6 +41,10 @@ namespace SandJamTest.Scene3D
         float stepTime, completionGlow;
         // One grain enters per step; the original pours roughly 550-600 cells per second.
         const float StepSeconds=1f/600f;
+        // Fresh-sand highlight: newly settled grains start this much lighter and fade over ~0.3 s.
+        const int FreshSteps=180; const float FreshLift=.32f;
+        int idleSteps, lastSettleStep; bool freshPainted;
+        float counterPunch;
         public void AttachBoard(SandBoardTextureView board)
         {
             Board=board; Geometry.GetComponent<MeshRenderer>().enabled=false;
@@ -65,7 +69,7 @@ namespace SandJamTest.Scene3D
         }
         public void ResetFlow()
         {
-            advancing=false; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0;completionGlow=0; lockDone=false;
+            advancing=false; idleSteps=0; lastSettleStep=0; freshPainted=false; counterPunch=0; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0;completionGlow=0; lockDone=false;
         }
         void ApplyLock(Region region)
         {
@@ -121,6 +125,8 @@ namespace SandJamTest.Scene3D
                 for(int i=0;i<settledColors.Length;i++) settledColors[i]=SandShade(solid,sand.Cols[i],sand.Rows[i]);
             }
             if(region.Remaining==lastRemaining && region.Open==lastOpen && region.InformationVisible==lastVisible) return;
+            // The amount label pops each time it counts down (original counter feedback).
+            if(lastRemaining>0 && region.Remaining<lastRemaining && region.Remaining>0) counterPunch=1f;
             lastRemaining=region.Remaining; lastOpen=region.Open; lastVisible=region.InformationVisible;
             sand.Request((int)((long)(region.Data.amount-region.Remaining)*region.Data.rows.Length/region.Data.amount));
             // Open regions use the original pale InitColor; locked ones stay neutral.
@@ -134,7 +140,9 @@ namespace SandJamTest.Scene3D
         void PaintBase()
         {
             // Run avoids dispatch/wait overhead for these small regions while using Burst native code.
-            new PaintRegionJob{Filled=sand.Filled,Colors=settledColors,Output=paintedColors,Empty=empty,Glow=.12f*completionGlow}.Run();
+            new PaintRegionJob{Filled=sand.Filled,Colors=settledColors,Output=paintedColors,Empty=empty,Glow=.12f*completionGlow,
+                SettleStep=sand.SettleStep,Now=sand.StepCount+idleSteps,FreshSteps=FreshSteps,FreshLift=FreshLift}.Run();
+            freshPainted=sand.StepCount+idleSteps-lastSettleStep<FreshSteps;
             for(int i=0;i<sand.Filled.Length;i++) Board.SetBase(sand.Cols[i],sand.Rows[i],paintedColors[i]);
         }
         void PaintMoving()
@@ -142,7 +150,7 @@ namespace SandJamTest.Scene3D
             // Restore previous pixel positions before drawing the current frame.
             ClearMoving();
             for(int i=0;i<sand.MovingCount;i++){var g=sand.Moving[i];
-                if(sand.Inside(g.X,g.Y)) { Board.SetGrain(g.X,g.Y,solid); previousMoving.Add(new Vector2Int(g.X,g.Y)); }}
+                if(sand.Inside(g.X,g.Y)) { Board.SetGrain(g.X,g.Y,(Color32)Color.Lerp((Color)SandShade(solid,g.X,g.Y+g.Index),Color.white,.12f)); previousMoving.Add(new Vector2Int(g.X,g.Y)); }}
         }
         // Settled sand in the original is speckled: mostly base colour with darker and lighter grains.
         public static Color32 SandShade(Color32 baseColor,int x,int y)
@@ -152,6 +160,15 @@ namespace SandJamTest.Scene3D
             float k=roll<22?.78f:roll<38?.89f:roll<88?1f:1.14f;
             Color c=(Color)baseColor*k;c.a=1;return c;
         }
+        Vector3 counterScale; bool counterScaleKnown;
+        void LateUpdate()
+        {
+            if(!Counter) return;
+            if(!counterScaleKnown){counterScale=Counter.transform.localScale;counterScaleKnown=true;}
+            if(counterPunch<=0) return;
+            counterPunch=Mathf.Max(0,counterPunch-Time.deltaTime/.18f);
+            Counter.transform.localScale=counterScale*(1f+.28f*Mathf.Sin(counterPunch*Mathf.PI));
+        }
         void ReleaseColors(){if(settledColors.IsCreated)settledColors.Dispose();if(paintedColors.IsCreated)paintedColors.Dispose();}
         void OnDestroy(){if(sand!=null)sand.Dispose();ReleaseColors();if(FlowMask)Destroy(FlowMask);}
         [BurstCompile]
@@ -159,16 +176,21 @@ namespace SandJamTest.Scene3D
         {
             [ReadOnly] public NativeArray<byte> Filled;
             [ReadOnly] public NativeArray<Color32> Colors;
+            [ReadOnly] public NativeArray<int> SettleStep;
             [WriteOnly] public NativeArray<Color32> Output;
             public Color32 Empty;
-            public float Glow;
+            public float Glow, FreshLift;
+            public int Now, FreshSteps;
             public void Execute()
             {
                 for(int i=0;i<Output.Length;i++)
                 {
                     if(Filled[i]==0){Output[i]=Empty;continue;}
                     Color32 c=Colors[i];
-                    Output[i]=(Color32)Color.Lerp((Color)c,Color.white,Glow);
+                    // Freshly landed grains catch the light, then fade into the pile.
+                    int age=Now-SettleStep[i];
+                    float fresh=age>=0 && age<FreshSteps?FreshLift*(1f-(float)age/FreshSteps):0f;
+                    Output[i]=(Color32)Color.Lerp((Color)c,Color.white,Glow+fresh);
                 }
             }
         }
@@ -178,6 +200,7 @@ namespace SandJamTest.Scene3D
             if(sand==null || delta<=0) return;
             if(IsSettled)
             {
+                if(freshPainted){idleSteps+=Mathf.Max(1,Mathf.RoundToInt(delta/StepSeconds));PaintBase();}
                 if(lastRemaining==0 && completionGlow<1)
                 {
                     completionGlow=Mathf.MoveTowards(completionGlow,1,delta/.35f);
@@ -194,7 +217,8 @@ namespace SandJamTest.Scene3D
         public void FinishAdvance()
         {
             if(!advancing)return;advancing=false;sand.CompleteSteps();
-            if(beforeStep!=sand.Settled) PaintBase();
+            if(beforeStep!=sand.Settled) lastSettleStep=sand.StepCount+idleSteps;
+            if(beforeStep!=sand.Settled || freshPainted) PaintBase();
             PaintMoving();
             if(IsSettled && lastRemaining==0) { Counter.text="";Counter.gameObject.SetActive(false); }
         }

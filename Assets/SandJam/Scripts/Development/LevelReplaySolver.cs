@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 namespace SandJamTest
 {
-    // Solvability probe used by the campaign builder and the mechanic test scenes ("Tự giải").
+    // Solvability probe used by the campaign builder and the mechanic test scenes ("Auto solve").
     // Gameplay itself never depends on this search.
     public sealed class LevelReplaySolver
     {

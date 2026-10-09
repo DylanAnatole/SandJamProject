@@ -62,12 +62,12 @@ namespace SandJamTest.Scene3D
             Fill(new Rect(0,0,483,1075),new Color(0,0,0,.65f));
             Fill(new Rect(48,296,387,455),new Color(.72f,.12f,.21f));
             Fill(new Rect(57,376,369,366),new Color(.24f,.22f,.42f));
-            GUI.Label(new Rect(65,308,353,62),"HẾT CHỖ CHỜ",heading);
-            GUI.Label(new Rect(78,405,327,143),"Không còn hộp có thể rót\nvào các vùng đang mở.\n\nThử đổi thứ tự chọn hộp nhé!",message);
+            GUI.Label(new Rect(65,308,353,62),"OUT OF SPACE",heading);
+            GUI.Label(new Rect(78,405,327,143),"No cube can pour into\nthe open areas.\n\nTry another order!",message);
             if(greenButton)GUI.DrawTexture(new Rect(107,571,269,76),greenButton,ScaleMode.StretchToFill,true);
-            GUI.Label(new Rect(107,571,269,76),"CHƠI LẠI",button);
+            GUI.Label(new Rect(107,571,269,76),"RETRY",button);
             if(GUI.Button(new Rect(107,571,269,76),GUIContent.none,GUIStyle.none))Retry();
-            if(GUI.Button(new Rect(137,673,209,46),"Về trang chủ"))GoHome();
+            if(GUI.Button(new Rect(137,673,209,46),"Home"))GoHome();
             GUI.matrix=matrix;GUI.color=color;
         }
         static void Fill(Rect rect,Color color){GUI.color=color;GUI.DrawTexture(rect,Texture2D.whiteTexture);GUI.color=Color.white;}

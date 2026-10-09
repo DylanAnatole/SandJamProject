@@ -19,7 +19,7 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             if(Controller.Game==null)return;
-            Status.text=Controller.Game.State==GameState.Won?"Hoàn thành!  ·  R: chơi lại":Controller.Game.State==GameState.Lost?"Hết chỗ chờ  ·  R: chơi lại":"";
+            Status.text=Controller.Game.State==GameState.Won?"Complete!  ·  R: retry":Controller.Game.State==GameState.Lost?"Out of Space  ·  R: retry":"";
         }
         void Start()
         {

@@ -76,7 +76,7 @@ namespace SandJamTest.Scene3D
                                     : claimed || doneToday ? "Reward_Cell_Bg_Pressed" : claimable ? "Reward_Cell_Bg_Active" : "Reward_Cell_Bg_Deactive";
                 var bg = PanelArt(rewardsPanel, cell, x, y, w, h, -6.4f, rewardsDynamic);
                 if (claimed) bg.color = new Color(.45f, .5f, .6f); // collected cells are greyed out (mockup "TODAY" cell)
-                string title = doneToday ? "HÔM NAY" : "NGÀY " + (day + 1);
+                string title = doneToday ? "TODAY" : "DAY " + (day + 1);
                 PanelText(rewardsPanel, title, x, y + h / 2 - 48, .034f, -6.6f, rewardsDynamic);
                 if (claimed) { PanelArt(rewardsPanel, "icon-done", x, y - 30, 130, 110, -6.5f, rewardsDynamic); continue; }
                 // Gift contents: icon + amount, side by side.
@@ -97,7 +97,7 @@ namespace SandJamTest.Scene3D
                 }
                 if (claimable) PanelHit(rewardsPanel, x, y, w, h, "daily-claim", rewardsDynamic);
             }
-            SetText(rewardsInfo, canClaim ? "Chạm vào ô quà để nhận!" : "Quà chưa sẵn sàng!\nQuay lại vào ngày mai nhé");
+            SetText(rewardsInfo, canClaim ? "Tap today's gift to claim it!" : "REWARD NOT READY!\nGET YOUR DAILY REWARD SOON");
             SetText(rewardsTimer, Clock(DailyRewards.UntilNext));
         }
         static string Clock(System.TimeSpan t) { return string.Format("{0}H {1:00}M", (int)t.TotalHours, t.Minutes); }
@@ -140,7 +140,7 @@ namespace SandJamTest.Scene3D
             PanelHit(p, 418, 445.8f, 200, 200, "tasks-claim", d);
             PanelArt(p, "Frame", 313.9f, 529.8f, 142, 108, -6.55f, d);
             PanelText(p, board.stars.ToString(), 290, 535, .03f, -6.6f, d);
-            if (TaskBoard.HasUnclaimed(shownKind)) PanelText(p, "Chạm rương để nhận quà!", 0, 352, .03f, -6.6f, d);
+            if (TaskBoard.HasUnclaimed(shownKind)) PanelText(p, "Tap the chest to claim!", 0, 352, .03f, -6.6f, d);
             // Task list.
             float listCentre = 254.5f - listH / 2;
             PanelArt(p, weekly ? "WeeklyTaskTaskBG" : "DailyTask_Task_BG", 0, listCentre, 1076, listH, -6.3f, d);
@@ -170,8 +170,8 @@ namespace SandJamTest.Scene3D
             var dailyTab = PanelArt(p, "DailyTask_Slider_BG", -170, tabY, 330, 110, -6.25f, d);
             var weeklyTab = PanelArt(p, "WeeklyTask_LoaderBG", 170, tabY, 330, 110, -6.25f, d);
             (weekly ? dailyTab : weeklyTab).color = new Color(.75f, .75f, .8f);
-            PanelText(p, "NGÀY", -170, tabY, .04f, -6.5f, d);
-            PanelText(p, "TUẦN", 170, tabY, .04f, -6.5f, d);
+            PanelText(p, "DAILY", -170, tabY, .04f, -6.5f, d);
+            PanelText(p, "WEEKLY", 170, tabY, .04f, -6.5f, d);
             PanelHit(p, -170, tabY, 330, 120, "tasks-daily", d);
             PanelHit(p, 170, tabY, 330, 120, "tasks-weekly", d);
         }
@@ -217,9 +217,9 @@ namespace SandJamTest.Scene3D
         {
             if (!ShowTaskWidgets) return;
             var home = screen.Home.transform;
-            dailyBadge = HomeWidget(home, "DailyRewardWidgetActive", 1.78f, -108, "QUÀ", "daily-rewards");
-            tasksBadge = HomeWidget(home, "DailyTaskWidgetActive", -1.78f, -108, "NGÀY", "daily-tasks");
-            weeklyBadge = HomeWidget(home, "WeeklyTaskWidgetActive", -1.78f, 290, "TUẦN", "weekly-tasks");
+            dailyBadge = HomeWidget(home, "DailyRewardWidgetActive", 1.78f, -108, "REWARDS", "daily-rewards");
+            tasksBadge = HomeWidget(home, "DailyTaskWidgetActive", -1.78f, -108, "DAILY", "daily-tasks");
+            weeklyBadge = HomeWidget(home, "WeeklyTaskWidgetActive", -1.78f, 290, "WEEKLY", "weekly-tasks");
         }
         GameObject HomeWidget(Transform home, string sprite, float x, float canvasY, string label, string action)
         {

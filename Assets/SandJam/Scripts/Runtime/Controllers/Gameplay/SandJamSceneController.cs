@@ -63,7 +63,7 @@ namespace SandJamTest.Scene3D
         int hintLane = -1;
         bool paused, fast, muted, smokeMode;
         int lastScreenWidth, lastScreenHeight;
-        string error, message = "Chọn nhân vật đỏ ở đầu hàng để bắt đầu.", smokeOutput;
+        string error, message = "Tap a cube at the front of a lane to start.", smokeOutput;
         static readonly Color Ink = new Color(.13f,.23f,.30f), Accent = new Color(.07f,.47f,.44f);
 
         // "Play on": buys one more waiting slot after the player ran out of space. Clones the last slot's
@@ -157,7 +157,7 @@ namespace SandJamTest.Scene3D
             accumulator = 0; paused = false; hintLane = -1;
             selectionFeedback = ""; selectionFeedbackUntil = 0;
             sound.Stop();
-            message = "Chọn nhân vật đỏ ở đầu hàng để bắt đầu.";
+            message = "Tap a cube at the front of a lane to start.";
             messageTime = Time.unscaledTime + 6;
         }
 
@@ -197,7 +197,7 @@ namespace SandJamTest.Scene3D
                 return SelectLane(actor.SourceLane);
             if (lane.Count == 0 || lane.Peek() != actor.Shooter)
             {
-                Notify("Chỉ chọn nhân vật đứng đầu mỗi hàng."); return false;
+                Notify("Only the cube at the front of a lane can be picked."); return false;
             }
             return SelectLane(actor.SourceLane);
         }
@@ -211,7 +211,7 @@ namespace SandJamTest.Scene3D
                 var first = lane >= 0 && lane < Game.Lanes.Length && Game.Lanes[lane].Count > 0 ? Game.Lanes[lane].Peek() : null;
                 var frozen = first != null && first.IsFrozen ? first : first != null && first.Partner != null && first.Partner.IsFrozen ? first.Partner : null;
                 bool linked = lane >= 0 && lane < Game.Lanes.Length && Game.Lanes[lane].Count > 0 && Game.Lanes[lane].Peek().Partner != null;
-                selectionFeedback = frozen != null ? "Còn " + frozen.FreezeRemaining + " lớp băng · Đưa hộp khác lên trước" : linked ? "Chưa đủ chỗ hoặc cặp chưa ra đầu hàng" : "Ô chờ đã đầy";
+                selectionFeedback = frozen != null ? "" + frozen.FreezeRemaining + " ice layers left · send other cubes first" : linked ? "Not enough space, or the pair is not at the front" : "The stash is full";
                 selectionFeedbackUntil = Time.unscaledTime + 3;
                 Notify(selectionFeedback); return false;
             }
@@ -220,7 +220,7 @@ namespace SandJamTest.Scene3D
             GameEvents.RaiseCharacterSelected(pickedColor);
             hintLane = -1;
             Synchronize(0);
-            Notify("Nhân vật sẽ tự bắn khi đến ô chờ và có màu đang mở.");
+            Notify("Cubes pour automatically once their color is open.");
             return true;
         }
 

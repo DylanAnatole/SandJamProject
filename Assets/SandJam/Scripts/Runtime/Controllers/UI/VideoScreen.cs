@@ -108,7 +108,7 @@ namespace SandJamTest.Scene3D
             if(Current==Page.Celebration && elapsed>2.2f && !smoke)Show(Page.Result);
             if(Current==Page.Gameplay && Controller.Game!=null)
             {
-                Status.text=Controller.Game.State==GameState.Lost?(Popups?"":"Hết chỗ chờ · R: chơi lại"):Boosters && !string.IsNullOrEmpty(Boosters.Message)?Boosters.Message:Controller.SelectionFeedback;
+                Status.text=Controller.Game.State==GameState.Lost?(Popups?"":"Out of Space · R: retry"):Boosters && !string.IsNullOrEmpty(Boosters.Message)?Boosters.Message:Controller.SelectionFeedback;
                 if(Controller.Game.State==GameState.Won && !smoke)
                 {
                     if(Levels)Levels.RecordCompletion();

@@ -76,7 +76,7 @@ namespace SandJamTest.Scene3D
             foreach (var o in galleryDynamic) if (o) Destroy(o);
             galleryDynamic.Clear();
             galleryScroll = 0;
-            if (galleryList.Count == 0) { GalleryText("Qua màn 15 để mở\nbộ sưu tập đầu tiên!", 0, 1.5f, .05f, -6.6f); return; }
+            if (galleryList.Count == 0) { GalleryText("Beat level 15 to unlock\nyour first collection!", 0, 1.5f, .05f, -6.6f); return; }
             var info = galleryList[galleryIndex];
             int won = Campaign.LevelNumber - 1;
             // Category tab.
@@ -128,7 +128,7 @@ namespace SandJamTest.Scene3D
                 }
             }
             GalleryArt("Group 10298", 0, .34f, 1.9f, .48f, -6.3f);
-            GalleryText("Nhận tất cả", 0, .35f, .036f, -6.4f);
+            GalleryText("Claim All Cards", 0, .35f, .036f, -6.4f);
             GalleryHit(0, .34f, 1.9f, .5f, "gallery-claim-all");
             // Picture grid (3 columns), scrolled inside the band between the button and the navbar.
             galleryGrid = new GameObject("Gallery grid") { layer = gallery.Root.layer }.transform;

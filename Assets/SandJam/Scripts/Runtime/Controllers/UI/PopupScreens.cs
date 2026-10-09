@@ -24,13 +24,13 @@ namespace SandJamTest.Scene3D
         // Vietnamese captions for the original NewFeature/NewBooster texts (English kept as fallback).
         static readonly System.Collections.Generic.Dictionary<string, string> Captions = new System.Collections.Generic.Dictionary<string, string>
         {
-            { "Vertical Chained Cubes move together to stash area", "Khối nối dọc cùng lên ô chờ" },
-            { "Mystery Cubes become visible when they reach the front row", "Khối bí ẩn hiện màu khi ra hàng đầu" },
-            { "Horizontal Chained Cubes move together to stash area", "Khối nối ngang cùng lên ô chờ" },
-            { "Locked grids become available as the cubes color tiles!", "Vùng khóa mở khi các khối tô màu" },
-            { "Flare reveals a random tile on the canvas", "Pháo sáng hé lộ một vùng" },
-            { "You can swap first and second line", "Đổi chỗ hàng 1 và hàng 2" },
-            { "You can tap on any shooter you want", "Chọn bất kỳ khối nào bạn muốn" },
+            { "Vertical Chained Cubes move together to stash area", "Vertical Chained Cubes move together to stash area" },
+            { "Mystery Cubes become visible when they reach the front row", "Mystery Cubes become visible when they reach the front row" },
+            { "Horizontal Chained Cubes move together to stash area", "Horizontal Chained Cubes move together to stash area" },
+            { "Locked grids become available as the cubes color tiles!", "Locked grids become available as the cubes color tiles!" },
+            { "Flare reveals a random tile on the canvas", "Flare reveals a random tile on the canvas" },
+            { "You can swap first and second line", "You can swap first and second line" },
+            { "You can tap on any shooter you want", "You can tap on any shooter you want" },
         };
         float shownAt;
         public GameObject Open { get; private set; }
@@ -51,12 +51,12 @@ namespace SandJamTest.Scene3D
             // green "Play on 400" and a red close button that gives the level up.
             lose = Build("Out of space popup");
             TintRibbon(lose, new Color(.93f, .25f, .36f));
-            lose.Title.text = "Hết chỗ!";
+            lose.Title.text = "Out of Space";
             lose.Icon.gameObject.SetActive(false); lose.Big.text = "";
             BuildStashPicture(lose);
-            lose.Caption.text = "Thêm 1 ô chờ";
+            lose.Caption.text = "Free Extra 1 Slot";
             SingleButton(lose);
-            Configure(lose.RightButton, lose.Right, "play-on", "Chơi tiếp · " + PlayOnPrice, 7f);
+            Configure(lose.RightButton, lose.Right, "play-on", "Play on · " + PlayOnPrice, 7f);
             AddCloseButton(lose, "give-up");
             // Original "Level Failed!": red frame, hearts with the lost one marked -1, refill timer, Try Again.
             failed = Build("Level failed popup");
@@ -83,7 +83,7 @@ namespace SandJamTest.Scene3D
             intro.LeftButton.transform.parent.gameObject.SetActive(false);
             foreach (Transform child in intro.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, child.localPosition.y, child.localPosition.z);
-            Configure(intro.RightButton, intro.Right, "close", "Tiếp tục");
+            Configure(intro.RightButton, intro.Right, "close", "Continue");
             BuildHardPopup();
             BuildArtStylePopup();
             owner.Feedback.UseLegacyOverlay = false;
@@ -195,7 +195,7 @@ namespace SandJamTest.Scene3D
             lostHeartLabel.gameObject.SetActive(show);
             if (show) { var pos = hearts[lives].transform.localPosition; lostHeartLabel.transform.localPosition = new Vector3(pos.x, pos.y, -7.4f); }
         }
-        string TimerText { get { return LivesManager.IsFull ? "Đầy tim" : "Hồi tim: " + LivesManager.Countdown(LivesManager.UntilNext); } }
+        string TimerText { get { return LivesManager.IsFull ? "Full" : "Next life: " + LivesManager.Countdown(LivesManager.UntilNext); } }
 
         // Original HARD LEVEL / BONUS LEVEL popups share one layout (Resources/HardLevel, Resources/BonusLevel):
         // crest on top (winged skull / coin cup), ribbon with the title art, level pill, mascot, one line of text
@@ -203,9 +203,9 @@ namespace SandJamTest.Scene3D
         void BuildHardPopup()
         {
             hard = BuildLevelKindPopup("Hard level popup", "HardLevel/", "bg-popUp-hardLevel-v2", "icon-hardLevel-popUp-v2", "icon-cup-hardLevel-v2",
-                "ribbon-red-v2", "text-hardLevel-v2", "bg-level-hardLevel-v2", "Thử thách: vượt qua màn này\nngay lần đầu!", "hard-play", out hardLevelLabel);
+                "ribbon-red-v2", "text-hardLevel-v2", "bg-level-hardLevel-v2", "Challenge yourself to beat\nthis level at once!", "hard-play", out hardLevelLabel);
             bonus = BuildLevelKindPopup("Bonus level popup", "BonusLevel/", "bg-popUp-easyLevel-v2", "icon-easyLevel-popUp-v2", "icon-cup-easyLevel-v2",
-                "ribbon-green-v2", "bonusLevel", "bg-level-easyLevel-v2", "Thắng màn này để nhận\nthêm xu!", "hard-play", out bonusLevelLabel);
+                "ribbon-green-v2", "bonusLevel", "bg-level-easyLevel-v2", "Beat this level to earn\nextra coins!", "hard-play", out bonusLevelLabel);
             // The bonus mascot holds a stack of coins: smaller and higher so the caption stays clear.
             var bonusMascot = bonus.Root.transform.Find("icon-easyLevel-popUp-v2");
             bonusMascot.localScale *= .78f; bonusMascot.localPosition += new Vector3(0, .18f, 0);
@@ -291,14 +291,14 @@ namespace SandJamTest.Scene3D
         void ShowFailed(bool justLost, bool noLives)
         {
             failedIsNoLives = noLives;
-            failed.Title.text = noLives ? "Hết tim!" : "Thua rồi!";
-            Configure(null, failed.Caption, null, noLives || !LivesManager.CanPlay ? "Bạn đã hết tim!" : "Cố lên!", 18f);
+            failed.Title.text = noLives ? "Level Failed!" : "Level Failed!";
+            Configure(null, failed.Caption, null, noLives || !LivesManager.CanPlay ? "You Have No Lives!" : "Keep Going!", 18f);
             failed.Big.text = TimerText;
             RefreshHearts(justLost);
             bool canPlay = LivesManager.CanPlay;
             // Original no-lives popup: "Refill 600" buys a full set of hearts; ✕ goes home.
-            if (!canPlay) Configure(failed.RightButton, failed.Right, "refill-lives", "Hồi tim · " + EconomyManager.RefillLivesPrice, 7f);
-            else Configure(failed.RightButton, failed.Right, !noLives ? "retry" : "close-failed", !noLives ? "Chơi lại" : "Đóng");
+            if (!canPlay) Configure(failed.RightButton, failed.Right, "refill-lives", "Refill · " + EconomyManager.RefillLivesPrice, 7f);
+            else Configure(failed.RightButton, failed.Right, !noLives ? "retry" : "close-failed", !noLives ? "Try Again" : "Close");
             Show(failed);
         }
 
@@ -324,7 +324,7 @@ namespace SandJamTest.Scene3D
                 var r = Child<SpriteRenderer>(p, "Band", new Vector3(0, part.y, part.z));
                 r.sprite = sprite; r.color = part.c; r.transform.localScale = new Vector3(8f, part.h, 1);
             }
-            SetText(OutlinedLabel(p, "Out of space text", new Vector3(0, .38f, -6.4f), .07f), "HẾT CHỖ!");
+            SetText(OutlinedLabel(p, "Out of space text", new Vector3(0, .38f, -6.4f), .07f), "OUT OF SPACE!");
             banner.SetActive(false);
         }
         void UpdateOutOfSpaceBanner()
@@ -363,7 +363,7 @@ namespace SandJamTest.Scene3D
             Art(congrats, "Congrats/text-congrats-v2", new Vector3(0, 2.8f, -6.7f), 3.3f);
             cardName = OutlinedLabel(congrats, "Collection name", new Vector3(0, 2.04f, -6.8f), .042f);
             cardPercent = OutlinedLabel(congrats, "Collection percent", new Vector3(0, -1.63f, -6.8f), .038f);
-            SetText(OutlinedLabel(congrats, "Tap to continue", new Vector3(0, -3.48f, -6.8f), .042f), "Chạm để tiếp tục");
+            SetText(OutlinedLabel(congrats, "Tap to continue", new Vector3(0, -3.48f, -6.8f), .042f), "Tap To Continue");
             // The whole screen continues, in front of everything else in the popup.
             var hit = Child<BoxCollider>(congrats, "Hit area - congrats-continue", new Vector3(0, 0, -9.5f));
             hit.gameObject.layer = 9; hit.size = new Vector3(30, 40, .2f);
@@ -399,7 +399,7 @@ namespace SandJamTest.Scene3D
             else { colour = Resources.Load<Sprite>("LevelRenders/" + info.RenderId); grey = Greyscale(colour); }
             if (!colour || !grey) return false;
             SetText(cardName, info.Name);
-            SetText(cardPercent, info.Percent(level) + "% hoàn thành");
+            SetText(cardPercent, info.Percent(level) + "% Completed");
             var size = grey.bounds.size;
             float k = Mathf.Min(CoverWidth / size.x, CoverHeight / size.y);
             cardBw.sprite = grey; cardBw.transform.localScale = new Vector3(k, k, 1);
@@ -512,7 +512,7 @@ namespace SandJamTest.Scene3D
             // Original: a newly unlocked booster arrives with one free use (HUD badge "1").
             if (boosterIntros.Contains(entry)) EconomyManager.AddBooster(entry.type == 1 ? "rocket" : entry.type == 2 ? "swap" : "select", 1, "unlock-gift");
             introGif = Resources.Load<SpriteSequence>("OriginalGifs/" + entry.gif);
-            intro.Title.text = boosterIntros.Contains(entry) ? "Booster mới!" : "Tính năng mới!";
+            intro.Title.text = boosterIntros.Contains(entry) ? "New Booster!" : "New Feature!";
             string caption; if (!Captions.TryGetValue(entry.info, out caption)) caption = entry.info;
             Configure(null, intro.Caption, null, caption, 22f);
             intro.Icon.sprite = introGif ? introGif.FrameAt(0) : null;
@@ -546,9 +546,9 @@ namespace SandJamTest.Scene3D
                     Close(); screen.Feedback.Retry(); return true;
                 case "home": Close(); gaveUp = false; screen.Feedback.GoHome(); return true;
                 case "play-on":
-                    if (!EconomyManager.TrySpend(PlayOnPrice, "play-on")) { Configure(null, lose.Caption, null, "Không đủ xu · cần " + PlayOnPrice, 18f); return true; }
+                    if (!EconomyManager.TrySpend(PlayOnPrice, "play-on")) { Configure(null, lose.Caption, null, "Not enough coins · need " + PlayOnPrice, 18f); return true; }
                     if (!screen.Controller.AddExtraSlot()) { EconomyManager.Add(PlayOnPrice, "refund"); return true; }
-                    lose.Caption.text = "Thêm 1 ô chờ";
+                    lose.Caption.text = "Free Extra 1 Slot";
                     Close(); return true;
                 case "give-up":
                     // Giving up the level costs a heart (original: Out of Space ✕ → Level Failed with -1).
@@ -563,7 +563,7 @@ namespace SandJamTest.Scene3D
                 case "refill-lives":
                     if (!EconomyManager.TrySpend(EconomyManager.RefillLivesPrice, "refill-lives"))
                     {
-                        string need = "Không đủ xu · cần " + EconomyManager.RefillLivesPrice;
+                        string need = "Not enough coins · need " + EconomyManager.RefillLivesPrice;
                         if (Open == noLives.Root) SetText(noLivesInfo, need); else Configure(null, failed.Caption, null, need, 18f);
                         return true;
                     }

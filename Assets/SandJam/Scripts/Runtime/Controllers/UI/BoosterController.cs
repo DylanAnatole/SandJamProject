@@ -17,7 +17,7 @@ namespace SandJamTest.Scene3D
         bool CanAfford(string action)
         {
             if (!screen.Levels || EconomyManager.CanUseBooster(action)) return true;
-            Tell("Không đủ xu · cần " + Price(action)); return false;
+            Tell("Not enough coins · need " + Price(action)); return false;
         }
         // Campaign: inventory first, then coins (EconomyManager). Test scenes stay free.
         void Pay(string action) { if (screen.Levels) EconomyManager.UseBooster(action); else GameEvents.RaiseBoosterUsed(action, 0); }
@@ -52,16 +52,16 @@ namespace SandJamTest.Scene3D
                 prices[action] = placeholder.DisplayPrice;
                 if (owner.Levels && Campaign.LevelNumber < OriginalConfig.BoosterUnlockLevel(action))
                 {
-                    // Locked until its NewBoosterConfig level: show "Màn N" instead of the price and dim the button.
+                    // Locked until its NewBoosterConfig level: show "Level N" instead of the price and dim the button.
                     var priceLabel = placeholder.transform.Find("Price");
-                    if (priceLabel) foreach (var label in priceLabel.GetComponentsInChildren<TextMesh>(true)) label.text = "Màn " + OriginalConfig.BoosterUnlockLevel(action);
+                    if (priceLabel) foreach (var label in priceLabel.GetComponentsInChildren<TextMesh>(true)) label.text = "Level " + OriginalConfig.BoosterUnlockLevel(action);
                     var coinIcon = placeholder.transform.Find("Price coin"); if (coinIcon) coinIcon.gameObject.SetActive(false);
                     foreach (var sprite in placeholder.GetComponentsInChildren<SpriteRenderer>(true)) sprite.color = new Color(.55f, .55f, .62f, sprite.color.a);
                 }
                 if (owner.Levels) { placeholders[action] = placeholder; AddBadge(action, image); }
                 if(owner.ReferenceBoosterLabels || owner.Levels)continue;
                 var price = placeholder.transform.Find("Price");
-                if (price) foreach (var label in price.GetComponentsInChildren<TextMesh>(true)) label.text = "Dùng";
+                if (price) foreach (var label in price.GetComponentsInChildren<TextMesh>(true)) label.text = "Use";
                 var coin = placeholder.transform.Find("Price coin"); if (coin) coin.gameObject.SetActive(false);
             }
         }
@@ -121,26 +121,26 @@ namespace SandJamTest.Scene3D
             controller.SuppressInputThisFrame();
             if (PickerOpen) { Cancel(); return false; }
             if (screen.Levels && screen.Levels.PlayedNumber < OriginalConfig.BoosterUnlockLevel(action))
-            { Tell("Mở khóa ở màn " + OriginalConfig.BoosterUnlockLevel(action)); return false; }
+            { Tell("Unlocks at level " + OriginalConfig.BoosterUnlockLevel(action)); return false; }
             if (!CanAfford(action)) return false;
             if (action == "swap")
             {
                 bool changed = controller.SwapFrontRows();
                 if (changed) Pay(action);
-                Tell(changed ? "Đã đổi hai hàng đầu" : "Chưa có đủ hai hàng để đổi");
+                Tell(changed ? "Front rows swapped" : "Not enough rows to swap");
                 return changed;
             }
             if (action == "select")
             {
                 if (!controller.Game.Lanes.SelectMany(l=>l).Any(controller.Game.CanSelectPriority))
-                { Tell("Không có hộp phù hợp hoặc ô chờ đã đầy"); return false; }
+                { Tell("No suitable cube or the stash is full"); return false; }
                 PickerOpen = true; scroll = Vector2.zero; controller.BoosterInputBlocked = true;
                 return true;
             }
             if (action == "rocket")
             {
                 var choices = Enumerable.Range(0,controller.Game.Regions.Length).Where(i=>!controller.Game.Regions[i].InformationVisible).ToArray();
-                if (choices.Length == 0) { Tell("Đã hiện thông tin tất cả vùng"); return false; }
+                if (choices.Length == 0) { Tell("All areas revealed"); return false; }
                 Pay(action);
                 StartCoroutine(Reveal(choices[Random.Range(0, choices.Length)])); return true;
             }
@@ -167,7 +167,7 @@ namespace SandJamTest.Scene3D
                 yield return null;
             }
             if (controller.Game == game && game.RevealRegion(index))
-            { controller.Advance(0); Tell("Đã hiện màu · Vùng vẫn chờ mở khóa"); }
+            { controller.Advance(0); Tell("Color revealed · area still locked"); }
             if (rocket) Destroy(rocket);
             Busy = false; controller.BoosterInputBlocked = false; controller.SuppressInputThisFrame();
         }
@@ -176,8 +176,8 @@ namespace SandJamTest.Scene3D
         {
             if (!PickerOpen) return false;
             bool selected = controller.SelectPriority(shooter);
-            if (selected) { Pay("select"); Cancel(); Tell("Đã đưa hộp lên ô rót"); }
-            else Tell("Không thể đưa hộp này lên lúc này");
+            if (selected) { Pay("select"); Cancel(); Tell("Cube sent to the stash"); }
+            else Tell("This cube cannot be sent right now");
             return selected;
         }
         public void Cancel()
@@ -209,8 +209,8 @@ namespace SandJamTest.Scene3D
                 itemStyle = new GUIStyle(GUI.skin.button) { font=controller.InterfaceFont,fontSize=19,alignment=TextAnchor.MiddleLeft,padding=new RectOffset(68,12,8,8) };
                 infoStyle = new GUIStyle(titleStyle) {fontSize=17};
             }
-            GUI.Label(new Rect(25,180,433,45),"CHỌN HỘP VƯỢT LƯỢT",titleStyle);
-            GUI.Label(new Rect(30,232,423,62),"Chỉ chọn màu đang mở trên bảng.\nCặp nối cần hai ô chờ cạnh nhau.",infoStyle);
+            GUI.Label(new Rect(25,180,433,45),"PICK ANY CUBE",titleStyle);
+            GUI.Label(new Rect(30,232,423,62),"Only open colors can be picked.\nChained pairs need two free slots side by side.",infoStyle);
             var options = controller.Game.Lanes.SelectMany((lane,laneIndex)=>lane.Select((shooter,order)=>new { shooter,laneIndex,order })).Where(x=>controller.Game.Target(x.shooter)>=0).ToArray();
             scroll = GUI.BeginScrollView(new Rect(30,310,423,540),scroll,new Rect(0,0,397,options.Length*76));
             for (int i=0;i<options.Length;i++)
@@ -218,11 +218,11 @@ namespace SandJamTest.Scene3D
                 var option=options[i]; var box=new Rect(0,i*76,392,67);
                 GUI.color=new Color(.30f,.25f,.39f,1);GUI.DrawTexture(box,Texture2D.whiteTexture);GUI.color=Color.white;
                 GUI.enabled=controller.Game.CanSelectPriority(option.shooter);
-                if (GUI.Button(box,"Cột "+(option.laneIndex+1)+" · Hàng "+(option.order+1)+"\n"+DisplayAmount.Units(option.shooter.Ammo,controller.Game.Data.uiDivider)+" cát"+(option.shooter.Partner!=null?" · Cặp nối":""),itemStyle)) Choose(option.shooter);
+                if (GUI.Button(box,"Lane "+(option.laneIndex+1)+" · Row "+(option.order+1)+"\n"+DisplayAmount.Units(option.shooter.Ammo,controller.Game.Data.uiDivider)+" sand"+(option.shooter.Partner!=null?" · Chained":""),itemStyle)) Choose(option.shooter);
                 GUI.color=ColorFor(option.shooter.Color);GUI.DrawTexture(new Rect(12,i*76+12,43,43),Texture2D.whiteTexture);GUI.color=Color.white;
             }
             GUI.enabled=true;GUI.EndScrollView();
-            if(GUI.Button(new Rect(130,885,223,55),"Hủy")) Cancel();
+            if(GUI.Button(new Rect(130,885,223,55),"Cancel")) Cancel();
             GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.backgroundColor=oldBackground;
         }
     }

@@ -28,8 +28,8 @@ namespace SandJamTest.Scene3D
             SetText(OutlinedLabel(questOffer, "Quest title", new Vector3(0, 2.42f, -6.8f), .068f), "Sand Quest");
             Art(questOffer, "SandQuest/quest-Victory", new Vector3(0, .82f, -6.4f), 2.55f);
             questOfferTimer = TimerPill(questOffer, new Vector3(0, -.48f, -6.6f));
-            SetText(OutlinedLabel(questOffer, "Quest offer text", new Vector3(0, -1.08f, -6.8f), .03f), "Sand Quest đã bắt đầu! Thắng 10 màn\nđể hoàn thành thử thách!");
-            GreenButton(questOffer, -1.85f, "quest-start", "Bắt đầu");
+            SetText(OutlinedLabel(questOffer, "Quest offer text", new Vector3(0, -1.08f, -6.8f), .03f), "Sand Quest has started! Beat 10 levels\nto complete the challenge!");
+            GreenButton(questOffer, -1.85f, "quest-start", "Start");
             CloseX(questOffer, new Vector3(1.72f, 2.62f, -8.5f), "quest-close");
 
             // Journey screen.
@@ -38,14 +38,14 @@ namespace SandJamTest.Scene3D
             if (body.sprite) body.transform.localScale = new Vector3(MapWidth / body.sprite.bounds.size.x, MapHeight / body.sprite.bounds.size.y, 1);
             Art(questMap, "SandQuest/bg-sandQuest", new Vector3(0, 3.82f, -6.3f), MapWidth);
             SetText(OutlinedLabel(questMap, "Quest title", new Vector3(0, 4.62f, -6.8f), .07f), "Sand Quest");
-            Label(questMap, "Quest goal", new Vector3(0, 3.9f, -6.8f), "Thắng 10 màn để hoàn thành thử thách!", .03f, new Color(.85f, .45f, .12f));
-            questLevel = InfoPanel(questMap, new Vector3(-1.3f, 3.18f, -6.5f), "Màn");
-            questPlayers = InfoPanel(questMap, new Vector3(1.3f, 3.18f, -6.5f), "Người chơi");
+            Label(questMap, "Quest goal", new Vector3(0, 3.9f, -6.8f), "Beat 10 levels to complete the challenge!", .03f, new Color(.85f, .45f, .12f));
+            questLevel = InfoPanel(questMap, new Vector3(-1.3f, 3.18f, -6.5f), "Level");
+            questPlayers = InfoPanel(questMap, new Vector3(1.3f, 3.18f, -6.5f), "Players");
             questTimer = TimerPill(questMap, new Vector3(0, 2.42f, -6.6f));
             var sign = Art(questMap, "SandQuest/icon-signBoard", MapPoint(new Vector2(165, 800), -6.4f), 1.35f);
-            SetText(OutlinedLabel(questMap, "Grand prize", sign.transform.localPosition + new Vector3(-.02f, .12f, -.2f), .028f), "Giải lớn\n" + SandQuest.GrandPrize);
+            SetText(OutlinedLabel(questMap, "Grand prize", sign.transform.localPosition + new Vector3(-.02f, .12f, -.2f), .028f), "Grand Prize\n" + SandQuest.GrandPrize);
             var marker = Art(questMap, "SandQuest/frame-avatar-yellow", MapPoint(Stones[0], -6.6f), .62f);
-            SetText(OutlinedLabel(questMap, "You", marker.transform.localPosition + new Vector3(0, -.42f, -.1f), .03f), "BẠN");
+            SetText(OutlinedLabel(questMap, "You", marker.transform.localPosition + new Vector3(0, -.42f, -.1f), .03f), "YOU");
             questMap.Root.transform.Find("You").SetParent(marker.transform, true);
             questMarker = marker.transform;
             CloseX(questMap, new Vector3(2.3f, 4.62f, -8.5f), "quest-close");
@@ -66,7 +66,7 @@ namespace SandJamTest.Scene3D
             questResultPicture = Art(questResult, "SandQuest/quest-victory_2", new Vector3(0, .95f, -6.4f), 2.2f);
             questResultPrize = OutlinedLabel(questResult, "Result prize", new Vector3(0, -.45f, -6.8f), .06f);
             questResultBody = OutlinedLabel(questResult, "Result text", new Vector3(0, -1.08f, -6.8f), .03f);
-            GreenButton(questResult, -1.85f, "quest-claim", "Nhận");
+            GreenButton(questResult, -1.85f, "quest-claim", "Claim");
         }
 
         // A popup clone with only the dark backdrop, the coin counter and the green button group kept.
@@ -143,10 +143,10 @@ namespace SandJamTest.Scene3D
             questResultBand.sprite = won ? questVictoryBand : questFailureBand;
             // Original result art: open chest with cheering cubes / sad cubes in the rain.
             questResultPicture.sprite = Resources.Load<Sprite>(won ? "SandQuest/quest-victory_2" : "SandQuest/quest-Fail");
-            SetText(questResultTitle, won ? "Chiến thắng!" : "Thất bại");
+            SetText(questResultTitle, won ? "Victory!" : "Failed");
             SetText(questResultPrize, won ? "+" + SandQuest.Prize : "");
-            SetText(questResultBody, won ? "Bạn chia giải " + SandQuest.GrandPrize + " xu với\n" + (SandQuest.Players - 1) + " người chơi khác!" : "Bạn đã thua một màn hoặc hết giờ.\nHãy thử lại lần sau!");
-            Configure(questResult.RightButton, questResult.Right, "quest-claim", won ? "Nhận" : "OK");
+            SetText(questResultBody, won ? "You share the " + SandQuest.GrandPrize + " coins with\n" + (SandQuest.Players - 1) + " other players!" : "You lost a level or ran out of time.\nTry again next time!");
+            Configure(questResult.RightButton, questResult.Right, "quest-claim", won ? "Claim" : "OK");
             Show(questResult);
         }
 

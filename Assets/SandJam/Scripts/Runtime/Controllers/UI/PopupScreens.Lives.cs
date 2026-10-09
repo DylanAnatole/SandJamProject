@@ -33,13 +33,13 @@ namespace SandJamTest.Scene3D
             noLivesShine = Ui(noLives, "Lives/light", LivesCentre, LivesUnit, 0, 118, 387, 387, -6.4f).transform;
             Ui(noLives, "Lives/icon-heard-big-enabled", LivesCentre, LivesUnit, 0, 118, 287, 262, -6.5f);
             noLivesCount = OutlinedLabel(noLives, "Hearts left", LivesPos(0, 126, -6.7f), .09f);
-            SetText(OutlinedLabel(noLives, "Next life caption", LivesPos(0, -99, -6.6f), .042f), "Thời gian đến tim tiếp theo");
+            SetText(OutlinedLabel(noLives, "Next life caption", LivesPos(0, -99, -6.6f), .042f), "Time to next life");
             Ui(noLives, "Lives/bg-watch", LivesCentre, LivesUnit, 0, -216, 420, 102, -6.4f);
             Ui(noLives, "Lives/icon-watch", LivesCentre, LivesUnit, -164.7f, -211.4f, 95, 117, -6.5f);
             noLivesTimer = OutlinedLabel(noLives, "Next life timer", LivesPos(25.9f, -216, -6.6f), .042f);
             Ui(noLives, "Lives/button-purple", LivesCentre, LivesUnit, 5, -455, 596.3f, 213.3f, -6.4f);
             Ui(noLives, "Shop/icon-coin_1", LivesCentre, LivesUnit, -190, -446, 90, 90, -6.5f);
-            SetText(OutlinedLabel(noLives, "Refill label", LivesPos(30, -446, -6.6f), .048f), EconomyManager.RefillLivesPrice + " Hồi tim");
+            SetText(OutlinedLabel(noLives, "Refill label", LivesPos(30, -446, -6.6f), .048f), EconomyManager.RefillLivesPrice + " Refill");
             Hit(noLives, LivesPos(5, -455, -8.5f), new Vector2(596.3f * LivesUnit, 213.3f * LivesUnit), "refill-lives");
             noLivesInfo = OutlinedLabel(noLives, "Refill info", LivesPos(0, -600, -6.6f), .034f);
             // Red exit button anchored to the frame's top-right corner.
@@ -58,7 +58,7 @@ namespace SandJamTest.Scene3D
         void RefreshNoLives()
         {
             SetText(noLivesCount, LivesManager.Lives.ToString());
-            SetText(noLivesTimer, LivesManager.IsFull ? "Đầy" : LivesManager.Countdown(LivesManager.UntilNext));
+            SetText(noLivesTimer, LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext));
         }
         void UpdateNoLives()
         {

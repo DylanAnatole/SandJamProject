@@ -178,12 +178,12 @@ namespace SandJamTest.Scene3D
         }
         void RunShopAction(string action)
         {
-            if (action == "shop-iap") { ShopToast("Bản clone chưa có thanh toán thật"); return; }
+            if (action == "shop-iap") { ShopToast("Purchases are not available"); return; }
             var parts = action.Split(':'); // shop-buy:<booster|all>:<count>:<price>
             int count = int.Parse(parts[2]), price = int.Parse(parts[3]);
-            if (!EconomyManager.TrySpend(price, "shop:" + parts[1])) { ShopToast("Không đủ xu · cần " + price); return; }
+            if (!EconomyManager.TrySpend(price, "shop:" + parts[1])) { ShopToast("Not enough coins · need " + price); return; }
             foreach (var booster in parts[1] == "all" ? BoosterActions : new[] { parts[1] }) EconomyManager.AddBooster(booster, count, "shop");
-            ShopToast(parts[1] == "all" ? "+" + count + " mỗi loại booster" : "+" + count + " booster");
+            ShopToast(parts[1] == "all" ? "+" + count + " of each booster" : "+" + count + " booster");
             RefreshShopCoins();
         }
 

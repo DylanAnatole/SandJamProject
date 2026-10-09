@@ -32,7 +32,7 @@ namespace SandJamTest.Editor
             root.gameObject.AddComponent<FreezeMechanicSmoke>();
             foreach(var label in root.GetComponentsInChildren<TextMesh>(true))if(label.text=="Level 147")label.text="Ice Test";
             var screen=root.GetComponent<VideoScreen>();
-            var hint=Text("Freeze instruction","Đưa hộp lên: giảm 1 lớp băng",screen.Gameplay.transform,241,113,16,Hex("374B78"),-2,true);
+            var hint=Text("Freeze instruction","Send a cube: -1 ice layer",screen.Gameplay.transform,241,113,16,Hex("374B78"),-2,true);
             SetOverlayLayer(hint.transform);
         }
         [MenuItem("Sand Jam/Create freeze test scene")]

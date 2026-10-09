@@ -107,7 +107,11 @@ namespace SandJamTest
                 Slots[slot] = partnerLane < lane ? second : first;
                 Slots[slot + 1] = partnerLane < lane ? first : second;
             }
-            AdvanceFreeze(first.Partner == null ? 1 : 2);
+            bool pair = first.Partner != null;
+            AdvanceFreeze(pair ? 2 : 1);
+            // Original: the chain breaks once the pair reaches the stash; from then on the two cubes are
+            // independent (each pours, empties and leaves on its own).
+            if (pair) { first.Partner.Partner = null; first.Partner = null; }
             Moves++;
             Revision++;
             Evaluate();
