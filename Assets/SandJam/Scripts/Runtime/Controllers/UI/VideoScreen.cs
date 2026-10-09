@@ -37,6 +37,8 @@ namespace SandJamTest.Scene3D
             // Original "Superb!": the finished, zoomed-in picture stays visible through a translucent dark layer.
             var superbBackdrop=Celebration.transform.Find("Dark backdrop");
             if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;}}
+            var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
+            if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=Controller.InterfaceFont;fx.Build(superbTitle);}
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
             Feedback=gameObject.AddComponent<GameplayFeedbackController>();Feedback.Initialize(this);

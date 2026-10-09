@@ -102,6 +102,7 @@ namespace SandJamTest.Scene3D
                     var material = CharacterMaterial(style.Skin.sharedMaterial, spec.Value.ColorType);
                     style.Skin.sharedMaterials = Enumerable.Repeat(material, style.Skin.sharedMaterials.Length).ToArray();
                 }
+                if (!actor.GetComponent<CubeContactShadow>()) actor.gameObject.AddComponent<CubeContactShadow>().Actor = actor;
                 if (spec.Value.IsFreeze && !actor.GetComponent<CharacterFreezeView>()) AddFreezeShell(actor);
                 if (spec.Value.IsUnlocker) AddKey(actor);
                 var cover = actor.GetComponent<ReferenceQueueCover>();

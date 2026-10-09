@@ -212,6 +212,10 @@ namespace SandJamTest.Scene3D
             beforeStep=sand.Settled;
             stepTime+=delta;
             int steps=0;while(stepTime>=StepSeconds){stepTime-=StepSeconds;steps++;}
+            // Catch up when grains are queued behind the mouth, so the picture keeps pace with the pouring cube
+            // instead of trickling on long after it emptied.
+            int backlog=sand.Requested-sand.Emitted;
+            if(backlog>60) steps=Mathf.RoundToInt(steps*Mathf.Min(3f,1f+(backlog-60)/240f));
             sand.ScheduleSteps(steps);advancing=true;
         }
         public void FinishAdvance()

@@ -111,6 +111,8 @@ namespace SandJamTest.Scene3D
         {
             ConfigureFiveSlots();
             Application.targetFrameRate = 60;
+            // Smaller, more frequent shots (same 500 units/s) keep counters and the pile moving continuously.
+            if (ShotInterval > .03f) { float rate = AmmoPerShot / ShotInterval; ShotInterval = .02f; AmmoPerShot = Mathf.Max(1, Mathf.RoundToInt(rate * ShotInterval)); }
             FitCamera();
             sound = GetComponent<AudioSource>();
             var args = Environment.GetCommandLineArgs();
@@ -176,8 +178,12 @@ namespace SandJamTest.Scene3D
                 if (Physics.Raycast(GameCamera.ScreenPointToRay(Input.mousePosition), out hit, 100, 1 << 8))
                     SelectActor(hit.collider.GetComponentInParent<SceneActorView>());
             }
-            if (!paused) Advance(Mathf.Min(Time.unscaledDeltaTime, .1f) * (fast ? 2 : 1));
+            if (!paused) Advance(Mathf.Min(Time.unscaledDeltaTime, .1f) * (fast ? 2 : 1) * (EndgameRush ? 2 : 1));
         }
+
+        // Endgame rush: once every remaining cube is already in the stash there is nothing left to decide,
+        // so the rest of the level plays at double speed.
+        public bool EndgameRush { get { return Game != null && Game.State == GameState.Playing && Game.Lanes.All(l => l.Count == 0); } }
 
         void FitCamera()
         {
