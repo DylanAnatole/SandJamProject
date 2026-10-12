@@ -92,6 +92,8 @@ namespace SandJamTest
             {
                 string category = Collections.CategoryOf(first);
                 info.Name = category != null ? Collections.DisplayName(category) : "Collection " + index;
+                // A few later collections have flat cover art in the original (MakeUp_1, Perfumes_1, School_1).
+                if (category != null && Resources.Load<Sprite>("Gallery/flat-" + category) != null) info.Cover = "Gallery/flat-" + category;
             }
             string own = levels[(start - 1) % levels.Length];
             info.StyleRenderId = System.Text.RegularExpressions.Regex.Replace(own, "_Dupe$", "");

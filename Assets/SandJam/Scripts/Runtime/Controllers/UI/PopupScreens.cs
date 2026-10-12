@@ -542,26 +542,80 @@ namespace SandJamTest.Scene3D
             else { colour = Resources.Load<Sprite>("LevelRenders/" + info.RenderId); grey = Greyscale(colour); }
             if (!colour || !grey) return false;
             SetText(cardName, info.Name);
-            SetText(cardPercent, info.Percent(level) + "% Completed");
             var size = grey.bounds.size;
             float k = Mathf.Min(CoverWidth / size.x, CoverHeight / size.y);
             cardBw.sprite = grey; cardBw.transform.localScale = new Vector3(k, k, 1);
-            // Colour slice from the bottom up, proportional to the levels won in this collection.
-            float fraction = (float)info.Completed(level) / info.Count;
-            var rect = colour.textureRect;
-            cardColor.gameObject.SetActive(fraction > 0);
-            if (fraction > 0)
+            // Original: the colour cover sits exactly on the grey one and a hard horizontal edge rises from the
+            // previous completion to the new one (about 0.8 s, right after the card pops in).
+            cardColor.sprite = colour;
+            cardColor.transform.localScale = new Vector3(k * size.x / colour.bounds.size.x, k * size.y / colour.bounds.size.y, 1);
+            cardColor.transform.localPosition = new Vector3(0, CoverY, cardColor.transform.localPosition.z);
+            cardColor.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+            cardColor.gameObject.SetActive(true);
+            // Original: the picture sits in a rounded slot with a soft lavender rim.
+            if (!coverFrame)
             {
-                var slice = Sprite.Create(colour.texture, new Rect(rect.x, rect.y, rect.width, Mathf.Max(1, Mathf.Round(rect.height * fraction))), new Vector2(.5f, 0), colour.pixelsPerUnit);
-                runtimeArt.Add(slice);
-                cardColor.sprite = slice;
-                cardColor.transform.localScale = new Vector3(k * colour.bounds.size.x / size.x, k * colour.bounds.size.y / size.y, 1);
-                cardColor.transform.localPosition = new Vector3(0, CoverY - k * size.y / 2, cardColor.transform.localPosition.z);
+                coverFrame = Child<SpriteRenderer>(congrats, "Cover frame", new Vector3(0, CoverY, -6.5f));
+                coverFrame.sprite = RoundedFrame(); runtimeArt.Add(coverFrame.sprite); runtimeArt.Add(coverFrame.sprite.texture);
             }
+            const float rim = .06f;
+            coverFrame.transform.localScale = new Vector3((k * size.x + 2 * rim) / coverFrame.sprite.bounds.size.x, (k * size.y + 2 * rim) / coverFrame.sprite.bounds.size.y, 1);
+            if (!coverMask)
+            {
+                coverMask = Child<SpriteMask>(congrats, "Cover fill mask", new Vector3(0, 0, -6.45f));
+                var white = Texture2D.whiteTexture;
+                coverMask.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, 0), white.width);
+                runtimeArt.Add(coverMask.sprite);
+            }
+            coverBottom = CoverY - k * size.y / 2; coverWidth = k * size.x; coverHeight = k * size.y;
+            int completed = info.Completed(level);
+            fillTo = (float)completed / info.Count;
+            fillFrom = (float)Mathf.Max(0, completed - 1) / info.Count;
+            percentTo = info.Percent(level); percentFrom = info.Count == 0 ? 0 : 100 * Mathf.Max(0, completed - 1) / info.Count;
+            SetCoverFill(fillFrom, percentFrom);
             // The card replaces the Level Complete page (same depth); the next level loads right after it.
             screen.Result.SetActive(false);
             Show(congrats);
             return true;
+        }
+
+        SpriteRenderer coverFrame;
+        // Rim texture for a 3:4 picture: transparent inside, lavender rim, card-coloured corners outside the rounding.
+        static Sprite RoundedFrame()
+        {
+            const int w = 180, h = 236, border = 6; const float radius = 22;
+            var card = new Color(.89f, .93f, .99f, 1); var rimColor = new Color(.62f, .62f, .93f, 1); var edge = new Color(.45f, .44f, .8f, 1);
+            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var pixels = new Color[w * h];
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
+            {
+                // Signed distance to the rounded rectangle whose outer edge is the texture border.
+                float px = Mathf.Abs(x + .5f - w / 2f) - (w / 2f - radius), py = Mathf.Abs(y + .5f - h / 2f) - (h / 2f - radius);
+                float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - radius;
+                Color c;
+                if (d > 0) c = card;                                   // outside the rounding: hide the picture's corners
+                else if (d > -1.5f) c = edge;                          // thin darker outline
+                else if (d > -border) c = rimColor;                    // lavender rim
+                else c = Color.clear;                                  // the picture shows through
+                if (d > 0 && (x < 1 || y < 1 || x >= w - 1 || y >= h - 1)) c = card;
+                pixels[y * w + x] = c;
+            }
+            texture.SetPixels(pixels); texture.Apply(false, true);
+            return Sprite.Create(texture, new Rect(0, 0, w, h), new Vector2(.5f, .5f), 100);
+        }
+        SpriteMask coverMask; float coverBottom, coverWidth, coverHeight, fillFrom, fillTo; int percentFrom, percentTo, shownPercent = -1;
+        void SetCoverFill(float fraction, int percent)
+        {
+            coverMask.transform.localPosition = new Vector3(0, coverBottom, coverMask.transform.localPosition.z);
+            coverMask.transform.localScale = new Vector3(coverWidth * 1.02f, Mathf.Max(.0001f, coverHeight * fraction), 1);
+            if (percent != shownPercent) { shownPercent = percent; SetText(cardPercent, percent + "% Completed"); }
+        }
+        void UpdateCoverFill()
+        {
+            if (Open != congrats.Root || !coverMask) return;
+            float t = Mathf.Clamp01((Time.unscaledTime - shownAt - .3f) / .8f);
+            t = t * t * (3 - 2 * t);
+            SetCoverFill(Mathf.Lerp(fillFrom, fillTo, t), Mathf.RoundToInt(Mathf.Lerp(percentFrom, percentTo, t)));
         }
 
         // Grey copy of a level render (collections without a configured black-and-white cover).
@@ -754,6 +808,7 @@ namespace SandJamTest.Scene3D
             Open.transform.localScale = Vector3.one * s;
             FitBackdrop(Open, s);
             if (Open == intro.Root && introGif) intro.Icon.sprite = introGif.FrameAt(Time.unscaledTime - shownAt);
+            UpdateCoverFill();
             if (Open == congrats.Root && congratsRays) congratsRays.localRotation = Quaternion.Euler(0, 0, Time.unscaledTime * 12f);
             UpdateSandQuest();
             UpdateShop();

@@ -23,6 +23,7 @@ namespace SandJamTest
         // "WomenInArt" -> "Women In Art", "musicians" -> "Musicians".
         public static string DisplayName(string category)
         {
+            if (category == "MakeUp") return "Makeup"; // original card title
             var spaced = Regex.Replace(category.Replace("_", " "), @"(?<=[a-z])(?=[A-Z])", " ");
             return spaced.Length > 0 ? char.ToUpper(spaced[0]) + spaced.Substring(1) : spaced;
         }
