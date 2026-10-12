@@ -38,6 +38,7 @@ namespace SandJamTest.Scene3D
         public bool LoadNext()
         {
             if(!RecordCompletion())return false;
+            if(PlayedNumber>=Campaign.HomeAfterLevel){if(loading)return false;Campaign.OpenHome=true;return Reload(false);}
             return Reload(true);
         }
         public bool Retry(){return Reload(true);}

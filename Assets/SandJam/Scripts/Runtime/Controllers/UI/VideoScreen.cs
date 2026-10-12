@@ -194,6 +194,7 @@ namespace SandJamTest.Scene3D
             if(index>=0 && index+1<args.Length){smoke=true;Controller.enabled=false;StartCoroutine(Guard(Smoke(args[index+1]),args[index+1]));}
             // "Next" / "Retry" reload the scene straight into gameplay.
             else if(Campaign.SkipIntro){Campaign.SkipIntro=false;Play();}
+            else if(Campaign.OpenHome){Campaign.OpenHome=false;Show(Page.Home);}
         }
         IEnumerator Guard(IEnumerator routine,string folder)
         {

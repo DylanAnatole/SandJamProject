@@ -54,6 +54,11 @@ namespace SandJamTest
 
         // Set before reloading the scene so the next level opens straight into gameplay.
         public static bool SkipIntro;
+        // Set when a scene reload should land on the Home screen directly (no loading splash).
+        public static bool OpenHome;
+        // Original flow (recordings of levels 200-267): after a win the game goes back to the Home screen and the
+        // player taps PLAY for the next level. The first levels chain straight into the next one.
+        public const int HomeAfterLevel = 10;
         public static event Action Changed;
         public static void NotifyChanged() { if (Changed != null) Changed(); }
         static Campaign() { GameEvents.CoinsChanged += (balance, delta, reason) => NotifyChanged(); }
