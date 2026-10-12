@@ -41,6 +41,19 @@ namespace SandJamTest
             GameEvents.RaiseSettingsChanged();
         }
 
+        // Original "Speed Up" (rewarded video): the next heart arrives 15 minutes sooner.
+        public static readonly TimeSpan SpeedUpTime = TimeSpan.FromMinutes(15);
+        public static void SpeedUp()
+        {
+            Tick();
+            var d = SaveManager.Data;
+            if (d.lives >= Max) return;
+            d.nextLifeUtcTicks -= SpeedUpTime.Ticks;
+            Tick();
+            SaveManager.Save();
+            GameEvents.RaiseSettingsChanged();
+        }
+
         public static void Refill()
         {
             SaveManager.Data.lives = Max; SaveManager.Data.nextLifeUtcTicks = 0;

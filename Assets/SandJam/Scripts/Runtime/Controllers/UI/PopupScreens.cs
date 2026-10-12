@@ -64,6 +64,7 @@ namespace SandJamTest.Scene3D
             failed.Border.color = new Color(.86f, .16f, .2f); failed.Root.transform.Find("Gold header").GetComponent<SpriteRenderer>().color = new Color(.9f, .2f, .24f);
             failed.Icon.gameObject.SetActive(false);
             BuildHearts(failed);
+            foreach (Transform child in failed.RightButton.transform.parent) failedRightX[child] = child.localPosition.x;
             failed.Big.transform.localPosition += new Vector3(0, -.15f, 0); ScaleText(failed.Big, .62f);
             // Original timer row: stopwatch icon left of the countdown.
             var watch = Resources.Load<Sprite>("VideoUI/icon-watch");
@@ -75,6 +76,7 @@ namespace SandJamTest.Scene3D
             }
             SingleButton(failed);
             AddCloseButton(failed, "home");
+            BuildNoLivesButtons();
             // Collection card shown after a win (original "CONGRATS · Accessories · 90% Completed").
             BuildCongratsCard();
             BuildOutOfSpaceBanner();
@@ -191,8 +193,15 @@ namespace SandJamTest.Scene3D
         void RefreshHearts(bool justLost)
         {
             int lives = LivesManager.Lives;
+            var lost = Resources.Load<Sprite>("VideoUI/icon-heart-lost"); var full = Resources.Load<Sprite>("VideoUI/icon-heart-big");
             for (int i = 0; i < hearts.Length; i++)
-                hearts[i].color = i < lives ? Color.white : new Color(.32f, .18f, .62f);
+            {
+                // Original: spent hearts are the dark purple heart art, not a tinted red one.
+                bool have = i < lives;
+                hearts[i].sprite = have || !lost ? full : lost;
+                hearts[i].color = have || lost ? Color.white : new Color(.32f, .18f, .62f);
+                if (hearts[i].sprite) { float s = .52f / hearts[i].sprite.bounds.size.y; hearts[i].transform.localScale = new Vector3(s, s, 1); }
+            }
             bool show = justLost && lives < hearts.Length;
             lostHeartLabel.gameObject.SetActive(show);
             if (show) { var pos = hearts[lives].transform.localPosition; lostHeartLabel.transform.localPosition = new Vector3(pos.x, pos.y, -7.4f); }
@@ -351,10 +360,89 @@ namespace SandJamTest.Scene3D
             failed.Big.text = TimerText;
             RefreshHearts(justLost);
             bool canPlay = LivesManager.CanPlay;
-            // Original no-lives popup: "Refill 600" buys a full set of hearts; ✕ goes home.
-            if (!canPlay) Configure(failed.RightButton, failed.Right, "refill-lives", "Refill · " + EconomyManager.RefillLivesPrice, 7f);
+            LayoutNoLives(!canPlay);
+            // Original no-lives popup: "Speed Up" (video) and purple "Refill (coin) 600", a green Home button below.
+            if (!canPlay)
+            {
+                Configure(failed.LeftButton, failed.Left, "speed-up", "Speed Up", 7f);
+                Configure(failed.RightButton, failed.Right, "refill-lives", "Refill", 5f);
+            }
             else Configure(failed.RightButton, failed.Right, !noLives ? "retry" : "close-failed", !noLives ? "Try Again" : "Close", 9f);
             Show(failed);
+        }
+
+        // Two-button no-lives layout of the failed popup (Speed Up | Refill), built from the template's x2/Next.
+        readonly System.Collections.Generic.Dictionary<Transform, float> failedRightX = new System.Collections.Generic.Dictionary<Transform, float>();
+        GameObject failedHome, failedSpeedBadge, failedRefillPrice;
+        SpriteRenderer failedRightBody; Sprite failedGreen, failedPurple; Vector3 failedGreenScale;
+        void BuildNoLivesButtons()
+        {
+            var root = failed.Root.transform;
+            failedRightBody = failed.RightButton.transform.parent.GetComponentsInChildren<SpriteRenderer>(true).OrderByDescending(r => r.bounds.size.x * r.bounds.size.y).FirstOrDefault();
+            if (failedRightBody) { failedGreen = failedRightBody.sprite; failedGreenScale = failedRightBody.transform.localScale; }
+            failedPurple = Resources.Load<Sprite>("Lives/button-purple");
+            // TV badge on Speed Up.
+            var left = failed.LeftButton.transform.parent;
+            var leftBody = left.GetComponentsInChildren<SpriteRenderer>(true).OrderByDescending(r => r.bounds.size.x * r.bounds.size.y).FirstOrDefault();
+            // The x2 template already carries the coin stack and TV badge; Speed Up keeps only the TV and a centred label.
+            foreach (Transform child in left) if (child.name == "icon-coin-reward") Destroy(child.gameObject);
+            if (leftBody) { var lp = failed.Left.transform.position; lp.x = leftBody.bounds.center.x; failed.Left.transform.position = lp; }
+            var tv = left.Find("iconRW") ? null : Resources.Load<Sprite>("VideoUI/iconRW");
+            if (leftBody && tv)
+            {
+                var b = leftBody.bounds;
+                var badge = Child<SpriteRenderer>(failed, "Speed up badge", root.InverseTransformPoint(new Vector3(b.min.x + b.size.y * .1f, b.max.y - b.size.y * .02f, b.center.z)) + new Vector3(0, 0, -.4f));
+                badge.sprite = tv; badge.sortingOrder = leftBody.sortingOrder + 2;
+                badge.transform.localRotation = Quaternion.Euler(0, 0, 12);
+                float k = b.size.y * .62f / tv.bounds.size.y / Mathf.Max(.0001f, root.lossyScale.y); badge.transform.localScale = new Vector3(k, k, 1);
+                badge.transform.SetParent(left, true);
+                failedSpeedBadge = badge.gameObject;
+            }
+            // Price on the Refill button: coin + 600, children of the right group so they follow its layout.
+            var right = failed.RightButton.transform.parent;
+            var price = new GameObject("Refill price") { layer = failed.Root.layer };
+            price.transform.SetParent(right, false);
+            failedRefillPrice = price;
+            var coin = Resources.Load<Sprite>("VideoUI/icon-coin");
+            var at = failed.Right.transform.localPosition;
+            if (coin)
+            {
+                var c = new GameObject("Price coin") { layer = failed.Root.layer }.AddComponent<SpriteRenderer>();
+                c.transform.SetParent(price.transform, false); c.sprite = coin; c.sortingOrder = failed.Right.GetComponent<MeshRenderer>().sortingOrder;
+                c.transform.position = failed.Right.transform.position + root.right * .22f * root.lossyScale.x - root.forward * .01f;
+                float k = .24f * root.lossyScale.y / coin.bounds.size.y / Mathf.Max(.0001f, c.transform.parent.lossyScale.y); c.transform.localScale = new Vector3(k, k, 1);
+            }
+            var amount = Instantiate(failed.Right.gameObject, price.transform, true); amount.name = "Price amount";
+            foreach (var t in amount.GetComponentsInChildren<TextMesh>(true)) t.text = EconomyManager.RefillLivesPrice.ToString();
+            amount.transform.position = failed.Right.transform.position + root.right * .6f * root.lossyScale.x;
+            amount.transform.localScale *= .8f;
+            failedRightX[price.transform] = failedRightX.ContainsKey(failed.Right.transform) ? failedRightX[failed.Right.transform] : 0;
+            // Big green Home button under the card.
+            failedHome = Instantiate(right.gameObject, root, true); failedHome.name = "Failed home button";
+            foreach (Transform child in failedHome.transform) if (child.name == "Refill price") Destroy(child.gameObject);
+            // Its top sits just under the card's bottom edge.
+            var homeBody = failedHome.GetComponentsInChildren<SpriteRenderer>(true).OrderByDescending(r => r.bounds.size.x * r.bounds.size.y).FirstOrDefault();
+            if (homeBody) failedHome.transform.position += Vector3.up * (failed.Border.bounds.min.y - .1f * root.lossyScale.y - homeBody.bounds.max.y);
+            foreach (var t in failedHome.GetComponentsInChildren<TextMesh>(true)) t.text = "Home";
+            foreach (var button in failedHome.GetComponentsInChildren<VideoUiButton>(true)) button.Action = "home";
+            failedHome.SetActive(false);
+        }
+        void LayoutNoLives(bool noLivesLayout)
+        {
+            failed.LeftButton.transform.parent.gameObject.SetActive(noLivesLayout);
+            foreach (var pair in failedRightX)
+                if (pair.Key) pair.Key.localPosition = new Vector3(noLivesLayout ? pair.Value : 0, pair.Key.localPosition.y, pair.Key.localPosition.z);
+            if (failedRefillPrice) failedRefillPrice.SetActive(noLivesLayout);
+            if (failedHome) failedHome.SetActive(noLivesLayout);
+            // The label makes room for the price.
+            var label = failed.Right.transform; float x = failedRightX.ContainsKey(label) ? failedRightX[label] : 0;
+            label.localPosition = new Vector3(noLivesLayout ? x - .36f * Mathf.Abs(1 / Mathf.Max(.0001f, label.parent.lossyScale.x)) * failed.Root.transform.lossyScale.x : 0, label.localPosition.y, label.localPosition.z);
+            if (failedRightBody && failedPurple && failedGreen)
+            {
+                failedRightBody.sprite = noLivesLayout ? failedPurple : failedGreen;
+                var a = failedGreen.bounds.size; var b = failedRightBody.sprite.bounds.size;
+                failedRightBody.transform.localScale = new Vector3(failedGreenScale.x * a.x / b.x, failedGreenScale.y * a.y / b.y, failedGreenScale.z);
+            }
         }
 
         // Home PLAY with no hearts left: the big NO MORE LIVES popup (original canvas_nolives).
@@ -611,6 +699,11 @@ namespace SandJamTest.Scene3D
                     LivesManager.LoseLife();
                     if (screen.Levels) GameEvents.RaiseLevelLost(screen.Levels.PlayedNumber);
                     ShowFailed(true, false); return true;
+                case "speed-up":
+                    // No ads in the clone: the rewarded video is granted straight away.
+                    LivesManager.SpeedUp();
+                    if (LivesManager.CanPlay) ShowFailed(false, false); else failed.Big.text = TimerText;
+                    return true;
                 case "close-failed":
                     Close();
                     if (!failedIsNoLives) { gaveUp = false; screen.Feedback.GoHome(); }
