@@ -13,7 +13,7 @@ namespace SandJamTest.Scene3D
         // (the tuned colours above) or dark — backdrop, picture frame and lane banks are recoloured.
         static readonly string[] FrameParts = { "Solid board frame", "Raised board frame", "Tray top", "Tray bevel", "Extruded plinth" };
         static readonly string[] SideParts = { "Left lane bank", "Right booster bank", "Left solid rail", "Right solid rail", "Left rail top", "Right rail top", "Left lane rail", "Right booster rail" };
-        public float PadTilt = 55f, PadThickness = 1.8f;
+        public float PadTilt = 30f, PadThickness = 1f;
         public int ThemeIndex { get; private set; }
         Color top, middle, bottom;
         Camera filler;
@@ -98,8 +98,8 @@ namespace SandJamTest.Scene3D
                 var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y / Mathf.Cos(angle * Mathf.Deg2Rad), ls.z);
             }
         }
-        // Frame and stand read as one piece: the stand (plinth) is exactly as wide as the frame, flush with its
-        // sides, instead of a wider ledge with separate end blocks.
+        // Original stand (level 313): one flat slab in the frame colour, about 11% wider than the frame, the frame
+        // posts standing on it - no separate end blocks.
         void BuildFrameFeet(SandJamSceneController controller)
         {
             var renderers = controller.GetComponentsInChildren<Renderer>(true);
@@ -107,9 +107,13 @@ namespace SandJamTest.Scene3D
             var frame = renderers.FirstOrDefault(r => r.name == "Solid board frame");
             if (!plinth || !frame) return;
             var t = plinth.transform; var pb = plinth.bounds; var fb = frame.bounds;
-            float k = fb.size.x / Mathf.Max(.0001f, pb.size.x);
+            float k = fb.size.x * 1.11f / Mathf.Max(.0001f, pb.size.x);
             var ls = t.localScale; t.localScale = new Vector3(ls.x * k, ls.y, ls.z);
             t.position += new Vector3(fb.center.x - plinth.bounds.center.x, 0, 0);
+            // A bit deeper (top edge fixed, so it does not cover more of the picture): the frame posts end in it.
+            var before = plinth.bounds;
+            ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y * 1.3f, ls.z);
+            t.position += new Vector3(0, before.max.y - plinth.bounds.max.y, 0);
             var shadow = renderers.FirstOrDefault(r => r.name == "Plinth contact shadow");
             if (shadow) { var sl = shadow.transform.localScale; shadow.transform.localScale = new Vector3(sl.x * k, sl.y, sl.z); }
         }
@@ -142,7 +146,7 @@ namespace SandJamTest.Scene3D
             var r = go.AddComponent<SpriteRenderer>();
             var white = Texture2D.whiteTexture;
             r.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
-            r.color = Color.Lerp(tone, Color.black, .45f);
+            r.color = Color.Lerp(tone, Color.black, .12f); // close to the frame colour: the picture sits flush in the frame
             r.sortingOrder = board.sortingOrder - 1;
             go.transform.localScale = Vector3.one;
             var world = new Vector3(b.size.x + .14f, b.size.y + .14f, 1);
