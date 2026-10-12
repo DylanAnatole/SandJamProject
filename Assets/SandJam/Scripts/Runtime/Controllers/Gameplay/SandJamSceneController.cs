@@ -264,7 +264,6 @@ namespace SandJamTest.Scene3D
                     foreach (var shot in Game.Tick(AmmoPerShot, CanShoot))
                     {
                         if(Game.Regions[shot.Region].Data.ColorType!=shot.Color)throw new InvalidOperationException("Shot colour does not match receiving region");
-                        if (shooters[shot.Slot]) shooters[shot.Slot].NotePour(Regions[shot.Region].Target.position);
                         projectiles.Spawn(shooters[shot.Slot], Regions[shot.Region], shot.Color, shot.Slot);
                         GameEvents.RaiseSandPoured(shot.Color, shot.Amount, Mathf.Max(1, level.uiDivider));
                     }
