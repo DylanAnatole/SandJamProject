@@ -26,7 +26,7 @@ namespace SandJamTest.Scene3D
         public PopupScreens Popups { get; private set; }
         public enum Page { Loading,Home,Gameplay,Celebration,Result }
         public Page Current { get; private set; }
-        float elapsed, winPresentationTime; Vector3 fillScale,mascotPosition; bool smoke;
+        float elapsed, winPresentationTime, loadingTime=1.6f; Vector3 fillScale,mascotPosition; bool smoke;
         int transitionFrame,viewWidth,viewHeight;
         void Awake()
         {
@@ -128,9 +128,9 @@ namespace SandJamTest.Scene3D
             elapsed+=Time.unscaledDeltaTime;
             if(Current==Page.Loading)
             {
-                float progress=Mathf.Clamp01(elapsed/1.6f);LoadingFill.localScale=new Vector3(fillScale.x*progress,fillScale.y,fillScale.z);
+                float progress=Mathf.Clamp01(elapsed/loadingTime);LoadingFill.localScale=new Vector3(fillScale.x*progress,fillScale.y,fillScale.z);
                 var p=LoadingFill.localPosition;p.x=-1.625f*(1-progress);LoadingFill.localPosition=p;
-                if(elapsed>1.8f && !smoke)Show(Page.Home);
+                if(elapsed>loadingTime+.2f && !smoke)Show(Page.Home);
             }
             if(Current==Page.Home)
             {
@@ -194,7 +194,8 @@ namespace SandJamTest.Scene3D
             if(index>=0 && index+1<args.Length){smoke=true;Controller.enabled=false;StartCoroutine(Guard(Smoke(args[index+1]),args[index+1]));}
             // "Next" / "Retry" reload the scene straight into gameplay.
             else if(Campaign.SkipIntro){Campaign.SkipIntro=false;Play();}
-            else if(Campaign.OpenHome){Campaign.OpenHome=false;Show(Page.Home);}
+            // Original: after a win the SAND JAM splash shows for under a second, then Home.
+            else if(Campaign.OpenHome){Campaign.OpenHome=false;loadingTime=.6f;}
         }
         IEnumerator Guard(IEnumerator routine,string folder)
         {

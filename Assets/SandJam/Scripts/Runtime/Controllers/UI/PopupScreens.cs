@@ -602,6 +602,17 @@ namespace SandJamTest.Scene3D
                 t.text = text; t.characterSize = size * factor;
             }
         }
+        const float PopStart = .5f;
+        // The dimmed backdrop always covers the whole screen; only the card zooms.
+        void FitBackdrop(GameObject root, float scale)
+        {
+            var dim = root.transform.Find("Dark backdrop");
+            if (!dim) return;
+            Vector3 full;
+            if (!backdropScales.TryGetValue(dim, out full)) backdropScales[dim] = full = dim.localScale;
+            dim.localScale = full / Mathf.Max(.05f, scale);
+        }
+        readonly System.Collections.Generic.Dictionary<Transform, Vector3> backdropScales = new System.Collections.Generic.Dictionary<Transform, Vector3>();
         int LevelShown { get { return screen.Levels ? screen.Levels.PlayedNumber : Campaign.LevelNumber; } }
 
         void Show(Popup p)
@@ -612,7 +623,9 @@ namespace SandJamTest.Scene3D
             foreach (var label in p.Root.GetComponentsInChildren<TextMesh>(true))
                 if (label.name == "2040") label.text = Campaign.Coins.ToString();
             p.Root.SetActive(true);
-            p.Root.transform.localScale = Vector3.one * .85f;
+            bool fullPage = p == shop || p == gallery || p == questMap;
+            p.Root.transform.localScale = Vector3.one * (fullPage ? 1 : PopStart);
+            FitBackdrop(p.Root, fullPage ? 1 : PopStart);
             if (screen.Controller) screen.Controller.BoosterInputBlocked = true;
         }
 
@@ -732,10 +745,14 @@ namespace SandJamTest.Scene3D
             if (!screen.Feedback.FailureVisible) gaveUp = false;
             if (!Open) { UpdateOutOfSpaceBanner(); return; }
             if (Open == failed.Root && Time.frameCount % 15 == 0) failed.Big.text = TimerText;
-            // Pop-in scale like the reference popups.
-            float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / .22f);
-            float s = .85f + .15f * (1 + 2.2f * Mathf.Pow(t - 1, 3) + 1.2f * Mathf.Pow(t - 1, 2));
+            // Pop-in: the original popups zoom in from about half size with a small overshoot; the HARD / BONUS
+            // level cards grow more slowly (recording of level 260).
+            bool slow = Open == hard.Root || Open == bonus.Root;
+            bool page = Open == shop.Root || Open == gallery.Root || Open == questMap.Root;
+            float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / (slow ? .5f : .3f));
+            float s = page ? 1 : PopStart + (1 - PopStart) * (1 + 2.70158f * Mathf.Pow(t - 1, 3) + 1.70158f * Mathf.Pow(t - 1, 2));
             Open.transform.localScale = Vector3.one * s;
+            FitBackdrop(Open, s);
             if (Open == intro.Root && introGif) intro.Icon.sprite = introGif.FrameAt(Time.unscaledTime - shownAt);
             if (Open == congrats.Root && congratsRays) congratsRays.localRotation = Quaternion.Euler(0, 0, Time.unscaledTime * 12f);
             UpdateSandQuest();
