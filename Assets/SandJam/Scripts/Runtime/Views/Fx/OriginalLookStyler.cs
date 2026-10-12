@@ -13,7 +13,7 @@ namespace SandJamTest.Scene3D
         // (the tuned colours above) or dark — backdrop, picture frame and lane banks are recoloured.
         static readonly string[] FrameParts = { "Solid board frame", "Raised board frame", "Tray top", "Tray bevel", "Extruded plinth" };
         static readonly string[] SideParts = { "Left lane bank", "Right booster bank", "Left solid rail", "Right solid rail", "Left rail top", "Right rail top", "Left lane rail", "Right booster rail" };
-        public float PadTilt = 50f, PadThickness = 3.5f;
+        public float PadTilt = 55f, PadThickness = 1.8f;
         public int ThemeIndex { get; private set; }
         Color top, middle, bottom;
         Camera filler;
@@ -53,8 +53,33 @@ namespace SandJamTest.Scene3D
                         child.localRotation = Quaternion.Euler(PadTilt, 0, 0);
                         var ls = child.localScale; child.localScale = new Vector3(ls.x, ls.y, PadThickness);
                     }
+            EvenFrameBorder(controller);
             TiltLaneWalls(controller);
             BuildFrameFeet(controller);
+        }
+
+        // The frame mesh leaves a thinner border above the picture than at its sides. Stretch the frame (and its
+        // shadow) upward, bottom fixed, so the top border matches the side borders as in the original.
+        static readonly string[] FrameOutline = { "Solid board frame", "Raised board frame", "Frame shadow" };
+        void EvenFrameBorder(SandJamSceneController controller)
+        {
+            var board = controller.Board ? controller.Board.Renderer : null;
+            var frame = controller.GetComponentsInChildren<Renderer>(true).FirstOrDefault(f => f.name == "Solid board frame");
+            if (!board || !frame) return;
+            var b = board.bounds; var f0 = frame.bounds;
+            float side = ((b.min.x - f0.min.x) + (f0.max.x - b.max.x)) * .5f;
+            float extra = (b.max.y + side) - f0.max.y;
+            if (extra <= .005f) return;
+            foreach (var r in controller.GetComponentsInChildren<Renderer>(true))
+            {
+                if (System.Array.IndexOf(FrameOutline, r.name) < 0) continue;
+                var t = r.transform; var rb = r.bounds;
+                if (rb.size.y <= 0) continue;
+                float k = (rb.size.y + extra) / rb.size.y;
+                // Scale along the world-vertical axis of the part, keeping its bottom edge in place.
+                var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y * k, ls.z);
+                var nb = r.bounds; t.position += new Vector3(0, rb.min.y - nb.min.y, 0);
+            }
         }
 
         // The lane walls follow the same floor perspective as the cubes (SceneActorView.DepthOffset): their lower
