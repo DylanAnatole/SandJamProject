@@ -36,7 +36,9 @@ namespace SandJamTest.Scene3D
         Gait gait;
         float yaw;
         const float SlideSeconds=.24f, RunSpeed=4.6f, MinRun=.36f, MaxRun=.62f, ExitSeconds=.45f, ExitPause=.12f;
-        const float MaxYaw=38f, ExitYaw=90f, StepsPerSecond=7f, StepBob=.07f;
+        // No turning: the body is pitched toward the camera, so any yaw reads as a lopsided diamond. Cubes keep
+        // facing the camera and run sideways on their legs.
+        const float MaxYaw=0f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
         // The rig is pitched toward the camera, so turning happens around the body's own up axis
         // (rotating the root around world Y would roll the tilted body sideways).
         Transform pose; Quaternion poseBase; bool poseCaptured;
