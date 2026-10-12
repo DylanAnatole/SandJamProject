@@ -39,6 +39,7 @@ namespace SandJamTest.Scene3D
             if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;}}
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
             if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=Controller.InterfaceFont;fx.Build(superbTitle);}
+            gameObject.AddComponent<TextOutliner>();
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
             Feedback=gameObject.AddComponent<GameplayFeedbackController>();Feedback.Initialize(this);

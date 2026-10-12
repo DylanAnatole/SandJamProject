@@ -56,14 +56,23 @@ namespace SandJamTest.Scene3D
             BuildStashPicture(lose);
             lose.Caption.text = "Free Extra 1 Slot";
             SingleButton(lose);
-            Configure(lose.RightButton, lose.Right, "play-on", "Play on · " + PlayOnPrice, 7f);
+            Configure(lose.RightButton, lose.Right, "play-on", "Play on", 7f);
+            PriceTag(lose, PlayOnPrice);
             AddCloseButton(lose, "give-up");
             // Original "Level Failed!": red frame, hearts with the lost one marked -1, refill timer, Try Again.
             failed = Build("Level failed popup");
             failed.Border.color = new Color(.86f, .16f, .2f); failed.Root.transform.Find("Gold header").GetComponent<SpriteRenderer>().color = new Color(.9f, .2f, .24f);
             failed.Icon.gameObject.SetActive(false);
             BuildHearts(failed);
-            failed.Big.transform.localPosition += new Vector3(0, -.15f, 0); ScaleText(failed.Big, .5f);
+            failed.Big.transform.localPosition += new Vector3(0, -.15f, 0); ScaleText(failed.Big, .62f);
+            // Original timer row: stopwatch icon left of the countdown.
+            var watch = Resources.Load<Sprite>("VideoUI/icon-watch");
+            if (watch)
+            {
+                var w = Child<SpriteRenderer>(failed, "Timer watch", failed.Root.transform.InverseTransformPoint(failed.Big.transform.position) + new Vector3(-.95f, .02f, -.2f));
+                w.sprite = watch; float k = .42f / watch.bounds.size.y; w.transform.localScale = new Vector3(k, k, 1);
+                failed.Big.transform.position += failed.Root.transform.right * .25f * failed.Root.transform.lossyScale.x;
+            }
             SingleButton(failed);
             AddCloseButton(failed, "home");
             // Collection card shown after a win (original "CONGRATS · Accessories · 90% Completed").
@@ -195,7 +204,60 @@ namespace SandJamTest.Scene3D
             lostHeartLabel.gameObject.SetActive(show);
             if (show) { var pos = hearts[lives].transform.localPosition; lostHeartLabel.transform.localPosition = new Vector3(pos.x, pos.y, -7.4f); }
         }
-        string TimerText { get { return LivesManager.IsFull ? "Full" : "Next life: " + LivesManager.Countdown(LivesManager.UntilNext); } }
+        string TimerText { get { return LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext); } }
+
+        // Original "Play on (coin) 400": the label moves left, a coin and the price sit to its right.
+        void PriceTag(Popup p, int price)
+        {
+            var root = p.Root.transform;
+            var at = root.InverseTransformPoint(p.Right.transform.position);
+            p.Right.transform.position -= root.right * .45f * root.lossyScale.x;
+            var coin = Resources.Load<Sprite>("VideoUI/icon-coin");
+            if (coin)
+            {
+                var c = Child<SpriteRenderer>(p, "Price coin", at + new Vector3(.5f, .02f, -.3f));
+                c.sprite = coin; float k = .3f / coin.bounds.size.y; c.transform.localScale = new Vector3(k, k, 1);
+                c.sortingOrder = p.Right.GetComponent<MeshRenderer>().sortingOrder;
+            }
+            var label = Label(p, "Price", at + new Vector3(.98f, 0, -.3f), price.ToString(), p.Right.characterSize, Color.white);
+            label.GetComponent<MeshRenderer>().sortingOrder = p.Right.GetComponent<MeshRenderer>().sortingOrder;
+        }
+
+        // Original Out of Space shows the player's own stash: the gameplay camera is rendered once when the popup
+        // opens and the strip around the waiting slots is shown inside the panel.
+        Texture2D stashShot; SpriteRenderer stashPicture;
+        void CaptureStash()
+        {
+            var cam = screen.Controller.GameCamera;
+            var slots = screen.Controller.StashSlots;
+            if (!cam || slots == null || slots.Length == 0) return;
+            int w = 720, h = Mathf.RoundToInt(w * (float)cam.pixelHeight / Mathf.Max(1, cam.pixelWidth));
+            var rt = RenderTexture.GetTemporary(w, h, 24);
+            var previous = cam.targetTexture;
+            cam.targetTexture = rt; cam.Render(); cam.targetTexture = previous;
+            float middle = cam.WorldToViewportPoint(slots[slots.Length / 2].position).y;
+            float x0 = .04f, x1 = .96f;
+            int cw = Mathf.RoundToInt((x1 - x0) * w), ch = Mathf.RoundToInt(cw * .5f);
+            int y0 = Mathf.Clamp(Mathf.RoundToInt(middle * h) - Mathf.RoundToInt(ch * .6f), 0, h - ch);
+            if (!stashShot || stashShot.width != cw || stashShot.height != ch)
+            {
+                if (stashShot) Destroy(stashShot);
+                stashShot = new Texture2D(cw, ch, TextureFormat.RGB24, false) { name = "Out of space stash" };
+            }
+            var active = RenderTexture.active; RenderTexture.active = rt;
+            stashShot.ReadPixels(new Rect(Mathf.RoundToInt(x0 * w), y0, cw, ch), 0, 0); stashShot.Apply();
+            RenderTexture.active = active; RenderTexture.ReleaseTemporary(rt);
+            if (!stashPicture)
+            {
+                stashPicture = Child<SpriteRenderer>(lose, "Stash snapshot", new Vector3(0, .82f, -7.3f));
+                foreach (Transform child in lose.Root.transform)
+                    if (child.name.StartsWith("Stash picture")) child.gameObject.SetActive(false);
+            }
+            stashPicture.sprite = Sprite.Create(stashShot, new Rect(0, 0, cw, ch), new Vector2(.5f, .5f), 100);
+            float k = 2.7f / stashPicture.sprite.bounds.size.x;
+            stashPicture.transform.localScale = new Vector3(k, k, 1);
+        }
+
 
         // Original HARD LEVEL / BONUS LEVEL popups share one layout (Resources/HardLevel, Resources/BonusLevel):
         // crest on top (winged skull / coin cup), ribbon with the title art, level pill, mascot, one line of text
@@ -298,7 +360,7 @@ namespace SandJamTest.Scene3D
             bool canPlay = LivesManager.CanPlay;
             // Original no-lives popup: "Refill 600" buys a full set of hearts; ✕ goes home.
             if (!canPlay) Configure(failed.RightButton, failed.Right, "refill-lives", "Refill · " + EconomyManager.RefillLivesPrice, 7f);
-            else Configure(failed.RightButton, failed.Right, !noLives ? "retry" : "close-failed", !noLives ? "Try Again" : "Close");
+            else Configure(failed.RightButton, failed.Right, !noLives ? "retry" : "close-failed", !noLives ? "Try Again" : "Close", 9f);
             Show(failed);
         }
 
@@ -336,7 +398,7 @@ namespace SandJamTest.Scene3D
             }
             if (bannerShownAt < 0) bannerShownAt = Time.unscaledTime;
             float t = Time.unscaledTime - bannerShownAt;
-            if (t >= BannerTime) { banner.SetActive(false); Show(lose); return; }
+            if (t >= BannerTime) { banner.SetActive(false); CaptureStash(); Show(lose); return; }
             banner.SetActive(true);
             // Slides open horizontally, then holds.
             banner.transform.localScale = new Vector3(Mathf.SmoothStep(0, 1, t / .18f), 1, 1);
@@ -434,7 +496,7 @@ namespace SandJamTest.Scene3D
             runtimeArt.Add(texture); runtimeArt.Add(sprite);
             return sprite;
         }
-        void OnDestroy() { foreach (var o in runtimeArt) if (o) Destroy(o); }
+        void OnDestroy() { foreach (var o in runtimeArt) if (o) Destroy(o); if (stashShot) Destroy(stashShot); }
         static void FitIcon(SpriteRenderer icon, float height)
         {
             if (!icon.sprite) return;

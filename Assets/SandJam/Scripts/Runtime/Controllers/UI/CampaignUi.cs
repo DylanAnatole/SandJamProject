@@ -39,7 +39,7 @@ namespace SandJamTest.Scene3D
             foreach (Transform child in owner.Home.transform)
                 if (child.name.StartsWith("LV ")) child.gameObject.SetActive(false);
             var x2 = owner.Result.transform.Find("x2");
-            if (x2) { doubleButton = x2.gameObject; AddHit(x2, "double"); }
+            if (x2) { doubleButton = x2.gameObject; AddHit(x2, "double"); DecorateDouble(x2); }
             var hud = owner.Gameplay.transform.Find("HUD - visual controls only/Settings - UI only");
             if (hud) AddHit(hud, "settings");
             var badge = owner.Gameplay.transform.Find("HUD - visual controls only/Level badge");
@@ -61,6 +61,30 @@ namespace SandJamTest.Scene3D
             Refresh();
         }
         void OnDestroy() { Campaign.Changed -= Refresh; }
+
+        // Original x2 button: a coin stack on the left of "X2" and the rewarded-video TV badge on its top-left corner.
+        static void DecorateDouble(Transform x2)
+        {
+            var body = x2.GetComponentsInChildren<SpriteRenderer>(true).OrderByDescending(r => r.bounds.size.x * r.bounds.size.y).FirstOrDefault();
+            if (!body) return;
+            var b = body.bounds; float h = b.size.y;
+            var label = x2.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t => t.name != "Text outline");
+            float z = (label ? label.transform.position.z : b.center.z) - .02f;
+            if (label) { label.text = "X2"; label.transform.position += Vector3.right * b.size.x * .13f; }
+            Icon(x2, "VideoUI/icon-coin-reward", new Vector3(b.center.x - b.size.x * .2f, b.center.y + h * .02f, z), h * .78f, body.sortingOrder + 1, 0);
+            Icon(x2, "VideoUI/iconRW", new Vector3(b.min.x + h * .1f, b.max.y - h * .02f, z - .02f), h * .62f, body.sortingOrder + 2, 12);
+        }
+        static void Icon(Transform parent, string sprite, Vector3 position, float height, int order, float angle)
+        {
+            var art = Resources.Load<Sprite>(sprite);
+            if (!art) return;
+            var go = new GameObject(System.IO.Path.GetFileName(sprite)) { layer = parent.gameObject.layer };
+            go.transform.SetParent(parent, false);
+            go.transform.position = position; go.transform.rotation = Quaternion.Euler(0, 0, angle);
+            var r = go.AddComponent<SpriteRenderer>(); r.sprite = art; r.sortingOrder = order;
+            float s = height / art.bounds.size.y / Mathf.Max(.0001f, parent.lossyScale.y);
+            go.transform.localScale = new Vector3(s, s, 1);
+        }
 
         // Adds a UI-layer click area that covers every sprite under the target.
         static void AddHit(Transform target, string action)
