@@ -137,7 +137,7 @@ namespace SandJamTest.Scene3D
                 Mascot.localPosition=mascotPosition+new Vector3(Mathf.PingPong(elapsed*.4f,3),0,0);
                 Mascot.localRotation=Quaternion.Euler(0,(elapsed*.4f)%6<3?-70:70,0);
             }
-            if(Current==Page.Celebration && elapsed>2.2f && !smoke)Show(Page.Result);
+            if(Current==Page.Celebration && elapsed>SuperbFx.Duration && !smoke)Show(Page.Result);
             if(Current==Page.Gameplay && Controller.Game!=null)
             {
                 Status.text=Controller.Game.State==GameState.Lost?(Popups?"":"Out of Space · R: retry"):Boosters && !string.IsNullOrEmpty(Boosters.Message)?Boosters.Message:Controller.SelectionFeedback;

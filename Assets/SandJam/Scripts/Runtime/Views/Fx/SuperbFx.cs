@@ -11,13 +11,18 @@ namespace SandJamTest.Scene3D
         public Font Font;
         TextMesh original;
         readonly List<Transform> letters = new List<Transform>();
-        readonly List<float> letterBase = new List<float>();
+        readonly List<float> letterBase = new List<float>(), letterX = new List<float>();
+        float wordCentreX;
         Transform rays, glow;
         Vector3 raysScale;
         SpriteRenderer flash;
         ParticleSystem stars;
         float time;
         const float LetterDelay = .07f, LetterPop = .28f;
+        // Original: after about two seconds the word shrinks away just before the Level Complete card.
+        public const float OutroStart = 2.1f, OutroTime = .4f, Duration = OutroStart + OutroTime + .05f;
+        readonly List<SpriteRenderer> cornerGlows = new List<SpriteRenderer>();
+        bool cornersPlaced;
 
         public void Build(TextMesh title)
         {
@@ -58,10 +63,41 @@ namespace SandJamTest.Scene3D
             for (int i = 0; i < letters.Count; i++)
             {
                 letters[i].position = new Vector3(x + widths[i] / 2, centre.y, centre.z - .3f);
-                letterBase.Add(centre.y); x += widths[i] + gap;
+                letterBase.Add(centre.y); letterX.Add(x + widths[i] / 2); x += widths[i] + gap;
             }
+            wordCentreX = centre.x;
             foreach (var t in title.GetComponentsInChildren<MeshRenderer>(true)) t.enabled = false;
             stars = Stars(centre);
+            // Warm light in both bottom corners (original win screen), placed on screen once a camera is known.
+            var soft = SoftDot();
+            for (int i = 0; i < 2; i++) cornerGlows.Add(Sprite("Corner glow " + i, soft, centre + new Vector3(0, 0, .4f), 3.4f, new Color(1, .78f, .25f, 0)));
+        }
+        static Sprite softDot;
+        static Sprite SoftDot()
+        {
+            if (softDot) return softDot;
+            const int n = 64; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+            {
+                float d = Mathf.Clamp01(Vector2.Distance(new Vector2(x + .5f, y + .5f), new Vector2(n / 2f, n / 2f)) / (n / 2f));
+                t.SetPixel(x, y, new Color(1, 1, 1, (1 - d) * (1 - d)));
+            }
+            t.Apply();
+            softDot = UnityEngine.Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), n);
+            return softDot;
+        }
+        void PlaceCorners()
+        {
+            Camera cam = null;
+            foreach (var c in Camera.allCameras) if ((c.cullingMask & (1 << gameObject.layer)) != 0) { cam = c; break; }
+            if (!cam || cornerGlows.Count < 2) return;
+            float depth = Vector3.Dot(cornerGlows[0].transform.position - cam.transform.position, cam.transform.forward);
+            for (int i = 0; i < 2; i++)
+            {
+                var p = cam.ViewportToWorldPoint(new Vector3(i == 0 ? .04f : .96f, .1f, depth));
+                cornerGlows[i].transform.position = new Vector3(p.x, p.y, cornerGlows[i].transform.position.z);
+            }
+            cornersPlaced = true;
         }
 
         MeshRenderer Glyph(Transform parent, string c, Color color, Vector3 offset, float size, float z)
@@ -118,17 +154,27 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             time += Time.unscaledDeltaTime;
+            if (!cornersPlaced) PlaceCorners();
+            float outro = Mathf.Clamp01((time - OutroStart) / OutroTime);
+            float keep = 1 - outro * outro * (3 - 2 * outro);
+            for (int i = 0; i < cornerGlows.Count; i++)
+            {
+                float a = Mathf.Clamp01(time * 3) * (.75f + .15f * Mathf.Sin(time * 4 + i * 1.7f)) * keep;
+                cornerGlows[i].color = new Color(1, .78f, .25f, a);
+            }
             for (int i = 0; i < letters.Count; i++)
             {
                 float t = (time - i * LetterDelay) / LetterPop;
                 float s = t <= 0 ? 0 : t >= 1 ? 1 : 1 + 1.7f * Mathf.Sin(t * Mathf.PI) * (1 - t) + (t < .5f ? -(1 - t * 2) * .9f : 0);
-                letters[i].localScale = Vector3.one * Mathf.Max(0, s);
+                letters[i].localScale = Vector3.one * Mathf.Max(0, s) * keep;
                 // Gentle wave once settled.
                 float wave = time > 1 ? Mathf.Sin((time - 1) * 5f + i * .7f) * .04f : 0;
-                var p = letters[i].position; letters[i].position = new Vector3(p.x, letterBase[i] + wave, p.z);
+                // The whole word shrinks (letters close in on the centre), not each letter on its own.
+                var p = letters[i].position; letters[i].position = new Vector3(wordCentreX + (letterX[i] - wordCentreX) * keep, letterBase[i] + wave, p.z);
             }
             if (rays) { rays.localRotation = Quaternion.Euler(0, 0, time * 25f); rays.localScale = raysScale * Mathf.Min(1, .3f + time * 2.5f); }
-            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .45f * g); }
+            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .45f * g * keep); }
+            if (rays) rays.localScale *= Mathf.Max(.01f, keep);
             if (flash) { var c = flash.color; c.a = Mathf.Clamp01(.55f - time * 2.2f); flash.color = c; }
         }
     }
