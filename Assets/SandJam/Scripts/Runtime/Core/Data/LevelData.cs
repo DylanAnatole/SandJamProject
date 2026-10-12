@@ -19,7 +19,11 @@ namespace SandJamTest
         public string unlockerPartName;
         public string[] prerequests;
         public int[] rows, cols;
+        // Designer-placed counter position (isManualPosition): x from the grid centre, y from the bottom row,
+        // in gridSlotScale units per cell.
+        public Vec3 cnvPos;
     }
+    [Serializable] public struct Vec3 { public float x, y, z; }
     [Serializable] public sealed class LaneData { public CharacterData[] ColorAmmoDatas; }
     [Serializable] public sealed class CharacterData
     {

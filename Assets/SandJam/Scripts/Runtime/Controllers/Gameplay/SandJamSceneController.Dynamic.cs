@@ -44,7 +44,14 @@ namespace SandJamTest.Scene3D
                 views[i].LockMode = part.IsUnlockerPart;
                 var cell = LabelCell(part.rows, part.cols);
                 // Board texture sits at (-3.15, 0.4) in the board root with one cell per CellSize.
-                views[i].Counter.transform.localPosition = new Vector3(-3.15f + (cell.x + .5f) * SandBoardTextureView.CellSize, .4f + (cell.y + .5f) * SandBoardTextureView.CellSize, -.09f);
+                float gx = cell.x + .5f, gy = cell.y + .5f;
+                // Original: most counters are placed by hand in the level (e.g. on top of a ring, not inside it).
+                if (part.isManualPosition && data.gridSlotScale > 0)
+                {
+                    float mx = part.cnvPos.x / data.gridSlotScale + data.columnCount * .5f, my = part.cnvPos.y / data.gridSlotScale;
+                    if (mx >= 0 && mx <= data.columnCount && my >= 0 && my <= data.rowCount) { gx = mx; gy = my; }
+                }
+                views[i].Counter.transform.localPosition = new Vector3(-3.15f + gx * SandBoardTextureView.CellSize, .4f + gy * SandBoardTextureView.CellSize, -.09f);
             }
             Regions = views;
         }
