@@ -98,23 +98,20 @@ namespace SandJamTest.Scene3D
                 var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y / Mathf.Cos(angle * Mathf.Deg2Rad), ls.z);
             }
         }
-        // Original frame stand: raised end blocks ("feet") at both ends of the plinth.
+        // Frame and stand read as one piece: the stand (plinth) is exactly as wide as the frame, flush with its
+        // sides, instead of a wider ledge with separate end blocks.
         void BuildFrameFeet(SandJamSceneController controller)
         {
-            var plinth = controller.GetComponentsInChildren<Renderer>(true).FirstOrDefault(r => r.name == "Extruded plinth");
-            if (!plinth || plinth.transform.parent.Find("Frame foot")) return;
-            var b = plinth.bounds;
-            for (int side = -1; side <= 1; side += 2)
-            {
-                var foot = Instantiate(plinth.gameObject, plinth.transform.parent, true);
-                foot.name = "Frame foot";
-                var t = foot.transform; var ls = t.localScale;
-                float width = b.size.x * .06f;
-                t.localScale = new Vector3(ls.x * width / b.size.x, ls.y * 1.25f, ls.z * 1.04f);
-                t.position = new Vector3(b.center.x + side * (b.extents.x - width * .5f), b.center.y + b.size.y * .12f, plinth.transform.position.z - .02f);
-                var fr = foot.GetComponent<Renderer>();
-                if (fr && fr.sharedMaterial && fr.sharedMaterial.HasProperty("_Color")) fr.material.color = Color.Lerp(fr.sharedMaterial.color, Color.white, .12f);
-            }
+            var renderers = controller.GetComponentsInChildren<Renderer>(true);
+            var plinth = renderers.FirstOrDefault(r => r.name == "Extruded plinth");
+            var frame = renderers.FirstOrDefault(r => r.name == "Solid board frame");
+            if (!plinth || !frame) return;
+            var t = plinth.transform; var pb = plinth.bounds; var fb = frame.bounds;
+            float k = fb.size.x / Mathf.Max(.0001f, pb.size.x);
+            var ls = t.localScale; t.localScale = new Vector3(ls.x * k, ls.y, ls.z);
+            t.position += new Vector3(fb.center.x - plinth.bounds.center.x, 0, 0);
+            var shadow = renderers.FirstOrDefault(r => r.name == "Plinth contact shadow");
+            if (shadow) { var sl = shadow.transform.localScale; shadow.transform.localScale = new Vector3(sl.x * k, sl.y, sl.z); }
         }
 
         // Dark plate right behind the picture, slightly larger than it: the frame opening is a little wider than the
