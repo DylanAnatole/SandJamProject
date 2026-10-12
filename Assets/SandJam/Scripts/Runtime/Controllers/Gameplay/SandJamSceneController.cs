@@ -192,10 +192,18 @@ namespace SandJamTest.Scene3D
         {
             if (lastScreenWidth == Screen.width && lastScreenHeight == Screen.height) return;
             lastScreenWidth = Screen.width; lastScreenHeight = Screen.height;
-            float aspect = (float)Screen.width / Mathf.Max(1, Screen.height);
-            if (aspect > ViewAspect) { float width = ViewAspect / aspect; GameCamera.rect = new Rect((1-width)/2,0,width,1); }
-            else { float height = aspect / ViewAspect; GameCamera.rect = new Rect(0,(1-height)/2,1,height); }
-            GameCamera.aspect = ViewAspect;
+            FitView(GameCamera, (float)Screen.width / Mathf.Max(1, Screen.height), ViewAspect);
+        }
+        // Phones a little wider than the design aspect (e.g. 19.5:9 vs the 0.449 layout) use the whole screen and
+        // simply see a bit more of the backdrop at the sides; side bars used to show as pale strips at the edges.
+        // Much wider screens (tablets) keep the centred design box, narrower ones are letterboxed.
+        public const float MaxExtraWidth = 1.15f;
+        public static void FitView(Camera camera, float aspect, float target)
+        {
+            if (aspect > target && aspect <= target * MaxExtraWidth) { camera.rect = new Rect(0, 0, 1, 1); camera.aspect = aspect; return; }
+            if (aspect > target) { float width = target * MaxExtraWidth / aspect; camera.rect = new Rect((1 - width) / 2, 0, width, 1); camera.aspect = target * MaxExtraWidth; return; }
+            float height = aspect / target; camera.rect = new Rect(0, (1 - height) / 2, 1, height);
+            camera.aspect = target;
         }
 
         public bool SelectActor(SceneActorView actor)

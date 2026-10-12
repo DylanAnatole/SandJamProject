@@ -45,8 +45,10 @@ namespace SandJamTest.Scene3D
             for(int i=0;i<labels.Length;i++)
             {
                 bool main=labels[i]==Actor.AmmoLabel;
-                // Back rows: embossed look, a light tint of the block colour with a slightly darker edge.
-                labels[i].color=highlighted?labelColors[i]:main?Color.Lerp(color,Color.white,.62f):Color.Lerp(color,Color.black,.45f);
+                // Back rows: still white digits with a dark edge (only lightly tinted by the block colour), so the count
+                // stays readable on white, yellow and grey blocks too.
+                var ink=new Color(.17f,.12f,.3f);
+                labels[i].color=highlighted?labelColors[i]:main?Color.Lerp(Color.white,color,.18f)*new Color(.93f,.93f,.93f,1):Color.Lerp(ink,color,.2f);
             }
         }
     }

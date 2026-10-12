@@ -61,10 +61,21 @@ namespace SandJamTest.Scene3D
             Color tone = new Color(.37f, .29f, .5f);
             if (frame is SpriteRenderer) tone = ((SpriteRenderer)frame).color;
             else if (frame && frame.sharedMaterial && frame.sharedMaterial.HasProperty("_Color")) tone = frame.sharedMaterial.color;
+            // The frame mesh is modelled slightly off-centre (about 0.025 to the left); centre it on the picture so the
+            // opening is even on both sides.
+            if (frame)
+            {
+                float dx = board.bounds.center.x - frame.bounds.center.x;
+                foreach (var part in controller.GetComponentsInChildren<Renderer>(true))
+                    if (part.name == "Solid board frame" || part.name == "Raised board frame" || part.name == "Frame shadow")
+                        part.transform.position += new Vector3(dx, 0, 0);
+            }
             var go = new GameObject("Board backing") { layer = board.gameObject.layer };
             go.transform.SetParent(board.transform.parent, true);
             var b = board.bounds;
-            go.transform.position = new Vector3(b.center.x, b.center.y, b.max.z + .04f);
+            // Behind the frame, so it only fills gaps in the opening instead of covering the frame's inner lip.
+            float behind = frame ? frame.bounds.max.z + .02f : b.max.z + .04f;
+            go.transform.position = new Vector3(b.center.x, b.center.y, behind);
             var r = go.AddComponent<SpriteRenderer>();
             var white = Texture2D.whiteTexture;
             r.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);

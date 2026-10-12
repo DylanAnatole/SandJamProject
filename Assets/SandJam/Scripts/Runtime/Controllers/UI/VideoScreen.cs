@@ -122,9 +122,7 @@ namespace SandJamTest.Scene3D
             if(viewWidth!=Screen.width || viewHeight!=Screen.height)
             {
                 viewWidth=Screen.width;viewHeight=Screen.height;
-                float aspect=(float)viewWidth/Mathf.Max(1,viewHeight),target=Controller.ViewAspect;
-                Controller.GameCamera.rect=aspect>target?new Rect((1-target/aspect)*.5f,0,target/aspect,1):new Rect(0,(1-aspect/target)*.5f,1,aspect/target);
-                Controller.GameCamera.aspect=target;
+                SandJamSceneController.FitView(Controller.GameCamera,(float)viewWidth/Mathf.Max(1,viewHeight),Controller.ViewAspect);
             }
             if(Current==Page.Gameplay && !smoke && Time.frameCount>transitionFrame)Controller.enabled=true;
             elapsed+=Time.unscaledDeltaTime;
