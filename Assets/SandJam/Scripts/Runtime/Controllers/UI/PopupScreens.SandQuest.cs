@@ -41,14 +41,14 @@ namespace SandJamTest.Scene3D
             Label(questMap, "Quest goal", new Vector3(0, 3.9f, -6.8f), "Beat 10 levels to complete the challenge!", .03f, new Color(.85f, .45f, .12f));
             questLevel = InfoPanel(questMap, new Vector3(-1.3f, 3.18f, -6.5f), "Level");
             questPlayers = InfoPanel(questMap, new Vector3(1.3f, 3.18f, -6.5f), "Players");
-            questTimer = TimerPill(questMap, new Vector3(0, 2.42f, -6.6f));
-            var sign = Art(questMap, "SandQuest/icon-signBoard", MapPoint(new Vector2(165, 800), -6.4f), 1.35f);
+            questTimer = TimerPill(questMap, new Vector3(0, 2.22f, -6.6f)); // below the Level / Players panels
+            var sign = Art(questMap, "SandQuest/icon-signBoard", MapPoint(new Vector2(165, 880), -6.4f), 1.35f); // clear of the Level panel
             SetText(OutlinedLabel(questMap, "Grand prize", sign.transform.localPosition + new Vector3(-.02f, .12f, -.2f), .028f), "Grand Prize\n" + SandQuest.GrandPrize);
             var marker = Art(questMap, "SandQuest/frame-avatar-yellow", MapPoint(Stones[0], -6.6f), .62f);
             SetText(OutlinedLabel(questMap, "You", marker.transform.localPosition + new Vector3(0, -.42f, -.1f), .03f), "YOU");
             questMap.Root.transform.Find("You").SetParent(marker.transform, true);
             questMarker = marker.transform;
-            CloseX(questMap, new Vector3(2.3f, 4.62f, -8.5f), "quest-close");
+            CloseX(questMap, new Vector3(2.08f, 4.62f, -8.5f), "quest-close"); // fully on screen
             // Full-screen page: no green button or coin counter; the house on the left goes back home.
             questMap.RightButton.transform.parent.gameObject.SetActive(false);
             foreach (var name in new[] { "bg-currency", "button-plus_0", "icon-coin", "2040" })

@@ -9,7 +9,9 @@ namespace SandJamTest.Scene3D
     // Rules live in DailyRewards and TaskBoard (Managers).
     public sealed partial class PopupScreens
     {
-        const float PanelUnit = 4.55f / 1147f;      // original panel pixels → popup units
+        // Original panel pixels → popup units. At 100% the 1147-px panel plus its corner icon is wider than a
+        // phone screen, so the whole panel (art and text) is drawn at 90%.
+        const float PanelScale = .9f, PanelUnit = 4.55f * PanelScale / 1147f;
         const float PanelY = -.25f;                 // panel centre in the popup
         Popup rewardsPanel, tasksPanel;
         readonly List<GameObject> rewardsDynamic = new List<GameObject>(), tasksDynamic = new List<GameObject>();
@@ -27,6 +29,7 @@ namespace SandJamTest.Scene3D
         }
         TextMesh[] PanelText(Popup p, string text, float x, float y, float size, float z, List<GameObject> owner = null, bool outlined = true, Color? color = null)
         {
+            size *= PanelScale;
             var labels = outlined ? OutlinedLabel(p, "Panel text", PanelPos(x, y, z), size)
                                   : new[] { Label(p, "Panel text", PanelPos(x, y, z), text, size, color ?? Color.white) };
             SetText(labels, text);
@@ -140,12 +143,12 @@ namespace SandJamTest.Scene3D
             PanelHit(p, 418, 445.8f, 200, 200, "tasks-claim", d);
             PanelArt(p, "Frame", 313.9f, 529.8f, 142, 108, -6.55f, d);
             PanelText(p, board.stars.ToString(), 290, 535, .03f, -6.6f, d);
-            if (TaskBoard.HasUnclaimed(shownKind)) PanelText(p, "Tap the chest to claim!", 0, 352, .03f, -6.6f, d);
+            if (TaskBoard.HasUnclaimed(shownKind)) PanelText(p, "Tap the chest to claim!", 0, 372, .026f, -6.6f, d); // between the star bar and the timer
             // Task list.
             float listCentre = 254.5f - listH / 2;
             PanelArt(p, weekly ? "WeeklyTaskTaskBG" : "DailyTask_Task_BG", 0, listCentre, 1076, listH, -6.3f, d);
-            PanelArt(p, "Timer_Bg", 0, 300.5f, 330, 118, -6.4f, d);
-            tasksTimer = PanelText(p, Clock(TaskBoard.Remaining(shownKind)), 45, 296, .034f, -6.5f, d);
+            PanelArt(p, "Timer_Bg", 0, 290, 330, 110, -6.4f, d);
+            tasksTimer = PanelText(p, Clock(TaskBoard.Remaining(shownKind)), 45, 286, .034f, -6.5f, d);
             float pitch = (listH - 60) / rows, rowScale = Mathf.Min(1, pitch / 226.75f);
             for (int i = 0; i < rows; i++)
             {
@@ -159,14 +162,14 @@ namespace SandJamTest.Scene3D
                 PanelArt(p, "Frame 13", bx, y - 35 * rowScale, bw, bh, -6.45f, d);
                 float f = Mathf.Clamp01((float)progress / task.Target);
                 if (f > 0) PanelArt(p, "Frame 12", bx - bw / 2 + bw * f / 2, y - 35 * rowScale, bw * f, bh, -6.47f, d);
-                PanelText(p, done ? "XONG" : Short(progress) + "/" + Short(task.Target), bx, y - 37 * rowScale, .03f * Mathf.Max(.8f, rowScale), -6.5f, d, false, new Color(.85f, .3f, .1f));
+                PanelText(p, done ? "DONE" : Short(progress) + "/" + Short(task.Target), bx, y - 37 * rowScale, .03f * Mathf.Max(.8f, rowScale), -6.5f, d, false, new Color(.85f, .3f, .1f));
                 // (the original sprite names are swapped: "StarDisableSprite" is the gold star)
                 var star = PanelArt(p, "StarDisableSprite", 385, y + 22 * rowScale, 100 * rowScale, 100 * rowScale, -6.45f, d);
                 if (done) PanelArt(p, "icon-done", 430, y - 10 * rowScale, 70 * rowScale, 60 * rowScale, -6.48f, d);
                 PanelText(p, task.Stars.ToString(), 385, y - 55 * rowScale, .032f * Mathf.Max(.8f, rowScale), -6.5f, d);
             }
             // Daily / weekly tabs under the panel.
-            float tabY = top - panelH - 40;
+            float tabY = top - panelH - 85; // clear of the panel's bottom edge
             var dailyTab = PanelArt(p, "DailyTask_Slider_BG", -170, tabY, 330, 110, -6.25f, d);
             var weeklyTab = PanelArt(p, "WeeklyTask_LoaderBG", 170, tabY, 330, 110, -6.25f, d);
             (weekly ? dailyTab : weeklyTab).color = new Color(.75f, .75f, .8f);

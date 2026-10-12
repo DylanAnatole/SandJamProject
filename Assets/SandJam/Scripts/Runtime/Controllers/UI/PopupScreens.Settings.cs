@@ -34,15 +34,17 @@ namespace SandJamTest.Scene3D
             settingsCentre = inGame ? new Vector2(0, 130.75f) : new Vector2(0, 145.6f);
             settingsHeight = inGame ? 1221.7f : 1081.5f;
             Sized("Settings/bg-settings", 0, 0, 867.2f, settingsHeight, -6.2f);
-            Sized("Settings/SETTINGS", 0, Top(-112), 641, 111, -6.4f);
+            Sized("Settings/SETTINGS", 0, Top(-140), 641 * .92f, 111 * .92f, -6.4f); // inside the panel's top edge
             hapticKnob = SettingsRow(Top(-308.85f), "Vibration", "toggle-haptics", out hapticKnobText);
             soundKnob = SettingsRow(Top(-502.85f), "Sounds", "toggle-sound", out soundKnobText);
             float closeY = settingsHeight / 2 - (inGame ? 36.5f : 11f);
             Sized("Settings/ExitButton_0", 433.6f - 13, closeY, 93.6f, 103, -6.7f);
             settingsDynamic.Add(Hit(settings, Px(420.6f, closeY, -8.5f), new Vector2(.6f, .6f), "close"));
-            SettingsButton("Settings/button-white", Bottom(inGame ? 503.9f : 357), 600, 181, "Privacy Policy", "privacy", new Color(.2f, .2f, .38f));
-            SettingsButton("Settings/button-white", Bottom(inGame ? 343 : 178), 600, 190, "Restore Purchases", "restore", new Color(.2f, .2f, .38f));
-            if (inGame) SettingsButton("Settings/button-green", Bottom(157), 768, 244, "HOME", "home", Color.white);
+            // The button art fills its whole rect (no transparent margin as in the original prefab), so drawn at the
+            // original rect size neighbouring buttons touched / overlapped: draw them a bit smaller, same centres.
+            SettingsButton("Settings/button-white", Bottom(inGame ? 503.9f : 357), 600 * .9f, 181 * .82f, "Privacy Policy", "privacy", new Color(.2f, .2f, .38f));
+            SettingsButton("Settings/button-white", Bottom(inGame ? 343 : 178), 600 * .9f, 190 * .82f, "Restore Purchases", "restore", new Color(.2f, .2f, .38f));
+            if (inGame) SettingsButton("Settings/button-green", Bottom(157), 768 * .9f, 244 * .78f, "HOME", "home", Color.white);
             RefreshSettings();
             Show(settings);
         }
