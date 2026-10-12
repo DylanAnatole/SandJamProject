@@ -9,13 +9,15 @@ namespace SandJamTest.Scene3D
     {
         const float Front = -.45f; // towards the camera so effects draw over the board
         SandJamSceneController controller;
-        ParticleSystem dust, sparkle, puff;
+        ParticleSystem dust, sparkle, puff, voxels;
+        readonly List<Color> palette = new List<Color>();
+        readonly List<Bubble> flashes = new List<Bubble>();
         readonly List<Bubble> bubbles = new List<Bubble>();
         readonly Dictionary<SceneActorView, ActorState> actors = new Dictionary<SceneActorView, ActorState>();
         bool[] regionDone;
         SandGame lastGame;
         Material bubbleMaterial;
-        static Texture2D softDot, ring;
+        static Texture2D softDot, ring, voxel;
 
         sealed class ActorState { public int Ammo; public bool Departing, AtRest; public float Pulse; public Vector3 BaseScale; }
         sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Rim; public float Age, Life, Size; }
@@ -27,6 +29,12 @@ namespace SandJamTest.Scene3D
             dust = MakeSystem("Pour dust", softDot, 400, .35f, .05f, .12f);
             sparkle = MakeSystem("Region sparkles", softDot, 600, .9f, .05f, .14f);
             puff = MakeSystem("Character puffs", softDot, 300, .5f, .12f, .28f);
+            // Original region-complete shower: hundreds of tiny sand cubes in the level's colours pop up and fall.
+            voxels = MakeSystem("Region voxels", voxel, 1500, 1.3f, .05f, .1f);
+            var vm = voxels.main; vm.gravityModifier = .9f; vm.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
+            var vrot = voxels.rotationOverLifetime; vrot.enabled = true; vrot.z = new ParticleSystem.MinMaxCurve(-6, 6);
+            var vsize = voxels.sizeOverLifetime; vsize.size = new ParticleSystem.MinMaxCurve(1, AnimationCurve.Linear(0, 1, 1, .7f));
+            voxels.GetComponent<ParticleSystemRenderer>().sortingOrder = 31;
             bubbleMaterial = new Material(Shader.Find("Sprites/Default"));
         }
 
@@ -42,6 +50,15 @@ namespace SandJamTest.Scene3D
                 softDot.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(1 - d) * Mathf.Clamp01(1 - d)));
             }
             softDot.Apply();
+            // A little sand cube: solid colour with a darker rim.
+            voxel = new Texture2D(16, 16, TextureFormat.RGBA32, false) { name = "Fx voxel", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Point };
+            for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++)
+            {
+                bool rim = x < 2 || y < 2 || x > 13 || y > 13;
+                float shade = rim ? .62f : (x + y < 12 ? 1f : .9f);
+                voxel.SetPixel(x, y, new Color(shade, shade, shade, 1));
+            }
+            voxel.Apply();
             int m = n * 2;
             for (int y = 0; y < m; y++) for (int x = 0; x < m; x++)
             {
@@ -102,6 +119,7 @@ namespace SandJamTest.Scene3D
             RegionBursts(game);
             Characters(game, dt);
             AnimateBubbles(dt);
+            AnimateFlashes(dt);
         }
 
         void Reset(SandGame game)
@@ -112,7 +130,18 @@ namespace SandJamTest.Scene3D
             actors.Clear();
             foreach (var b in bubbles) if (b.Root) Destroy(b.Root.gameObject);
             bubbles.Clear();
-            dust.Clear(); sparkle.Clear(); puff.Clear();
+            dust.Clear(); sparkle.Clear(); puff.Clear(); voxels.Clear();
+            foreach (var f in flashes) if (f.Root) Destroy(f.Root.gameObject);
+            flashes.Clear();
+            palette.Clear();
+            foreach (var view in controller.Regions)
+            {
+                if (!view) continue;
+                Color sc = view.SolidColor;
+                float h, sat, val; Color.RGBToHSV(sc, out h, out sat, out val);
+                if (sat < .3f || val < .35f) continue; // greys, black and white would just look like dirt
+                if (!palette.Exists(c => Mathf.Abs(c.r - sc.r) + Mathf.Abs(c.g - sc.g) + Mathf.Abs(c.b - sc.b) < .05f)) palette.Add(sc);
+            }
         }
 
         float dustTimer;
@@ -144,6 +173,17 @@ namespace SandJamTest.Scene3D
                 var center = view.Counter ? view.Counter.transform.position : view.Target.position;
                 center.z = view.Board.transform.position.z + Front;
                 Color color = view.SolidColor;
+                // Original (recording, level 267): a bright white-cyan flash and a shower of little sand cubes in the
+                // level's colours that pop up and fall with gravity.
+                SpawnFlash(center);
+                for (int v = 0; v < 110; v++)
+                {
+                    // Recording: the cubes stay around the finished region, drifting up a little and falling back.
+                    float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad, speed = Random.Range(.3f, 1.6f);
+                    var vel = new Vector3(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed + .9f, 0);
+                    Color vc = palette.Count > 0 && v % 4 != 0 ? palette[Random.Range(0, palette.Count)] : (v % 8 == 0 ? Color.white : color);
+                    Emit(voxels, center + (Vector3)(Random.insideUnitCircle * .55f), vel, vc, Random.Range(.05f, .1f), Random.Range(.6f, 1f));
+                }
                 // Original: a few translucent bubbles pop over the finished region with coloured sparkles.
                 for (int b = 0; b < 5; b++)
                     SpawnBubble(center + (Vector3)(Random.insideUnitCircle * .55f), Random.Range(.5f, .85f), b * .07f);
@@ -153,6 +193,27 @@ namespace SandJamTest.Scene3D
                     Color sc = s % 3 == 0 ? Color.white : Color.Lerp(color, Color.white, Random.Range(0f, .35f));
                     Emit(sparkle, center + (Vector3)(Random.insideUnitCircle * .25f), new Vector3(dir.x, dir.y + .6f, 0), sc, Random.Range(.07f, .17f), Random.Range(.45f, .9f));
                 }
+            }
+        }
+
+        void SpawnFlash(Vector3 position)
+        {
+            var root = new GameObject("Completion flash").transform;
+            root.SetParent(transform, false); root.position = position + new Vector3(0, 0, -.02f);
+            var disc = root.gameObject.AddComponent<SpriteRenderer>();
+            disc.sprite = Sprite.Create(softDot, new Rect(0, 0, softDot.width, softDot.height), new Vector2(.5f, .5f), softDot.width);
+            disc.sharedMaterial = bubbleMaterial; disc.sortingOrder = 30;
+            flashes.Add(new Bubble { Root = root, Disc = disc, Age = 0, Life = .42f, Size = 2.6f });
+        }
+        void AnimateFlashes(float dt)
+        {
+            for (int i = flashes.Count - 1; i >= 0; i--)
+            {
+                var f = flashes[i]; f.Age += dt;
+                float t = f.Age / f.Life;
+                if (t >= 1) { if (f.Disc.sprite) Destroy(f.Disc.sprite); Destroy(f.Root.gameObject); flashes.RemoveAt(i); continue; }
+                f.Root.localScale = Vector3.one * f.Size * (.35f + .65f * (1 - (1 - t) * (1 - t)));
+                f.Disc.color = new Color(.9f, 1f, 1f, Mathf.Clamp01(t * 8) * (1 - t * t));
             }
         }
 
