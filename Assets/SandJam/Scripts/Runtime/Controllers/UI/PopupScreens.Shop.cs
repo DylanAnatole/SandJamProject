@@ -33,25 +33,29 @@ namespace SandJamTest.Scene3D
 
             // Bundles: coins + one row of boosters, green price button.
             // Store prices as shown in the Vietnamese store (recording 2026-10-08); the starter price was not visible.
-            Bundle(277, "Shop/bg-starterPack-shop", "Shop/bg-slot-starterPack-shop", "Starter Pack", 2500, 1, "299000 VND");
-            Bundle(474, "Shop/bg-smallBundle-shop", "Shop/bg-slot-smallBundle-shop", "Small Bundle", 5000, 2, "599000 VND");
-            Bundle(671, "Shop/bg-mediumBundle-shop", "Shop/bg-slot-smallBundle-shop", "Medium Bundle", 8000, 4, "999000 VND");
-            Bundle(868, "Shop/bg-largeBundle-shop", "Shop/bg-slot-smallBundle-shop", "Large Bundle", 12000, 6, "1199000 VND");
+            // Recording 2026-10-08: the list opens with REMOVE ADS (249000) and the No Ads Pack (499000).
+            RemoveAdsCard(250.5f);
+            NoAdsPack(419.5f);
+            const float D = 339.5f; // everything below moves down by the two no-ads cards
+            Bundle(277 + D, "Shop/bg-starterPack-shop", "Shop/bg-slot-starterPack-shop", "Starter Pack", 2500, 1, "299000 VND");
+            Bundle(474 + D, "Shop/bg-smallBundle-shop", "Shop/bg-slot-smallBundle-shop", "Small Bundle", 5000, 2, "599000 VND");
+            Bundle(671 + D, "Shop/bg-mediumBundle-shop", "Shop/bg-slot-smallBundle-shop", "Medium Bundle", 8000, 4, "999000 VND");
+            Bundle(868 + D, "Shop/bg-largeBundle-shop", "Shop/bg-slot-smallBundle-shop", "Large Bundle", 12000, 6, "1199000 VND");
 
             // Coin packs (reward_coin_preset).
-            SectionHeader(1013, "Shop/bg-coinSectionHeader-shop", "COINS");
+            SectionHeader(1013 + D, "Shop/bg-coinSectionHeader-shop", "COINS");
             int[] coins = { 500, 2500, 5000, 12500, 25000, 50000 };
             string[] prices = { "25000 VND", "75000 VND", "125000 VND", "249000 VND", "499000 VND", "999000 VND" }; // estimates
             for (int i = 0; i < coins.Length; i++)
-                CoinCell(new[] { 63f, 167f, 270f }[i % 3], i < 3 ? 1130 : 1298, "Shop/icon-coin" + (i + 1) + "-shop", coins[i], prices[i]);
+                CoinCell(new[] { 63f, 167f, 270f }[i % 3], i < 3 ? 1130 + D : 1298 + D, "Shop/icon-coin" + (i + 1) + "-shop", coins[i], prices[i]);
 
             // Boosters for coins and the booster bundle.
             // Recording: Flare x3 400, Swap x3 1300, Select x3 2000, all three x5 for 6000.
-            SectionHeader(1425, "Shop/bg-boosterSectionHeader-shop", "BOOSTERS");
+            SectionHeader(1425 + D, "Shop/bg-boosterSectionHeader-shop", "BOOSTERS");
             int[] boosterPrices = { 400, 1300, 2000 };
-            for (int i = 0; i < 3; i++) BoosterCell(new[] { 63f, 167f, 270f }[i], 1542, i, 3, boosterPrices[i]);
-            BigBoosterBundle(1720, 5, 6000);
-            shopScrollMax = Mathf.Max(0, (1820 - 185) * ShopUnit - (ShopTop + 3.9f)); // list ends above the navbar
+            for (int i = 0; i < 3; i++) BoosterCell(new[] { 63f, 167f, 270f }[i], 1542 + D, i, 3, boosterPrices[i]);
+            BigBoosterBundle(1720 + D, 5, 6000);
+            shopScrollMax = Mathf.Max(0, (1820 + D - 185) * ShopUnit - (ShopTop + 3.9f)); // list ends above the navbar
 
             // Fixed header drawn over the scrolling list.
             // Fixed SAND SHOP header under the Home top bar, drawn over the scrolling list.
@@ -97,6 +101,30 @@ namespace SandJamTest.Scene3D
             ShopHit(x, y, w, 40, action);
         }
 
+        void RemoveAdsCard(float y)
+        {
+            ShopArt("Shop/bg-NoAds-shop", 168, y, 300 * ShopUnit, -6.3f, shopContent);
+            ShopArt("Shop/icon-noAds", 55, y - 12, 62 * ShopUnit, -6.5f, shopContent);
+            ShopText("REMOVE ADS", 190, y - 40, .04f, -6.6f, true, Color.white);
+            ShopText("Have more fun without advertisements", 190, y - 17, .022f, -6.6f, true, Color.white);
+            PriceButton(190, y + 30, 135, "249000 VND", "shop-iap", false);
+        }
+        void NoAdsPack(float y)
+        {
+            ShopArt("Shop/bg-NoAdsPack-shop", 168, y, 300 * ShopUnit, -6.3f, shopContent);
+            ShopText("No Ads Pack", 168, y - 74, .04f, -6.6f, true, Color.white);
+            ShopArt("Shop/icon-noAds", 55, y - 20, 62 * ShopUnit, -6.5f, shopContent);
+            ShopArt("Shop/bg-slot-noAdsPack-shop_0", 203, y - 21, 197 * ShopUnit, -6.4f, shopContent);
+            ShopArt("Shop/icon-coin_1", 128, y - 27, 30 * ShopUnit, -6.5f, shopContent);
+            ShopText("1000", 128, y - 4, .026f, -6.6f, true, Color.white);
+            for (int i = 0; i < 3; i++)
+            {
+                float x = 173 + i * 44;
+                ShopArt(BoosterIcons[i], x, y - 27, 32 * ShopUnit, -6.5f, shopContent);
+                ShopText("x3", x + 4, y - 6, .027f, -6.6f, true, Color.white);
+            }
+            PriceButton(167, y + 53, 135, "499000 VND", "shop-iap", false);
+        }
         void Bundle(float y, string card, string slot, string title, int coins, int each, string price)
         {
             ShopArt(card, 168, y, 300 * ShopUnit, -6.3f, shopContent);
