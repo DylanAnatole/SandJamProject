@@ -34,7 +34,7 @@ namespace SandJamTest.Scene3D
         public int StepCount {get{return state[8];}}
         // Column and row the stream currently falls from.
         public int MouthX {get{return state[9];}}
-        public int MouthY {get{int c=topCell[state[9]];return c<0?InletY:Rows[c];}}
+        public int MouthY {get{return state[10];}}
         public BurstSandSimulation(int[] sourceRows,int[] sourceCols):this(sourceRows,sourceCols,false){}
         internal BurstSandSimulation(int[] sourceRows,int[] sourceCols,bool runManaged)
         {
@@ -45,9 +45,9 @@ namespace SandJamTest.Scene3D
             cellAt=new NativeArray<int>(layout.CellAt,Allocator.Persistent);
             spawns=new NativeArray<int>(layout.Spawns,Allocator.Persistent);
             seep=new NativeArray<int>(layout.SeepOrder,Allocator.Persistent);
-            state=new NativeArray<int>(10,Allocator.Persistent);
+            state=new NativeArray<int>(11,Allocator.Persistent);
             topCell=new NativeArray<int>(layout.TopCell,Allocator.Persistent);minX=layout.MinX;maxX=layout.MaxX;
-            state[9]=InletX;
+            state[9]=InletX;state[10]=InletY;
             // Deterministic seed so replays and editor checks are reproducible.
             state[5]=unchecked((int)(0x9E3779B9u^(uint)(Rows.Length*7919+InletX*131+InletY)));if(state[5]==0)state[5]=1;
             Filled=new NativeArray<byte>(Rows.Length,Allocator.Persistent);
@@ -97,7 +97,7 @@ namespace SandJamTest.Scene3D
             if(disposed)return;CompleteSteps();disposed=true;
             SettleStep.Dispose();topCell.Dispose();rows.Dispose();cols.Dispose();cellAt.Dispose();spawns.Dispose();seep.Dispose();state.Dispose();Filled.Dispose();Moving.Dispose();occupied.Dispose();
         }
-        // State: 0 emitted, 1 settled, 2 requested, 3 moving count, 4 burst flag, 5 rng, 6 seep cursor, 7 next grain id, 8 step count, 9 mouth column
+        // State: 0 emitted, 1 settled, 2 requested, 3 moving count, 4 burst flag, 5 rng, 6 seep cursor, 7 next grain id, 8 step count, 9 mouth column, 10 mouth row
         [BurstCompile(CompileSynchronously=true)]
         public struct StepJob : IJob
         {
@@ -151,34 +151,30 @@ namespace SandJamTest.Scene3D
                         Filled[dest]=1;SettleStep[dest]=State[8];State[1]++;
                     }
                     State[3]=write;
-                    // Pour new grains through every free mouth cell.
-                    // Original: one fixed pour column (top-centre of the region). When that column is full the
-                    // nearest open column takes over.
-                    int range=MaxX-MinX;
-                    int target=InletX;
-                    bool mouthBuried=true;int chosen=-1;
-                    for(int d=0;d<=range && chosen<0;d++)
-                        for(int sgn=-1;sgn<=1 && chosen<0;sgn+=2)
+                    // Pour point follows the sand surface (original): the stream drops from the top of the vertical
+                    // run that holds the next empty cell, so the grain lands where the sand is being laid. Grains
+                    // still in flight have already claimed the first empty cells of the fill order.
+                    while(State[6]<Seep.Length && Filled[Seep[State[6]]]!=0)State[6]++;
+                    int next=-1,skip=State[3];
+                    for(int k=State[6];k<Seep.Length;k++)
+                    {
+                        int c=Seep[k];if(Filled[c]!=0)continue;
+                        if(skip>0){skip--;continue;}
+                        next=c;break;
+                    }
+                    if(next<0)for(int k=State[6];k<Seep.Length;k++){int c=Seep[k];if(Filled[c]==0){next=c;break;}}
+                    if(next>=0)
+                    {
+                        int x=Cols[next],y=Rows[next];
+                        while(Cell(x,y+1)>=0 && Filled[Cell(x,y+1)]==0)y++;
+                        int spawn=Cell(x,y);
+                        State[9]=x;State[10]=y;
+                        if(State[0]<State[2] && Occupied[spawn]==0)
                         {
-                            int x=target+d*sgn;if(x<MinX || x>MaxX)continue;
-                            int cell=TopCell[x];if(cell<0 || Filled[cell]!=0)continue;
-                            mouthBuried=false;
-                            if(Occupied[cell]==0)chosen=cell;
+                            Occupied[spawn]=1;State[0]++;
+                            Moving[State[3]++]=new SandPourSimulation.Grain{Index=State[7]++,X=x,Y=y,Speed=1,Dir=0};
                         }
-                    if(chosen<0)for(int x=MinX;x<=MaxX && mouthBuried;x++){int cell=TopCell[x];if(cell>=0 && Filled[cell]==0)mouthBuried=false;}
-                    if(chosen>=0){State[9]=Cols[chosen];
-                        if(State[0]<State[2]){Occupied[chosen]=1;State[0]++;
-                            Moving[State[3]++]=new SandPourSimulation.Grain{Index=State[7]++,X=Cols[chosen],Y=Rows[chosen],Speed=1,Dir=0};}}
-                    // Mouth is buried: remaining grains settle into unreachable pockets, lowest first.
-                    if(mouthBuried)
-                        for(int k=0;k<SeepPerStep && State[0]<State[2];k++)
-                        {
-                            while(State[6]<Seep.Length && Filled[Seep[State[6]]]!=0)State[6]++;
-                            int cell=-1;
-                            for(int q=State[6];q<Seep.Length;q++)if(Filled[Seep[q]]==0 && Occupied[Seep[q]]==0){cell=Seep[q];break;}
-                            if(cell<0)break;
-                            Occupied[cell]=1;Filled[cell]=1;SettleStep[cell]=State[8];State[0]++;State[1]++;State[7]++;
-                        }
+                    }
                 }
             }
         }
