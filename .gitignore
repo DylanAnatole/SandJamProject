@@ -43,6 +43,7 @@ Thumbs.db
 /Assets/SandJam/Resources/*.meta
 !/Assets/SandJam/Resources/*.shader.meta
 !/Assets/SandJam/Resources/Inter.ttf.meta
+!/Assets/SandJam/Resources/LilitaOne-Regular.ttf.meta
 /Assets/SandJam/Resources/Tutorial.json
 /recovered-assets-*.log
 # Data derived from the original levels/art: region meshes, picture previews, level JSON copies,

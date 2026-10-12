@@ -38,12 +38,13 @@ namespace SandJamTest.Scene3D
             var superbBackdrop=Celebration.transform.Find("Dark backdrop");
             if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;}}
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
-            if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=Controller.InterfaceFont;fx.Build(superbTitle);}
+            if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=UiFont.Font?UiFont.Font:Controller.InterfaceFont;fx.Build(superbTitle);}
             gameObject.AddComponent<TextOutliner>();
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
             Feedback=gameObject.AddComponent<GameplayFeedbackController>();Feedback.Initialize(this);
             if(Levels){Ui=gameObject.AddComponent<CampaignUi>();Ui.Initialize(this);Popups=gameObject.AddComponent<PopupScreens>();Popups.Initialize(this);}
+            UiFont.ApplyAll();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--booster-smoke") >= 0) gameObject.AddComponent<BoosterSmoke>();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--feeling-smoke") >= 0) gameObject.AddComponent<FeelingSmoke>();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--october-smoke") >= 0) gameObject.AddComponent<OctoberVideoSmoke>();

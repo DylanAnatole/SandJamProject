@@ -159,14 +159,7 @@ namespace SandJamTest.Scene3D
             var border = p.Border;
             var corner = new Vector3(border.bounds.max.x - .12f, border.bounds.max.y - .12f, 0);
             var local = p.Root.transform.InverseTransformPoint(corner); local.z = -8.5f;
-            var panel = Child<SpriteRenderer>(p, "Close button", local);
-            panel.sprite = p.Ribbon.sprite; panel.color = new Color(.92f, .16f, .2f);
-            float s = .5f / Mathf.Max(.01f, panel.sprite.bounds.size.y);
-            panel.transform.localScale = new Vector3(s * panel.sprite.bounds.size.y / Mathf.Max(.01f, panel.sprite.bounds.size.x), s, 1);
-            Label(p, "Close X", local + new Vector3(0, 0, -.2f), "X", .06f, Color.white);
-            var hit = Child<BoxCollider>(p, "Hit area - " + action, local + new Vector3(0, 0, -.5f));
-            hit.gameObject.layer = 9; hit.size = new Vector3(.6f, .6f, .2f);
-            hit.gameObject.AddComponent<VideoUiButton>().Action = action;
+            CloseX(p, local, action);
         }
         // Mini stash: five white pads plus a green sixth one, like the reference illustration.
         void BuildStashPicture(Popup p)

@@ -9,6 +9,9 @@ namespace SandJamTest.Scene3D
         {
             var target = transform.parent;
             if (!target) return;
+            // Full-screen "tap anywhere" areas don't bounce anything.
+            var box = GetComponent<BoxCollider>();
+            if (box && Mathf.Abs(box.size.x * transform.lossyScale.x) > 4) return;
             var press = target.GetComponent<ButtonPress>();
             if (!press) press = target.gameObject.AddComponent<ButtonPress>();
             press.Play();

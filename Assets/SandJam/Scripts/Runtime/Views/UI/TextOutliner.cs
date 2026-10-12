@@ -13,13 +13,23 @@ namespace SandJamTest.Scene3D
         float nextScan;
         readonly HashSet<TextMesh> seen = new HashSet<TextMesh>();
 
+        // Board counters and cube numbers live outside the UI screens; they are switched to the UI font when a
+        // level starts (and once at startup).
+        bool fontPass = true;
+        void OnEnable() { GameEvents.LevelStarted += OnLevel; }
+        void OnDisable() { GameEvents.LevelStarted -= OnLevel; }
+        void OnLevel(int level) { fontPass = true; }
+
         void LateUpdate()
         {
+            if (fontPass) { fontPass = false; UiFont.ApplyAll(); }
             if (Time.unscaledTime < nextScan) return;
             nextScan = Time.unscaledTime + Rescan;
             foreach (var label in GetComponentsInChildren<TextMesh>(false))
             {
-                if (!seen.Add(label) || !Eligible(label)) continue;
+                if (!seen.Add(label)) continue;
+                UiFont.Apply(label);
+                if (!Eligible(label)) continue;
                 label.gameObject.AddComponent<OutlinedText>();
             }
         }

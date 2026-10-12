@@ -88,13 +88,23 @@ namespace SandJamTest.Scene3D
         void CloseX(Popup p, Vector3 local, string action)
         {
             var panel = Child<SpriteRenderer>(p, "Close button", local);
-            panel.sprite = p.Ribbon.sprite; panel.color = new Color(.92f, .16f, .2f);
-            float s = .5f / Mathf.Max(.01f, panel.sprite.bounds.size.y);
-            panel.transform.localScale = new Vector3(s * panel.sprite.bounds.size.y / Mathf.Max(.01f, panel.sprite.bounds.size.x), s, 1);
-            Label(p, "Close X", local + new Vector3(0, 0, -.2f), "X", .06f, Color.white);
+            // Original glossy red button with a white rim and cross (button-exit); drawn fallback otherwise.
+            var art = Resources.Load<Sprite>("VideoUI/button-exit-v2");
+            if (art) { panel.sprite = art; float k = .62f / art.bounds.size.y; panel.transform.localScale = new Vector3(k, k, 1); }
+            else
+            {
+                panel.sprite = p.Ribbon.sprite; panel.color = new Color(.92f, .16f, .2f);
+                float s = .5f / Mathf.Max(.01f, panel.sprite.bounds.size.y);
+                panel.transform.localScale = new Vector3(s * panel.sprite.bounds.size.y / Mathf.Max(.01f, panel.sprite.bounds.size.x), s, 1);
+                Label(p, "Close X", local + new Vector3(0, 0, -.2f), "X", .06f, Color.white);
+            }
             var hit = Child<BoxCollider>(p, "Hit area - " + action, local + new Vector3(0, 0, -.5f));
             hit.gameObject.layer = 9; hit.size = new Vector3(.6f, .6f, .2f);
             hit.gameObject.AddComponent<VideoUiButton>().Action = action;
+            // Under the button art so a press bounces the button, not the whole popup.
+            var scale = panel.transform.localScale;
+            hit.transform.SetParent(panel.transform, true);
+            hit.size = new Vector3(.6f / scale.x, .6f / scale.y, .2f);
         }
         TextMesh[] TimerPill(Popup p, Vector3 local)
         {
