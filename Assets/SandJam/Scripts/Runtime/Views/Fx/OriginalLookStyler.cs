@@ -53,6 +53,43 @@ namespace SandJamTest.Scene3D
                         child.localRotation = Quaternion.Euler(PadTilt, 0, 0);
                         var ls = child.localScale; child.localScale = new Vector3(ls.x, ls.y, PadThickness);
                     }
+            TiltLaneWalls(controller);
+            BuildFrameFeet(controller);
+        }
+
+        // The lane walls follow the same floor perspective as the cubes (SceneActorView.DepthOffset): their lower
+        // ends lean toward the camera, so the walls fan out with the lanes.
+        static readonly string[] LaneWalls = { "Left lane rail", "Left lane bank", "Right booster rail", "Right booster bank",
+            "Left solid rail", "Left rail top", "Right solid rail", "Right rail top" };
+        void TiltLaneWalls(SandJamSceneController controller)
+        {
+            float angle = Mathf.Atan(SceneActorView.DepthPerUnit) * Mathf.Rad2Deg;
+            foreach (var r in controller.GetComponentsInChildren<Renderer>(true))
+            {
+                if (System.Array.IndexOf(LaneWalls, r.name) < 0) continue;
+                var t = r.transform;
+                t.RotateAround(new Vector3(t.position.x, SceneActorView.DepthOriginY, t.position.z), Vector3.right, angle);
+                // Keep the on-screen height: the tilt alone would shorten the wall.
+                var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y / Mathf.Cos(angle * Mathf.Deg2Rad), ls.z);
+            }
+        }
+        // Original frame stand: raised end blocks ("feet") at both ends of the plinth.
+        void BuildFrameFeet(SandJamSceneController controller)
+        {
+            var plinth = controller.GetComponentsInChildren<Renderer>(true).FirstOrDefault(r => r.name == "Extruded plinth");
+            if (!plinth || plinth.transform.parent.Find("Frame foot")) return;
+            var b = plinth.bounds;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                var foot = Instantiate(plinth.gameObject, plinth.transform.parent, true);
+                foot.name = "Frame foot";
+                var t = foot.transform; var ls = t.localScale;
+                float width = b.size.x * .06f;
+                t.localScale = new Vector3(ls.x * width / b.size.x, ls.y * 1.25f, ls.z * 1.04f);
+                t.position = new Vector3(b.center.x + side * (b.extents.x - width * .5f), b.center.y + b.size.y * .12f, plinth.transform.position.z - .02f);
+                var fr = foot.GetComponent<Renderer>();
+                if (fr && fr.sharedMaterial && fr.sharedMaterial.HasProperty("_Color")) fr.material.color = Color.Lerp(fr.sharedMaterial.color, Color.white, .12f);
+            }
         }
 
         // Dark plate right behind the picture, slightly larger than it: the frame opening is a little wider than the

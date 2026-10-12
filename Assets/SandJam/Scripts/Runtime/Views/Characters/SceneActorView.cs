@@ -22,6 +22,28 @@ namespace SandJamTest.Scene3D
         bool wasRunning, wasSliding;
         public void Punch(float strength) { squashVelocity += strength * 18f; }
         public void Shake() { shakeTime = .28f; }
+        // Original pour: the box lifts a little and tips toward the picture (~15°) while its sand runs out,
+        // wobbling with every shot, and settles back upright when it stops pouring.
+        const float PourTilt = 16f, PourLift = .12f;
+        float lastPour = -10, pourSide = 1, roll;
+        Vector3 juicePosition;
+        public void NotePour(Vector3 target)
+        {
+            lastPour = Time.unscaledTime;
+            pourSide = target.x >= transform.position.x ? 1 : -1;
+        }
+        void UpdateRoll(float delta)
+        {
+            bool pouring = Time.unscaledTime - lastPour < .18f && !Departing;
+            float target = pouring ? -pourSide * PourTilt : 0;
+            // Quick tip-over, slower and slightly springy return.
+            roll = Mathf.MoveTowards(roll, target, delta * (pouring ? 240f : 160f));
+            float wobble = pouring ? Mathf.Sin(Time.unscaledTime * 22f) * 2.5f : 0;
+            if (!pose) return;
+            pose.localRotation = Quaternion.Euler(0, 0, roll + wobble) * poseBase * Quaternion.Euler(0, yaw, 0);
+            float lift = Mathf.Abs(roll) / PourTilt;
+            if (pose == Visual) pose.localPosition = juicePosition + Vector3.up * lift * PourLift + Vector3.right * (-roll / PourTilt) * .04f;
+        }
         Quaternion baseRotation;
         // Original camera looks down the lanes like a floor: rows nearer the bottom of the screen are nearer the
         // camera, so they look bigger and the lanes fan out. Rows below the front row are pulled toward the camera.
@@ -55,7 +77,7 @@ namespace SandJamTest.Scene3D
             Shooter = shooter;
             gameObject.SetActive(true);
             if (baseScale == Vector3.zero) { baseScale = Visual.localScale;baseRotation=Visual.localRotation;basePosition=Visual.localPosition; }
-            squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = basePosition;
+            squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = juicePosition = basePosition; roll = 0; lastPour = -10;
             Visual.localScale = baseScale;
             Visual.localRotation = baseRotation;
             transform.position = destination = from = position;
@@ -177,6 +199,7 @@ namespace SandJamTest.Scene3D
             wasSliding = gait == Gait.Slide && !AtRest;
             wasRunning = runningNow;
             ApplyJuice(delta);
+            UpdateRoll(delta);
             ApplyDepth();
             string ammo = DisplayAmount.Units(Shooter.Ammo, Divider).ToString();
             if (AmmoLabel.text != ammo) AmmoLabel.text = ammo;
@@ -197,7 +220,7 @@ namespace SandJamTest.Scene3D
             Visual.localScale = new Vector3(baseScale.x * (1 - squash * .5f), baseScale.y * (1 + squash), baseScale.z * (1 - squash * .5f));
             float shake = 0;
             if (shakeTime > 0) { shakeTime = Mathf.Max(0, shakeTime - delta); shake = Mathf.Sin(shakeTime * 70f) * .06f * (shakeTime / .28f); }
-            Visual.localPosition = basePosition + new Vector3(shake, 0, 0);
+            Visual.localPosition = juicePosition = basePosition + new Vector3(shake, 0, 0);
         }
     }
 }
