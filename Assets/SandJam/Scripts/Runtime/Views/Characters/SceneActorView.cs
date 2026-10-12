@@ -35,7 +35,7 @@ namespace SandJamTest.Scene3D
         enum Gait { Slide, Run }
         Gait gait;
         float yaw;
-        const float SlideSeconds=.24f, RunSpeed=4.6f, MinRun=.36f, MaxRun=.62f, ExitSeconds=.45f, ExitPause=.12f;
+        const float SlideSeconds=.24f, RunSpeed=4.6f, MinRun=.36f, MaxRun=.62f, ExitSeconds=.75f, ExitPause=.12f;
         // No turning: the body is pitched toward the camera, so any yaw reads as a lopsided diamond. Cubes keep
         // facing the camera and run sideways on their legs.
         const float MaxYaw=0f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
@@ -43,6 +43,38 @@ namespace SandJamTest.Scene3D
         // (rotating the root around world Y would roll the tilted body sideways).
         Transform pose; Quaternion poseBase; bool poseCaptured;
         Renderer legs;
+        // Only the legs turn toward where the cube runs (the body keeps facing the camera): after the animator has
+        // posed the rig, both thighs are swung around the hips' up axis.
+        public static float LegTurnSign = 1;
+        const float RunLegYaw = 55f, ExitLegYaw = 85f;
+        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw;
+        void FindRig()
+        {
+            rigSearched = true;
+            foreach (var t in GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name.EndsWith("Hips")) hips = t;
+                else if (t.name.EndsWith("LeftUpLeg")) leftThigh = t;
+                else if (t.name.EndsWith("RightUpLeg")) rightThigh = t;
+            }
+        }
+        void LateUpdate()
+        {
+            if (!rigSearched) FindRig();
+            if (!hips || !leftThigh || !rightThigh || Shooter == null) return;
+            bool running = gait == Gait.Run && (!AtRest || (Departing && exitDelay > 0));
+            float dx = destination.x - from.x;
+            float target = !running ? 0 : Departing ? ExitLegYaw * Mathf.Sign(dx) : Mathf.Abs(dx) < .05f ? 0 : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
+            legYaw = Mathf.MoveTowards(legYaw, target, Time.deltaTime * 600f);
+            if (Mathf.Abs(legYaw) < .01f) return;
+            var axis = (pose ? pose.up : hips.up);
+            var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, axis);
+            foreach (var thigh in new[] { leftThigh, rightThigh })
+            {
+                thigh.position = hips.position + turn * (thigh.position - hips.position);
+                thigh.rotation = turn * thigh.rotation;
+            }
+        }
         void ApplyYaw()
         {
             if (pose) { pose.localRotation = poseBase * Quaternion.Euler(0, yaw, 0); transform.localRotation = Quaternion.identity; }
