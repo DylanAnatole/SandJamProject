@@ -39,6 +39,7 @@ namespace SandJamTest.Scene3D
             if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;}}
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
             if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=UiFont.Font?UiFont.Font:Controller.InterfaceFont;fx.Build(superbTitle);}
+            StyleHome();
             gameObject.AddComponent<TextOutliner>();
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
@@ -48,6 +49,53 @@ namespace SandJamTest.Scene3D
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--booster-smoke") >= 0) gameObject.AddComponent<BoosterSmoke>();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--feeling-smoke") >= 0) gameObject.AddComponent<FeelingSmoke>();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--october-smoke") >= 0) gameObject.AddComponent<OctoberVideoSmoke>();
+        }
+
+        // Home closer to the original recording (level 267): brighter level sign and stage, and a soft spotlight
+        // falling from the walkway onto the PLAY button.
+        void StyleHome()
+        {
+            Tint(Home.transform.Find("Level sign blue"),new Color32(80,160,241,255));
+            Tint(Home.transform.Find("Sign inset"),new Color32(104,180,236,255));
+            Tint(Home.transform.Find("Level sign rim"),new Color32(178,232,250,255));
+            Tint(Home.transform.Find("Lower stage"),new Color32(38,91,132,255));
+            var stage=Home.transform.Find("Lower stage");var walk=Home.transform.Find("Walkway edge");
+            // Original PLAY caption is much larger on the button.
+            var play=Home.transform.Find("PLAY");
+            if(play)foreach(var label in play.GetComponentsInChildren<TextMesh>(true))if(label.name!="Text outline"){label.transform.localScale*=1.3f;break;}
+            if(!stage || !walk)return;
+            var cone=new GameObject("Stage spotlight"){layer=Home.layer}.AddComponent<SpriteRenderer>();
+            cone.transform.SetParent(Home.transform,true);
+            cone.sprite=SpotlightSprite();
+            float top=walk.GetComponent<Renderer>().bounds.min.y,bottom=top-2.5f;
+            cone.transform.position=new Vector3(0,(top+bottom)/2,stage.position.z-.03f);
+            var size=cone.sprite.bounds.size;var parent=cone.transform.parent.lossyScale;
+            cone.transform.localScale=new Vector3(3.2f/size.x/parent.x,(top-bottom)/size.y/parent.y,1);
+        }
+        static void Tint(Transform t,Color color)
+        {
+            if(!t)return;var r=t.GetComponent<Renderer>();if(!r)return;
+            var sr=r as SpriteRenderer;if(sr){sr.color=color;return;}
+            if(r.sharedMaterial && r.sharedMaterial.HasProperty("_Color"))r.material.color=color;
+        }
+        // Trapezoid of light: narrower under the walkway, widening and fading out towards the bottom.
+        static Sprite SpotlightSprite()
+        {
+            const int w=128,h=128;var t=new Texture2D(w,h,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp};
+            for(int y=0;y<h;y++)
+            {
+                float v=y/(float)(h-1);                        // 0 bottom, 1 top
+                float half=.3f+.2f*(1-v);                      // widens downwards
+                for(int x=0;x<w;x++)
+                {
+                    float u=Mathf.Abs((x+.5f)/w-.5f);
+                    float edge=Mathf.Clamp01((half-u)/.06f);
+                    float a=.34f*v*v*edge;
+                    t.SetPixel(x,y,new Color(.75f,.88f,1f,a));
+                }
+            }
+            t.Apply();
+            return Sprite.Create(t,new Rect(0,0,w,h),new Vector2(.5f,.5f),w);
         }
         void OnDestroy(){SandBoardTextureView.ObstacleTint=new Color(.16f,.27f,.34f);}
         public void Show(Page page)
