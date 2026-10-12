@@ -39,7 +39,7 @@ namespace SandJamTest.Scene3D
             if (label.name == "Text outline" || label.GetComponent<OutlinedText>()) return false;
             var parent = label.transform.parent;
             if (parent && (parent.name == "Text outline" || parent.GetComponent<OutlinedText>())) return false;
-            if (label.GetComponentInParent<SuperbFx>()) return false;
+            if (label.GetComponentInParent<SuperbFx>() || UiFont.OnGeometry(label)) return false;
             var c = label.color;
             return c.r > .85f && c.g > .85f && c.b > .85f;
         }
