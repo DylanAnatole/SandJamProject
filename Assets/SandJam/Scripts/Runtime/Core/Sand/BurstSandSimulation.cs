@@ -151,29 +151,37 @@ namespace SandJamTest.Scene3D
                         Filled[dest]=1;SettleStep[dest]=State[8];State[1]++;
                     }
                     State[3]=write;
-                    // Pour point follows the sand surface (original): the stream drops from the top of the vertical
-                    // run that holds the next empty cell, so the grain lands where the sand is being laid. Grains
-                    // still in flight have already claimed the first empty cells of the fill order.
-                    while(State[6]<Seep.Length && Filled[Seep[State[6]]]!=0)State[6]++;
-                    int next=-1,skip=State[3];
-                    for(int k=State[6];k<Seep.Length;k++)
+                    // Pour point (original): one fixed spout per region. It is chosen once - the column nearest the
+                    // region's centre at the lowest empty level, pouring from the top of that column - and it stays
+                    // there while the sand rises. Only when the sand has risen up to the spout does the pour move to a
+                    // new spot, chosen the same way.
+                    int spout=State[8]==1?-1:Cell(State[9],State[10]);
+                    if(spout<0 || Filled[spout]!=0)
                     {
-                        int c=Seep[k];if(Filled[c]!=0)continue;
-                        if(skip>0){skip--;continue;}
-                        next=c;break;
-                    }
-                    if(next<0)for(int k=State[6];k<Seep.Length;k++){int c=Seep[k];if(Filled[c]==0){next=c;break;}}
-                    if(next>=0)
-                    {
-                        int x=Cols[next],y=Rows[next];
-                        while(Cell(x,y+1)>=0 && Filled[Cell(x,y+1)]==0)y++;
-                        int spawn=Cell(x,y);
-                        State[9]=x;State[10]=y;
-                        if(State[0]<State[2] && Occupied[spawn]==0)
+                        while(State[6]<Seep.Length && Filled[Seep[State[6]]]!=0)State[6]++;
+                        spout=-1;
+                        if(State[6]<Seep.Length)
                         {
-                            Occupied[spawn]=1;State[0]++;
-                            Moving[State[3]++]=new SandPourSimulation.Grain{Index=State[7]++,X=x,Y=y,Speed=1,Dir=0};
+                            int level=Rows[Seep[State[6]]],best=-1,bestDistance=int.MaxValue;
+                            for(int k=State[6];k<Seep.Length;k++)
+                            {
+                                int c=Seep[k];if(Rows[c]!=level)break;
+                                if(Filled[c]!=0)continue;
+                                int distance=Cols[c]-InletX;if(distance<0)distance=-distance;
+                                if(distance<bestDistance){bestDistance=distance;best=c;}
+                            }
+                            if(best>=0)
+                            {
+                                int x=Cols[best],y=Rows[best];
+                                while(Cell(x,y+1)>=0)y++;
+                                State[9]=x;State[10]=y;spout=Cell(x,y);
+                            }
                         }
+                    }
+                    if(spout>=0 && State[0]<State[2] && Occupied[spout]==0 && Filled[spout]==0)
+                    {
+                        Occupied[spout]=1;State[0]++;
+                        Moving[State[3]++]=new SandPourSimulation.Grain{Index=State[7]++,X=State[9],Y=State[10],Speed=1,Dir=0};
                     }
                 }
             }

@@ -38,11 +38,8 @@ namespace SandJamTest.Scene3D
             TopCell=Enumerable.Repeat(-1,Width).ToArray();
             for(int i=0;i<rows.Length;i++){int t=TopCell[cols[i]];if(t<0 || rows[i]>rows[t])TopCell[cols[i]]=i;}
             int inletX=InletX;
-            // Fill order = where the stream goes: bottom row first, each row swept in a snake (left→right, then
-            // right→left on the next row) so the pour point glides along the sand surface and only jumps when a
-            // stretch is covered (e.g. to the other arm of a ring), as in the original.
             SeepOrder=Enumerable.Range(0,rows.Length)
-                .OrderBy(i=>rows[i]).ThenBy(i=>rows[i]%2==0?cols[i]:-cols[i]).ToArray();
+                .OrderBy(i=>rows[i]).ThenBy(i=>Math.Abs(cols[i]-inletX)).ThenBy(i=>cols[i]).ToArray();
         }
     }
 }
