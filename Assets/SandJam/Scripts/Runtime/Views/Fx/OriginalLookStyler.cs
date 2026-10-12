@@ -98,24 +98,76 @@ namespace SandJamTest.Scene3D
                 var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y / Mathf.Cos(angle * Mathf.Deg2Rad), ls.z);
             }
         }
-        // Original stand (level 313): one flat slab in the frame colour, about 11% wider than the frame, the frame
-        // posts standing on it - no separate end blocks.
+        // Original stand (level 313): one rounded slab in the frame colour, about 11% wider than the frame. The
+        // frame's posts are plugged into a long slot in the slab's top: above the slab only the frame shows, and
+        // the slot's dark ends peek out just beside each post. Drawn as flat pieces right in front of the frame's
+        // foot (the old extruded plinth is hidden: its shading made it read as a separate part).
         void BuildFrameFeet(SandJamSceneController controller)
         {
             var renderers = controller.GetComponentsInChildren<Renderer>(true);
             var plinth = renderers.FirstOrDefault(r => r.name == "Extruded plinth");
             var frame = renderers.FirstOrDefault(r => r.name == "Solid board frame");
-            if (!plinth || !frame) return;
-            var t = plinth.transform; var pb = plinth.bounds; var fb = frame.bounds;
-            float k = fb.size.x * 1.11f / Mathf.Max(.0001f, pb.size.x);
-            var ls = t.localScale; t.localScale = new Vector3(ls.x * k, ls.y, ls.z);
-            t.position += new Vector3(fb.center.x - plinth.bounds.center.x, 0, 0);
-            // A bit deeper (top edge fixed, so it does not cover more of the picture): the frame posts end in it.
-            var before = plinth.bounds;
-            ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y * 1.3f, ls.z);
-            t.position += new Vector3(0, before.max.y - plinth.bounds.max.y, 0);
+            if (!plinth || !frame || plinth.transform.parent.Find("Stand front")) return;
+            Color tone = frame.sharedMaterial && frame.sharedMaterial.HasProperty("_Color") ? frame.sharedMaterial.color : new Color(.37f, .29f, .5f);
+            var fb = frame.bounds; var parent = plinth.transform.parent;
+            plinth.enabled = false;
+            float width = fb.size.x * 1.11f, lip = fb.min.y + .2f, topH = .13f, frontH = .25f, z = fb.min.z - .06f;
+            var top = StandPiece("Stand top", parent, Color.Lerp(tone, Color.white, .13f), 6);
+            Place(top, fb.center.x, lip - topH * .5f, width, topH + .06f, z);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                // A small socket with tight corners, from under the post's outer edge outward.
+                var slot = StandPiece("Stand slot", parent, Color.Lerp(tone, Color.black, .42f), 7, 800f);
+                float x = side < 0 ? fb.min.x - .07f : fb.max.x + .07f;
+                Place(slot, x, lip - topH * .5f, .18f, .06f, z - .01f);
+            }
+            var front = StandPiece("Stand front", parent, Color.Lerp(tone, Color.black, .06f), 8);
+            Place(front, fb.center.x, lip - topH - frontH * .5f + .02f, width, frontH, z - .02f);
+            var edge = StandPiece("Stand front edge", parent, Color.Lerp(tone, Color.black, .25f), 9);
+            Place(edge, fb.center.x, lip - topH - frontH + .03f, width * .985f, .05f, z - .03f);
             var shadow = renderers.FirstOrDefault(r => r.name == "Plinth contact shadow");
-            if (shadow) { var sl = shadow.transform.localScale; shadow.transform.localScale = new Vector3(sl.x * k, sl.y, sl.z); }
+            if (shadow)
+            {
+                var sb = shadow.bounds; var sl = shadow.transform.localScale;
+                shadow.transform.localScale = new Vector3(sl.x * width * 1.04f / Mathf.Max(.0001f, sb.size.x), sl.y, sl.z);
+                shadow.transform.position += new Vector3(fb.center.x - shadow.bounds.center.x, (lip - topH - frontH) - shadow.bounds.center.y, 0);
+            }
+        }
+
+        SpriteRenderer StandPiece(string name, Transform parent, Color color, int order, float pixelsPerUnit = 250f)
+        {
+            var r = new GameObject(name) { layer = parent.gameObject.layer }.AddComponent<SpriteRenderer>();
+            r.transform.SetParent(parent, false);
+            r.sprite = RoundedSprite(pixelsPerUnit); r.color = color; r.sortingOrder = order;
+            return r;
+        }
+        // Sliced rounded rectangle: the corner radius stays the same however the piece is stretched.
+        static void Place(SpriteRenderer r, float x, float y, float width, float height, float z)
+        {
+            r.transform.position = new Vector3(x, y, z);
+            r.drawMode = SpriteDrawMode.Sliced;
+            var parent = r.transform.parent ? r.transform.parent.lossyScale : Vector3.one;
+            r.transform.localScale = Vector3.one;
+            r.size = new Vector2(width / parent.x, height / parent.y);
+        }
+        static readonly System.Collections.Generic.Dictionary<float, Sprite> roundedSprites = new System.Collections.Generic.Dictionary<float, Sprite>();
+        static Sprite RoundedSprite(float pixelsPerUnit)
+        {
+            Sprite rounded;
+            if (roundedSprites.TryGetValue(pixelsPerUnit, out rounded) && rounded) return rounded;
+            const int n = 64; const float radius = 20f;
+            var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+            {
+                float px = Mathf.Abs(x + .5f - n / 2f) - (n / 2f - radius), py = Mathf.Abs(y + .5f - n / 2f) - (n / 2f - radius);
+                float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - radius;
+                t.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(.5f - d)));
+            }
+            t.Apply();
+            // 20-px corners at 250 px per unit: about 0.08 units of rounding.
+            rounded = Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), pixelsPerUnit, 0, SpriteMeshType.FullRect, new Vector4(21, 21, 21, 21));
+            roundedSprites[pixelsPerUnit] = rounded;
+            return rounded;
         }
 
         // Dark plate right behind the picture, slightly larger than it: the frame opening is a little wider than the
