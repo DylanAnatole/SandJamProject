@@ -13,7 +13,7 @@ namespace SandJamTest.Scene3D
         // (the tuned colours above) or dark — backdrop, picture frame and lane banks are recoloured.
         static readonly string[] FrameParts = { "Solid board frame", "Raised board frame", "Tray top", "Tray bevel", "Extruded plinth" };
         static readonly string[] SideParts = { "Left lane bank", "Right booster bank", "Left solid rail", "Right solid rail", "Left rail top", "Right rail top", "Left lane rail", "Right booster rail" };
-        public float PadTilt = 58f;
+        public float PadTilt = 50f, PadThickness = 3.5f;
         public int ThemeIndex { get; private set; }
         Color top, middle, bottom;
         Camera filler;
@@ -48,7 +48,11 @@ namespace SandJamTest.Scene3D
             if (stash)
                 foreach (Transform child in stash)
                     if (child.name.StartsWith("Solid waiting pad"))
+                    {
+                        // Original pads are chunky tiles: thicker, and tilted a little less so the front edge shows.
                         child.localRotation = Quaternion.Euler(PadTilt, 0, 0);
+                        var ls = child.localScale; child.localScale = new Vector3(ls.x, ls.y, PadThickness);
+                    }
         }
 
         // Dark plate right behind the picture, slightly larger than it: the frame opening is a little wider than the

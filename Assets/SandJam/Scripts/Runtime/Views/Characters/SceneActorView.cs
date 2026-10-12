@@ -23,6 +23,11 @@ namespace SandJamTest.Scene3D
         public void Punch(float strength) { squashVelocity += strength * 18f; }
         public void Shake() { shakeTime = .28f; }
         Quaternion baseRotation;
+        // Original camera looks down the lanes like a floor: rows nearer the bottom of the screen are nearer the
+        // camera, so they look bigger and the lanes fan out. Rows below the front row are pulled toward the camera.
+        public static float DepthOriginY = -2.98f, DepthPerUnit = .6f;
+        float laneZ; bool laneZKnown;
+        public static float DepthOffset(float y) { return Mathf.Min(0, y - DepthOriginY) * DepthPerUnit; }
         float travel, duration, exitDelay;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
@@ -54,6 +59,8 @@ namespace SandJamTest.Scene3D
             Visual.localScale = baseScale;
             Visual.localRotation = baseRotation;
             transform.position = destination = from = position;
+            if (!laneZKnown) { laneZ = position.z; laneZKnown = true; }
+            ApplyDepth();
             if (!poseCaptured && Motion) { pose = Motion.transform; poseBase = pose.localRotation; poseCaptured = true; }
             if (!legs) { var style = GetComponent<CharacterDepthStyle>(); if (style) legs = style.Skin; }
             yaw = 0; ApplyYaw(); ShowLegs(false);
@@ -170,8 +177,14 @@ namespace SandJamTest.Scene3D
             wasSliding = gait == Gait.Slide && !AtRest;
             wasRunning = runningNow;
             ApplyJuice(delta);
+            ApplyDepth();
             string ammo = DisplayAmount.Units(Shooter.Ammo, Divider).ToString();
             if (AmmoLabel.text != ammo) AmmoLabel.text = ammo;
+        }
+        void ApplyDepth()
+        {
+            if (!laneZKnown) return;
+            var p = transform.position; p.z = laneZ + DepthOffset(p.y); transform.position = p;
         }
         void ApplyJuice(float delta)
         {
