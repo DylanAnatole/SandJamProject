@@ -557,12 +557,14 @@ namespace SandJamTest.Scene3D
             if (!colour || !grey) return false;
             SetText(cardName, info.Name);
             var size = grey.bounds.size;
-            float k = Mathf.Min(CoverWidth / size.x, CoverHeight / size.y);
-            cardBw.sprite = grey; cardBw.transform.localScale = new Vector3(k, k, 1);
+            // The picture fills the rounded slot completely (original): it is fitted to the slot box on both axes
+            // (the 84x112 renders are within a few percent of the slot's shape) and runs under the rim.
+            float kx = CoverWidth / size.x, ky = CoverHeight / size.y;
+            cardBw.sprite = grey; cardBw.transform.localScale = new Vector3(kx, ky, 1);
             // Original: the colour cover sits exactly on the grey one and a hard horizontal edge rises from the
             // previous completion to the new one (about 0.8 s, right after the card pops in).
             cardColor.sprite = colour;
-            cardColor.transform.localScale = new Vector3(k * size.x / colour.bounds.size.x, k * size.y / colour.bounds.size.y, 1);
+            cardColor.transform.localScale = new Vector3(CoverWidth / colour.bounds.size.x, CoverHeight / colour.bounds.size.y, 1);
             cardColor.transform.localPosition = new Vector3(0, CoverY, cardColor.transform.localPosition.z);
             cardColor.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
             cardColor.gameObject.SetActive(true);
@@ -573,7 +575,7 @@ namespace SandJamTest.Scene3D
                 coverFrame.sprite = RoundedFrame(); runtimeArt.Add(coverFrame.sprite); runtimeArt.Add(coverFrame.sprite.texture);
             }
             const float rim = .06f;
-            coverFrame.transform.localScale = new Vector3((k * size.x + 2 * rim) / coverFrame.sprite.bounds.size.x, (k * size.y + 2 * rim) / coverFrame.sprite.bounds.size.y, 1);
+            coverFrame.transform.localScale = new Vector3((CoverWidth + rim) / coverFrame.sprite.bounds.size.x, (CoverHeight + rim) / coverFrame.sprite.bounds.size.y, 1);
             if (!coverMask)
             {
                 coverMask = Child<SpriteMask>(congrats, "Cover fill mask", new Vector3(0, 0, -6.45f));
@@ -581,7 +583,7 @@ namespace SandJamTest.Scene3D
                 coverMask.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, 0), white.width);
                 runtimeArt.Add(coverMask.sprite);
             }
-            coverBottom = CoverY - k * size.y / 2; coverWidth = k * size.x; coverHeight = k * size.y;
+            coverBottom = CoverY - CoverHeight / 2; coverWidth = CoverWidth; coverHeight = CoverHeight;
             int completed = info.Completed(level);
             fillTo = (float)completed / info.Count;
             fillFrom = (float)Mathf.Max(0, completed - 1) / info.Count;
