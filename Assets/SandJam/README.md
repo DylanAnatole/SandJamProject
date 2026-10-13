@@ -58,6 +58,7 @@ regions need, and the level can be won with five waiting slots.
 - `Prefabs/Gameplay/GameplayLevelTemplate` – variant of the runtime gameplay template (board, frame, stash,
   lanes, HUD). Visual changes made here can be applied to the template the game loads.
 - `Prefabs/Gameplay/PaintRegion` – one picture region (pour target, counter).
-- `Prefabs/Characters/SandCube` – a sand cube with legs, ammo label and effects.
+- `Prefabs/Characters/SandCube` – a sand cube with legs, ammo label and effects. Local only (not in git): it is built
+  from the original character rig.
 
 These reference art in `Resources/` and `Generated/`, which stay local (original game content).
