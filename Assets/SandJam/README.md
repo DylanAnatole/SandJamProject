@@ -23,15 +23,24 @@ Assets/SandJam/
 
 ## Design patterns
 
-- **Observer** – `Managers/GameEvents.cs` is the event hub. Gameplay and UI raise events (level started/won/lost,
-  region completed, cube selected/emptied, sand poured, booster used, coins, gallery changed); audio, haptics,
+Each pattern lives in its own script under `Scripts/Runtime/Core/Patterns/` (namespace `SandJamTest`), so new
+patterns (State, Command, Factory…) can be added next to them as separate files.
+
+- **Observer** – `Core/Patterns/Observer.cs`: `GameEvent`, `GameEvent<T>`, `GameEvent<T1,T2>`, `GameEvent<T1,T2,T3>`.
+  Subscribe with `+=`, unsubscribe with `-=`, notify with `Raise(...)`. Raising allocates nothing, a listener may
+  unsubscribe while being notified, and an exception in one listener is logged without stopping the others.
+  `Managers/GameEvents.cs` declares the game's events (level started/won/lost, region completed, cube
+  selected/emptied, sand poured, booster used, coins, button clicked, settings/gallery changed); audio, haptics,
   tasks, stats, effects and UI badges subscribe instead of polling each other. Always unsubscribe in OnDestroy.
+  New event: add `public static GameEvent<int> MyEvent = new GameEvent<int>();` plus a `RaiseMyEvent` method.
 - **Singleton** – `Core/Patterns/Singleton.cs` (`Singleton<T>`): one live instance via `Instance`, duplicates destroy
   themselves, `Persistent` keeps it across scene loads. Used by `GameServices` (persistent root) and `AudioManager`.
   Subclasses override `OnSingletonAwake` / `OnSingletonDestroy`.
-- **Object pooling** – Unity's `UnityEngine.Pool.ObjectPool<T>`: sand pellets (`ProjectileManager`) and the
-  region-complete flashes/bubbles (`SandFx`) are reused instead of created and destroyed; particles use
-  `ParticleSystem.Emit`. Gameplay ticks allocate nothing (reused lists/arrays) to avoid GC spikes on mobile.
+- **Object pooling** – `Core/Patterns/ObjectPooling.cs` (`Pool<T>`, built on Unity's `ObjectPool<T>`): `Get`
+  activates an object, `Release`/`ReleaseAt` deactivates it, `Active()` lists the objects in use. Sand pellets
+  (`ProjectileManager`) and the region-complete flashes/bubbles (`SandFx`) are reused instead of created and
+  destroyed; particles use `ParticleSystem.Emit`. Gameplay ticks allocate nothing (reused lists/arrays) to avoid GC
+  spikes on mobile.
 
 ## Tests
 

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 
 namespace SandJamTest.Scene3D
 {
@@ -12,8 +11,6 @@ namespace SandJamTest.Scene3D
         SandJamSceneController controller;
         ParticleSystem dust, sparkle, puff, voxels;
         readonly List<Color> palette = new List<Color>();
-        readonly List<Bubble> flashes = new List<Bubble>();
-        readonly List<Bubble> bubbles = new List<Bubble>();
         readonly Dictionary<SceneActorView, ActorState> actors = new Dictionary<SceneActorView, ActorState>();
         bool[] regionDone;
         SandGame lastGame;
@@ -129,11 +126,9 @@ namespace SandJamTest.Scene3D
             regionDone = new bool[game.Regions.Length];
             foreach (var pair in actors) if (pair.Key) pair.Key.transform.localScale = pair.Value.BaseScale;
             actors.Clear();
-            foreach (var b in bubbles) bubblePool.Release(b);
-            bubbles.Clear();
+            bubblePool.ReleaseAll();
             dust.Clear(); sparkle.Clear(); puff.Clear(); voxels.Clear();
-            foreach (var f in flashes) flashPool.Release(f);
-            flashes.Clear();
+            flashPool.ReleaseAll();
             palette.Clear();
             foreach (var view in controller.Regions)
             {
@@ -197,26 +192,21 @@ namespace SandJamTest.Scene3D
             }
         }
 
-        // Object pooling: completion flashes and bubbles are reused instead of created and destroyed each time
-        // (a region completion used to make ~6 GameObjects and 6 sprites). Both pools share one sprite each.
+        // Object pooling (Core/Patterns/ObjectPooling.cs): completion flashes and bubbles are reused instead of
+        // created and destroyed each time. Both pools share one sprite each.
         Sprite flashSprite, bubbleSprite;
-        ObjectPool<Bubble> flashPoolValue, bubblePoolValue;
-        ObjectPool<Bubble> flashPool { get { return flashPoolValue ?? (flashPoolValue = MakePool("Completion flash", 30, () => flashSprite ? flashSprite : (flashSprite = Sprite.Create(softDot, new Rect(0, 0, softDot.width, softDot.height), new Vector2(.5f, .5f), softDot.width)))); } }
-        ObjectPool<Bubble> bubblePool { get { return bubblePoolValue ?? (bubblePoolValue = MakePool("Completion bubble", 29, () => bubbleSprite ? bubbleSprite : (bubbleSprite = Sprite.Create(ring, new Rect(0, 0, ring.width, ring.height), new Vector2(.5f, .5f), ring.width)))); } }
-        ObjectPool<Bubble> MakePool(string name, int order, System.Func<Sprite> sprite)
+        Pool<Bubble> flashPoolValue, bubblePoolValue;
+        Pool<Bubble> flashPool { get { return flashPoolValue ?? (flashPoolValue = MakePool("Completion flash", 30, () => flashSprite ? flashSprite : (flashSprite = Sprite.Create(softDot, new Rect(0, 0, softDot.width, softDot.height), new Vector2(.5f, .5f), softDot.width)))); } }
+        Pool<Bubble> bubblePool { get { return bubblePoolValue ?? (bubblePoolValue = MakePool("Completion bubble", 29, () => bubbleSprite ? bubbleSprite : (bubbleSprite = Sprite.Create(ring, new Rect(0, 0, ring.width, ring.height), new Vector2(.5f, .5f), ring.width)))); } }
+        Pool<Bubble> MakePool(string name, int order, System.Func<Sprite> sprite)
         {
-            return new ObjectPool<Bubble>(
-                () =>
-                {
-                    var root = new GameObject(name).transform; root.SetParent(transform, false);
-                    var disc = root.gameObject.AddComponent<SpriteRenderer>();
-                    disc.sprite = sprite(); disc.sharedMaterial = bubbleMaterial; disc.sortingOrder = order;
-                    return new Bubble { Root = root, Disc = disc };
-                },
-                b => b.Root.gameObject.SetActive(true),
-                b => { if (b.Root) b.Root.gameObject.SetActive(false); },
-                b => { if (b.Root) Destroy(b.Root.gameObject); },
-                false, 8, 64);
+            return new Pool<Bubble>(() =>
+            {
+                var root = new GameObject(name).transform; root.SetParent(transform, false);
+                var disc = root.gameObject.AddComponent<SpriteRenderer>();
+                disc.sprite = sprite(); disc.sharedMaterial = bubbleMaterial; disc.sortingOrder = order;
+                return new Bubble { Root = root, Disc = disc };
+            }, b => b.Root ? b.Root.gameObject : null, 0, 64);
         }
 
         void SpawnFlash(Vector3 position)
@@ -224,15 +214,15 @@ namespace SandJamTest.Scene3D
             var f = flashPool.Get();
             f.Root.position = position + new Vector3(0, 0, -.02f);
             f.Age = 0; f.Life = .42f; f.Size = 2.6f;
-            flashes.Add(f);
         }
         void AnimateFlashes(float dt)
         {
+            var flashes = flashPool.Active();
             for (int i = flashes.Count - 1; i >= 0; i--)
             {
                 var f = flashes[i]; f.Age += dt;
                 float t = f.Age / f.Life;
-                if (t >= 1) { flashPool.Release(f); flashes.RemoveAt(i); continue; }
+                if (t >= 1) { flashPool.ReleaseAt(i); continue; }
                 f.Root.localScale = Vector3.one * f.Size * (.35f + .65f * (1 - (1 - t) * (1 - t)));
                 f.Disc.color = new Color(.9f, 1f, 1f, Mathf.Clamp01(t * 8) * (1 - t * t));
             }
@@ -244,11 +234,11 @@ namespace SandJamTest.Scene3D
             b.Root.position = position; b.Root.localScale = Vector3.zero;
             b.Disc.color = new Color(.75f, .95f, 1f, 0);
             b.Age = -delay; b.Life = .55f; b.Size = size;
-            bubbles.Add(b);
         }
 
         void AnimateBubbles(float dt)
         {
+            var bubbles = bubblePool.Active();
             for (int i = bubbles.Count - 1; i >= 0; i--)
             {
                 var b = bubbles[i];
@@ -263,7 +253,7 @@ namespace SandJamTest.Scene3D
                         float a = k * Mathf.PI * 2 / 10;
                         Emit(sparkle, b.Root.position, new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0) * 1.4f, new Color(.8f, .97f, 1f), .06f, .3f);
                     }
-                    bubblePool.Release(b); bubbles.RemoveAt(i); continue;
+                    bubblePool.ReleaseAt(i); continue;
                 }
                 float grow = 1 - Mathf.Pow(1 - Mathf.Clamp01(t * 1.6f), 3);
                 b.Root.localScale = Vector3.one * b.Size * (.3f + .7f * grow + .08f * Mathf.Sin(t * 20));

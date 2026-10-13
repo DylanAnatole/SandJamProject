@@ -1,35 +1,34 @@
-using System;
-
 namespace SandJamTest
 {
-    // Game-wide event hub. Gameplay and UI raise events; managers (audio, save, stats, effects) listen,
-    // so systems no longer poll each other's state.
+    // Game-wide event hub (Observer pattern, see Core/Patterns/Observer.cs). Gameplay and UI raise events; managers
+    // (audio, save, stats, effects, UI badges) listen with += / -=, so systems never poll each other's state.
+    // To add an event: declare a GameEvent field here and a Raise method next to the others.
     public static class GameEvents
     {
-        public static event Action<int> LevelStarted;              // level number
-        public static event Action<int> LevelWon;                  // level number
-        public static event Action<int> LevelLost;                 // level number
-        public static event Action<int, int> RegionCompleted;      // region index, colour type
-        public static event Action<int> CharacterSelected;         // colour type
-        public static event Action<int> CharacterEmptied;          // colour type
-        public static event Action<string, int> BoosterUsed;       // action, coins paid (0 = from inventory)
-        public static event Action<int, int, string> CoinsChanged; // balance, delta, reason
-        public static event Action<string> ButtonClicked;          // button action id
-        public static event Action SettingsChanged;
-        public static event Action GalleryChanged;                 // a collection milestone was reached or claimed
-        public static event Action<int, int, int> SandPoured;      // colour type, sand units, level uiDivider (units per board number)
+        public static GameEvent<int> LevelStarted = new GameEvent<int>();                       // level number
+        public static GameEvent<int> LevelWon = new GameEvent<int>();                           // level number
+        public static GameEvent<int> LevelLost = new GameEvent<int>();                          // level number
+        public static GameEvent<int, int> RegionCompleted = new GameEvent<int, int>();          // region index, colour type
+        public static GameEvent<int> CharacterSelected = new GameEvent<int>();                  // colour type
+        public static GameEvent<int> CharacterEmptied = new GameEvent<int>();                   // colour type
+        public static GameEvent<string, int> BoosterUsed = new GameEvent<string, int>();        // action, coins paid (0 = from inventory)
+        public static GameEvent<int, int, string> CoinsChanged = new GameEvent<int, int, string>(); // balance, delta, reason
+        public static GameEvent<string> ButtonClicked = new GameEvent<string>();                // button action id
+        public static GameEvent SettingsChanged = new GameEvent();
+        public static GameEvent GalleryChanged = new GameEvent();                               // a collection milestone was reached or claimed
+        public static GameEvent<int, int, int> SandPoured = new GameEvent<int, int, int>();     // colour type, sand units, level uiDivider
 
-        public static void RaiseLevelStarted(int level) { if (LevelStarted != null) LevelStarted(level); }
-        public static void RaiseLevelWon(int level) { if (LevelWon != null) LevelWon(level); }
-        public static void RaiseLevelLost(int level) { if (LevelLost != null) LevelLost(level); }
-        public static void RaiseRegionCompleted(int region, int color) { if (RegionCompleted != null) RegionCompleted(region, color); }
-        public static void RaiseCharacterSelected(int color) { if (CharacterSelected != null) CharacterSelected(color); }
-        public static void RaiseCharacterEmptied(int color) { if (CharacterEmptied != null) CharacterEmptied(color); }
-        public static void RaiseBoosterUsed(string action, int paid) { if (BoosterUsed != null) BoosterUsed(action, paid); }
-        public static void RaiseCoinsChanged(int balance, int delta, string reason) { if (CoinsChanged != null) CoinsChanged(balance, delta, reason); }
-        public static void RaiseButtonClicked(string action) { if (ButtonClicked != null) ButtonClicked(action); }
-        public static void RaiseSettingsChanged() { if (SettingsChanged != null) SettingsChanged(); }
-        public static void RaiseGalleryChanged() { if (GalleryChanged != null) GalleryChanged(); }
-        public static void RaiseSandPoured(int color, int amount, int divider) { if (SandPoured != null) SandPoured(color, amount, divider); }
+        public static void RaiseLevelStarted(int level) { LevelStarted.Raise(level); }
+        public static void RaiseLevelWon(int level) { LevelWon.Raise(level); }
+        public static void RaiseLevelLost(int level) { LevelLost.Raise(level); }
+        public static void RaiseRegionCompleted(int region, int color) { RegionCompleted.Raise(region, color); }
+        public static void RaiseCharacterSelected(int color) { CharacterSelected.Raise(color); }
+        public static void RaiseCharacterEmptied(int color) { CharacterEmptied.Raise(color); }
+        public static void RaiseBoosterUsed(string action, int paid) { BoosterUsed.Raise(action, paid); }
+        public static void RaiseCoinsChanged(int balance, int delta, string reason) { CoinsChanged.Raise(balance, delta, reason); }
+        public static void RaiseButtonClicked(string action) { ButtonClicked.Raise(action); }
+        public static void RaiseSettingsChanged() { SettingsChanged.Raise(); }
+        public static void RaiseGalleryChanged() { GalleryChanged.Raise(); }
+        public static void RaiseSandPoured(int color, int amount, int divider) { SandPoured.Raise(color, amount, divider); }
     }
 }

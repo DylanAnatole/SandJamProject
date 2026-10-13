@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 
 namespace SandJamTest.Scene3D
 {
@@ -16,16 +15,15 @@ namespace SandJamTest.Scene3D
         readonly int[] colorIds;
         readonly Material trailMaterial;
         static Sprite square;
-        // Object pool: pellets in flight live in `pellets`; finished ones go back to the pool.
-        readonly List<Pellet> pellets = new List<Pellet>();
-        readonly ObjectPool<Pellet> pool;
+        // Object pooling (Core/Patterns/ObjectPooling.cs): pellets in flight are the pool's active items.
+        readonly Pool<Pellet> pool;
         readonly Dictionary<int, float> lastFire = new Dictionary<int, float>();
         float clock;
 
         sealed class Pellet
         {
             public GameObject Root; public SpriteRenderer Body; public LineRenderer Trail;
-            public SceneRegionView Region; public Vector3 From; public float Age; public bool Live;
+            public SceneRegionView Region; public Vector3 From; public float Age;
         }
 
         public ProjectileManager(Transform root, GameObject prefab, Material[] materials, int[] colorIds)
@@ -34,16 +32,14 @@ namespace SandJamTest.Scene3D
             colors = new Color[materials.Length];
             for (int i = 0; i < materials.Length; i++) colors[i] = materials[i].color;
             trailMaterial = new Material(Shader.Find("Sprites/Default"));
-            pool = new ObjectPool<Pellet>(Create, p => { p.Live = true; p.Root.SetActive(true); }, p => { p.Live = false; if (p.Root) p.Root.SetActive(false); },
-                p => { if (p.Root) UnityEngine.Object.Destroy(p.Root); }, false, 16, 64);
+            pool = new Pool<Pellet>(Create, p => p.Root, 16, 64);
         }
 
         public void Dispose() { pool.Dispose(); if (trailMaterial) UnityEngine.Object.Destroy(trailMaterial); }
 
         public void Reset()
         {
-            foreach (var p in pellets) pool.Release(p);
-            pellets.Clear();
+            pool.ReleaseAll();
             lastFire.Clear();
         }
 
@@ -75,8 +71,8 @@ namespace SandJamTest.Scene3D
             float last;
             if (lastFire.TryGetValue(slot, out last) && clock - last < FireInterval) return;
             lastFire[slot] = clock;
-            var p = pool.Get(); pellets.Add(p);
-            p.Region = region; p.From = actor.AimPoint; p.Age = 0; p.Live = true;
+            var p = pool.Get();
+            p.Region = region; p.From = actor.AimPoint; p.Age = 0;
             int index = Array.IndexOf(colorIds, color);
             p.Body.color = index >= 0 ? colors[index] : Color.white;
             p.Root.SetActive(true);
@@ -99,11 +95,12 @@ namespace SandJamTest.Scene3D
         public void Advance(float delta)
         {
             clock += delta;
+            var pellets = pool.Active();
             for (int i = pellets.Count - 1; i >= 0; i--)
             {
                 var p = pellets[i];
                 p.Age += delta;
-                if (p.Age >= FlightTime || !p.Region) { pool.Release(p); pellets.RemoveAt(i); continue; }
+                if (p.Age >= FlightTime || !p.Region) { pool.ReleaseAt(i); continue; }
                 Place(p);
             }
         }
