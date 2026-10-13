@@ -56,7 +56,7 @@ namespace SandJamTest.Scene3D
         // falling from the walkway onto the PLAY button.
         // Walkway crossing (local units of the Home page): right edge to left edge.
         const float MascotEdgeX=3.3f, MascotWalk=2.2f, MascotLap=2.8f, MascotEnter=1f, MascotYaw=0f;
-        int mascotLap=-1; float mascotDirection=1;
+        int mascotLap=-1,mascotPasses; float mascotDirection=1;
         static readonly Color[] MascotColors={new Color(0f,.64f,1f),new Color(1f,.8f,0f),new Color(.75f,.09f,.09f),new Color(.83f,0f,.78f),
             new Color(.11f,.79f,0f),new Color(1f,.53f,0f),new Color(.44f,0f,.93f)};
         // New pass: random direction (+1 = from the right edge) and a colour different from the last one.
@@ -81,7 +81,8 @@ namespace SandJamTest.Scene3D
         }
         void StartMascotPass()
         {
-            mascotDirection=UnityEngine.Random.value<.5f?1:-1;
+            // Passes alternate: left to right, then right to left, and so on (direction 1 walks right to left).
+            mascotDirection=mascotPasses++%2==0?-1:1;
             int next=UnityEngine.Random.Range(0,MascotColors.Length-1);if(next>=mascotColor)next++;
             if(mascotColor<0)next=0; // the first one is blue, as in the recording
             mascotColor=next;
@@ -169,9 +170,27 @@ namespace SandJamTest.Scene3D
             // Navbar: the original icons and captions are noticeably bigger.
             foreach(var name in new[]{"icon-shop","icon-home","icon-cards"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.15f;}
             foreach(var name in new[]{"SHOP","HOME","GALLERY"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.22f;}
-            // Walkway seen in perspective: the tile joints lean outward like the original's floor.
-            foreach(Transform child in Home.transform)
-                if(child.name=="Paving joint")child.localRotation=Quaternion.Euler(0,0,-child.position.x*7f);
+            // Walkway as a 3D ledge (original Home, measured): a shaded back edge, two rows of tiles split by a joint,
+            // joints leaning outward in perspective and a front lip falling into the shadow of the stage below. It is
+            // drawn as one texture, replacing the flat band, its thin edge line and the separate joint sprites.
+            var walkway=Home.transform.Find("Walkway");var lowerStage=Home.transform.Find("Lower stage");
+            var walkwayEdge=Home.transform.Find("Walkway edge");
+            float floorTop=lowerStage?lowerStage.GetComponent<Renderer>().bounds.max.y:-.98f,floorBottom=-1.8f;
+            if(walkway)
+            {
+                var wr=walkway.GetComponent<SpriteRenderer>();
+                if(walkwayEdge)floorBottom=walkwayEdge.GetComponent<Renderer>().bounds.min.y;
+                if(wr)
+                {
+                    wr.sprite=WalkwaySprite();wr.color=Color.white;
+                    var wps=walkway.parent.lossyScale;var wsz=wr.sprite.bounds.size;
+                    walkway.localScale=new Vector3(6.4f/wsz.x/wps.x,(floorTop-floorBottom)/wsz.y/wps.y,1);
+                    walkway.position=new Vector3(0,(floorTop+floorBottom)*.5f,walkway.position.z);
+                }
+                foreach(Transform child in Home.transform)
+                    if(child.name=="Paving joint"){var jr=child.GetComponent<Renderer>();if(jr)jr.enabled=false;}
+                if(walkwayEdge){var er=walkwayEdge.GetComponent<Renderer>();if(er)er.enabled=false;}
+            }
             var stage=Home.transform.Find("Lower stage");var walk=Home.transform.Find("Walkway edge");
             // Original PLAY caption is much larger on the button.
             var play=Home.transform.Find("PLAY");
@@ -180,8 +199,9 @@ namespace SandJamTest.Scene3D
             var cone=new GameObject("Stage spotlight"){layer=Home.layer}.AddComponent<SpriteRenderer>();
             cone.transform.SetParent(Home.transform,true);
             cone.sprite=SpotlightSprite();
-            float top=walk.GetComponent<Renderer>().bounds.min.y,bottom=top-2.5f;
-            cone.transform.position=new Vector3(0,(top+bottom)/2,stage.position.z-.03f);
+            // The original's light falls on the walkway too (the floor under it is ~40% brighter), then fades below.
+            float top=floorTop,bottom=floorBottom-2.5f;
+            cone.transform.position=new Vector3(0,(top+bottom)/2,(walkway?walkway.position.z:stage.position.z)-.02f);
             var size=cone.sprite.bounds.size;var parent=cone.transform.parent.lossyScale;
             cone.transform.localScale=new Vector3(3.2f/size.x/parent.x,(top-bottom)/size.y/parent.y,1);
         }
@@ -211,21 +231,66 @@ namespace SandJamTest.Scene3D
         // Trapezoid of light: narrower under the walkway, widening and fading out towards the bottom.
         static Sprite SpotlightSprite()
         {
+            // Covers the walkway (top quarter, even light) and the stage below (fading out); 3.2 units wide, the lit
+            // column ~2 units at the top with a soft edge.
             const int w=128,h=128;var t=new Texture2D(w,h,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp};
+            const float lit=.25f;
             for(int y=0;y<h;y++)
             {
                 float v=y/(float)(h-1);                        // 0 bottom, 1 top
-                float half=.3f+.2f*(1-v);                      // widens downwards
+                float down=1-v;                                // 0 top, 1 bottom
+                float half=.31f+.06f*down;                     // widens slightly downwards
+                float fade=down<lit?1:Mathf.Pow(Mathf.Clamp01(1-(down-lit)/(1-lit)),1.3f);
                 for(int x=0;x<w;x++)
                 {
                     float u=Mathf.Abs((x+.5f)/w-.5f);
-                    float edge=Mathf.Clamp01((half-u)/.06f);
-                    float a=.34f*v*v*edge;
-                    t.SetPixel(x,y,new Color(.75f,.88f,1f,a));
+                    float edge=Mathf.SmoothStep(0,1,Mathf.Clamp01((half-u)/.08f));
+                    t.SetPixel(x,y,new Color(.9f,.92f,.97f,.42f*fade*edge));
                 }
             }
             t.Apply();
             return Sprite.Create(t,new Rect(0,0,w,h),new Vector2(.5f,.5f),w);
+        }
+        // Walkway ledge texture, top to bottom (fractions of its height, colours measured on the original):
+        // shaded back edge, back tile row, row joint, front tile row (taller, nearer), front lip into shadow.
+        // Three tile joints (centre and about 1.55 units each side) lean outward towards the viewer.
+        static Sprite walkwaySprite;
+        static Sprite WalkwaySprite()
+        {
+            if(walkwaySprite)return walkwaySprite;
+            const int w=1024,h=160;const float width=6.4f,height=.8f;
+            var px=new Color32[w*h];
+            Color tile=new Color32(116,178,226,255),joint=new Color32(76,134,181,255);
+            Color[] back={new Color32(112,174,222,255),new Color32(67,127,171,255),new Color32(35,82,120,255),new Color32(26,64,96,255)};
+            Color[] lip={new Color32(118,182,230,255),new Color32(71,131,175,255),new Color32(36,83,123,255),new Color32(32,77,114,255)};
+            Color Ramp(Color[] c,float f){f=Mathf.Clamp01(f)*(c.Length-1);int i=Mathf.Min((int)f,c.Length-2);return Color.Lerp(c[i],c[i+1],f-i);}
+            const float backEnd=.111f,rowJoint=.46f,frontEnd=.889f,jointHalf=.012f;
+            for(int y=0;y<h;y++)
+            {
+                float v=1-(y+.5f)/h;                           // 0 top, 1 bottom
+                for(int x=0;x<w;x++)
+                {
+                    Color c;
+                    if(v<backEnd)c=Ramp(back,v/backEnd);
+                    else if(v>frontEnd)c=Ramp(lip,(v-frontEnd)/(1-frontEnd));
+                    else
+                    {
+                        float floor=(v-backEnd)/(frontEnd-backEnd);
+                        float wx=((x+.5f)/w-.5f)*width;
+                        float side=1.53f+.12f*floor;              // outer joints spread towards the front
+                        float d=Mathf.Min(Mathf.Abs(wx),Mathf.Min(Mathf.Abs(wx-side),Mathf.Abs(wx+side)));
+                        float rowD=Mathf.Abs(v-rowJoint)*height;  // distance to the row joint, in units
+                        float k=Mathf.Clamp01((jointHalf*1.6f-Mathf.Min(d,rowD))/(jointHalf*1.2f));
+                        // Slight depth shading: the back row a touch darker than the front row.
+                        c=Color.Lerp(tile*(v<rowJoint?.97f:1f),joint,k);c.a=1;
+                    }
+                    px[y*w+x]=c;
+                }
+            }
+            var t=new Texture2D(w,h,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear};
+            t.SetPixels32(px);t.Apply();
+            walkwaySprite=Sprite.Create(t,new Rect(0,0,w,h),new Vector2(.5f,.5f),w/width);
+            return walkwaySprite;
         }
         void OnDestroy(){SandBoardTextureView.ObstacleTint=new Color(.16f,.27f,.34f);}
         public void Show(Page page)
@@ -313,7 +378,7 @@ namespace SandJamTest.Scene3D
             if(Current==Page.Home)
             {
                 // Original Home (recordings): a sand cube walks across the whole walkway in ~2.2 s, then the next one
-                // comes - each pass a new colour (blue, yellow, red, pink...) and either direction.
+                // comes - each pass a new colour (blue, yellow, red, pink...), alternating left-to-right and right-to-left.
                 float lapTime=elapsed+MascotLap-MascotEnter;
                 int lapIndex=Mathf.FloorToInt(lapTime/MascotLap);
                 float lap=lapTime-lapIndex*MascotLap;
