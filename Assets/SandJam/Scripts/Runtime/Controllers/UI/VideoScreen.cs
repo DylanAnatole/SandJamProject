@@ -58,6 +58,73 @@ namespace SandJamTest.Scene3D
             Tint(Home.transform.Find("Sign inset"),new Color32(104,180,236,255));
             Tint(Home.transform.Find("Level sign rim"),new Color32(178,232,250,255));
             Tint(Home.transform.Find("Lower stage"),new Color32(38,91,132,255));
+            // Colours measured on the original Home (recording, level 267).
+            // (sprites render ~12% darker here, so the sign colours are pre-brightened to land on the measured ones)
+            Tint(Home.transform.Find("Level sign blue"),new Color32(106,192,255,255));
+            Tint(Home.transform.Find("Sign inset"),new Color32(124,206,255,255));
+            Tint(Home.transform.Find("Level sign rim"),new Color32(158,206,242,255));
+            Tint(Home.transform.Find("Level sign shadow"),new Color32(13,71,116,255));
+            Tint(Home.transform.Find("Top bar"),new Color32(54,112,157,255));
+            Tint(Home.transform.Find("Walkway"),new Color32(120,182,228,255));
+            Tint(Home.transform.Find("Join label"),new Color32(200,146,36,255));
+            foreach(Transform child in Home.transform)
+            {
+                if(child.name.StartsWith("Hanger")){Tint(child,new Color32(122,186,235,255));var hs=child.localScale;child.localScale=new Vector3(hs.x*1.5f,hs.y,hs.z);}
+                if(child.name=="Paving joint")Tint(child,new Color32(92,140,182,255));
+            }
+            // The sign panels go through a shader that darkens them ~30%; plain sprite shading gives the true colours.
+            // The panel sprite is shaded (not white), which dulled the measured colours; the sign uses a plain white
+            // rounded panel instead so the tints land on the original's colours.
+            var plain=new Material(Shader.Find("Sprites/Default"));
+            foreach(var name in new[]{"Level sign blue","Sign inset","Level sign rim","Level sign shadow","Join label"})
+            {
+                var t=Home.transform.Find(name);var r=t?t.GetComponent<SpriteRenderer>():null;if(!r)continue;
+                var rb=r.bounds;r.sharedMaterial=plain;r.sprite=WhiteRounded();r.drawMode=SpriteDrawMode.Sliced;
+                var ps=t.parent.lossyScale;t.localScale=Vector3.one;r.size=new Vector2(rb.size.x/ps.x,rb.size.y/ps.y);
+            }
+            Tint(Home.transform.Find("Level sign blue"),new Color32(71,141,214,255));
+            Tint(Home.transform.Find("Sign inset"),new Color32(93,169,228,255));
+            // The original sign is about 12% larger; it grows around its own centre.
+            var signParts=new[]{"Level sign shadow","Level sign rim","Level sign blue","Sign inset","147","LEVEL"};
+            var rim=Home.transform.Find("Level sign rim");
+            if(rim)
+            {
+                var centre=rim.position;
+                foreach(var name in signParts)
+                {
+                    var t=Home.transform.Find(name);if(!t)continue;
+                    t.position=centre+(t.position-centre)*1.12f;t.localScale*=1.12f;
+                }
+            }
+            // Full-width bands are square-cornered and reach past both screen edges (the rounded panels left dark
+            // corners and side strips on phones); the top bar is as thin as the original's.
+            var square=SquareSprite();
+            foreach(var name in new[]{"Top bar","Walkway","Lower stage","Walkway edge"})
+            {
+                var r=Home.transform.Find(name)?Home.transform.Find(name).GetComponent<SpriteRenderer>():null;if(!r)continue;
+                var rb=r.bounds;r.sprite=square;r.drawMode=SpriteDrawMode.Simple;
+                var rps=r.transform.parent.lossyScale;r.transform.localScale=new Vector3(6.4f/rps.x,rb.size.y/rps.y,1);
+                r.transform.position=new Vector3(0,rb.center.y,r.transform.position.z);
+            }
+            var bar=Home.transform.Find("Top bar")?Home.transform.Find("Top bar").GetComponent<SpriteRenderer>():null;
+            if(bar){var bb=bar.bounds;float barBottom=4.2f;var bps=bar.transform.parent.lossyScale;bar.transform.localScale=new Vector3(bar.transform.localScale.x,(bb.max.y-barBottom)/bps.y,1);bar.transform.position=new Vector3(0,(bb.max.y+barBottom)*.5f,bar.transform.position.z);}
+            foreach(var name in new[]{"generalBackground-main","bg-navbar"}){var t=Home.transform.Find(name);if(t){var ls=t.localScale;t.localScale=new Vector3(ls.x*1.12f,ls.y,ls.z);}}
+            // Hangers run from the top bar down to the sign.
+            var rimNow=Home.transform.Find("Level sign rim");
+            if(rimNow && bar)foreach(Transform child in Home.transform)
+                if(child.name.StartsWith("Hanger"))
+                {
+                    var hr=child.GetComponent<SpriteRenderer>();if(!hr)continue;
+                    float hTop=bar.bounds.min.y+.02f,hBottom=rimNow.GetComponent<Renderer>().bounds.max.y-.02f;var hb=hr.bounds;
+                    child.localScale=new Vector3(child.localScale.x,child.localScale.y*(hTop-hBottom)/Mathf.Max(.001f,hb.size.y),1);
+                    child.position=new Vector3(child.position.x,(hTop+hBottom)*.5f,child.position.z);
+                }
+            // Navbar: the original icons and captions are noticeably bigger.
+            foreach(var name in new[]{"icon-shop","icon-home","icon-cards"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.15f;}
+            foreach(var name in new[]{"SHOP","HOME","GALLERY"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.22f;}
+            // Walkway seen in perspective: the tile joints lean outward like the original's floor.
+            foreach(Transform child in Home.transform)
+                if(child.name=="Paving joint")child.localRotation=Quaternion.Euler(0,0,-child.position.x*7f);
             var stage=Home.transform.Find("Lower stage");var walk=Home.transform.Find("Walkway edge");
             // Original PLAY caption is much larger on the button.
             var play=Home.transform.Find("PLAY");
@@ -71,6 +138,23 @@ namespace SandJamTest.Scene3D
             var size=cone.sprite.bounds.size;var parent=cone.transform.parent.lossyScale;
             cone.transform.localScale=new Vector3(3.2f/size.x/parent.x,(top-bottom)/size.y/parent.y,1);
         }
+        static Sprite whiteRounded;
+        static Sprite WhiteRounded()
+        {
+            if(whiteRounded)return whiteRounded;
+            const int n=64;const float radius=22f;var t=new Texture2D(n,n,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp};
+            for(int y=0;y<n;y++)for(int x=0;x<n;x++)
+            {
+                float px=Mathf.Abs(x+.5f-n/2f)-(n/2f-radius),py=Mathf.Abs(y+.5f-n/2f)-(n/2f-radius);
+                float d=new Vector2(Mathf.Max(px,0),Mathf.Max(py,0)).magnitude+Mathf.Min(Mathf.Max(px,py),0)-radius;
+                t.SetPixel(x,y,new Color(1,1,1,Mathf.Clamp01(.5f-d)));
+            }
+            t.Apply();
+            whiteRounded=Sprite.Create(t,new Rect(0,0,n,n),new Vector2(.5f,.5f),130f,0,SpriteMeshType.FullRect,new Vector4(23,23,23,23));
+            return whiteRounded;
+        }
+        static Sprite squareSprite;
+        static Sprite SquareSprite(){if(squareSprite)return squareSprite;var w=Texture2D.whiteTexture;squareSprite=Sprite.Create(w,new Rect(0,0,w.width,w.height),new Vector2(.5f,.5f),w.width);return squareSprite;}
         static void Tint(Transform t,Color color)
         {
             if(!t)return;var r=t.GetComponent<Renderer>();if(!r)return;
