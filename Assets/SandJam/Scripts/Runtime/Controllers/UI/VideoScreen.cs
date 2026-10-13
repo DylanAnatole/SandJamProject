@@ -40,6 +40,7 @@ namespace SandJamTest.Scene3D
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
             if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=UiFont.Font?UiFont.Font:Controller.InterfaceFont;fx.Build(superbTitle);}
             StyleHome();
+            var devLabel=Loading.transform.Find("UI reconstruction");if(devLabel)devLabel.gameObject.SetActive(false);
             Result.AddComponent<ResultFx>().Build();
             gameObject.AddComponent<TextOutliner>();
             Show(Page.Loading);
@@ -86,6 +87,17 @@ namespace SandJamTest.Scene3D
             mascotColor=next;
             foreach(var r in Mascot.GetComponentsInChildren<Renderer>(true))
                 foreach(var m in r.materials)if(m.HasProperty("_Color"))m.color=MascotColors[next];
+        }
+        // Original splash between levels (recording, 259 -> 260): only the big SAND JAM logo high on the purple
+        // background and the loading bar near the bottom.
+        void QuickSplash()
+        {
+            foreach(var name in new[]{"image-1-splashScene","Voodoo","Entertain the world","logo","Loading hint"}){var t=Loading.transform.Find(name);if(t)t.gameObject.SetActive(false);}
+            var header=Loading.transform.Find("header-splashScene");
+            if(header){header.localScale*=1.24f;header.localPosition=new Vector3(-.2f,2.55f,header.localPosition.z);}
+            var label=Loading.transform.Find("Loading...");if(label)label.localScale*=1.5f;
+            foreach(var name in new[]{"bg-fillbar-splashScene","Loading fill","Loading..."}){var t=Loading.transform.Find(name);if(t)t.localPosition+=new Vector3(0,-1.1f,0);}
+            fillScale=LoadingFill.localScale;
         }
         void StyleHome()
         {
@@ -371,7 +383,7 @@ namespace SandJamTest.Scene3D
             // "Next" / "Retry" reload the scene straight into gameplay.
             else if(Campaign.SkipIntro){Campaign.SkipIntro=false;Play();}
             // Original: after a win the SAND JAM splash shows for under a second, then Home.
-            else if(Campaign.OpenHome){Campaign.OpenHome=false;loadingTime=.6f;}
+            else if(Campaign.OpenHome){Campaign.OpenHome=false;loadingTime=.6f;QuickSplash();}
         }
         IEnumerator Guard(IEnumerator routine,string folder)
         {
