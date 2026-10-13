@@ -54,7 +54,7 @@ namespace SandJamTest.Scene3D
             var shopIcon = owner.Home.transform.Find("icon-shop");
             if (shopIcon) AddHit(shopIcon, "shop");
             var galleryIcon = owner.Home.transform.Find("icon-cards");
-            if (galleryIcon) AddHit(galleryIcon, "gallery");
+            if (galleryIcon) { AddHit(galleryIcon, "gallery"); galleryBadge = AlertBadge(galleryIcon); }
             var homeGear = owner.Home.transform.Find("icon-settings-v2");
             if (homeGear) AddHit(homeGear, "settings");
             Campaign.Changed += Refresh;
@@ -84,6 +84,45 @@ namespace SandJamTest.Scene3D
             var r = go.AddComponent<SpriteRenderer>(); r.sprite = art; r.sortingOrder = order;
             float s = height / art.bounds.size.y / Mathf.Max(.0001f, parent.lossyScale.y);
             go.transform.localScale = new Vector3(s, s, 1);
+        }
+
+        GameObject galleryBadge;
+        // Original alert badge: red disc with a white ring and a white "!", at the icon's top-right corner.
+        static GameObject AlertBadge(Transform icon)
+        {
+            var renderer = icon.GetComponentInChildren<SpriteRenderer>(true); if (!renderer) return null;
+            var b = renderer.bounds;
+            var root = new GameObject("Alert badge") { layer = icon.gameObject.layer }.transform;
+            root.SetParent(icon.parent, true);
+            root.position = new Vector3(b.max.x + b.size.x * .1f, b.max.y - b.size.y * .18f, icon.position.z - .3f);
+            var disc = Disc();
+            var ring = new GameObject("Ring") { layer = root.gameObject.layer }.AddComponent<SpriteRenderer>();
+            ring.transform.SetParent(root, false); ring.sprite = disc; ring.color = Color.white; ring.sortingOrder = 40;
+            var fill = new GameObject("Fill") { layer = root.gameObject.layer }.AddComponent<SpriteRenderer>();
+            fill.transform.SetParent(root, false); fill.transform.localPosition = new Vector3(0, 0, -.01f); fill.sprite = disc; fill.color = new Color(.92f, .2f, .3f); fill.sortingOrder = 41;
+            float d = b.size.y * .48f, s = root.lossyScale.x;
+            ring.transform.localScale = Vector3.one * d / s; fill.transform.localScale = Vector3.one * d * .84f / s;
+            var mark = new GameObject("Mark") { layer = root.gameObject.layer }.AddComponent<TextMesh>();
+            mark.transform.SetParent(root, false); mark.transform.localPosition = new Vector3(0, 0, -.02f);
+            mark.text = "!"; mark.anchor = TextAnchor.MiddleCenter; mark.alignment = TextAlignment.Center; mark.fontSize = 64;
+            mark.characterSize = d * .11f / s; mark.color = Color.white;
+            UiFont.Apply(mark); mark.GetComponent<MeshRenderer>().sortingOrder = 42;
+            root.gameObject.SetActive(false);
+            return root.gameObject;
+        }
+        static Sprite disc;
+        static Sprite Disc()
+        {
+            if (disc) return disc;
+            const int n = 64; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x + .5f, y + .5f), new Vector2(n / 2f, n / 2f));
+                t.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(n / 2f - d)));
+            }
+            t.Apply();
+            disc = Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), n);
+            return disc;
         }
 
         // Adds a UI-layer click area that covers every sprite under the target.
@@ -214,6 +253,7 @@ namespace SandJamTest.Scene3D
             string join = SandQuest.Joined ? SandQuest.StepsDone + "/" + SandQuest.Steps : "JOIN";
             foreach (var label in joinLabels) if (label) label.text = join;
             if (livesStatus) livesStatus.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
+            if (galleryBadge) galleryBadge.SetActive(GalleryCollections.HasUnclaimedReward());
         }
 
         public void OpenSettings()

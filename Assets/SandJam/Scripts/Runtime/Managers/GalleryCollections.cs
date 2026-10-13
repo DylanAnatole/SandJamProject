@@ -77,6 +77,15 @@ namespace SandJamTest
             return true;
         }
 
+        // Original navbar badge: a collection milestone has been reached but its reward not collected yet.
+        public static bool HasUnclaimedReward()
+        {
+            foreach (var info in Unlocked())
+                for (int m = 0; m < 3; m++)
+                    if (MilestoneReached(info, m) && !MilestoneClaimed(info, m)) return true;
+            return false;
+        }
+
         public static Info ForLevel(int level)
         {
             int index, start, count;
