@@ -35,6 +35,27 @@ namespace SandJamTest.Scene3D
             galleryDynamic.Add(r.gameObject);
             return r;
         }
+        // Original cards: the picture fills the card's opening and is clipped to its rounded shape by the card
+        // mask, leaving the blue slot frame around it.
+        SpriteRenderer MaskedPicture(Sprite sprite, float x, float y, float w, float h, float z, Transform parent = null)
+        {
+            var maskSprite = Resources.Load<Sprite>("GalleryPage/bg-cardSlot-cardCollection_mask");
+            var r = Child<SpriteRenderer>(gallery, "Picture", new Vector3(x, y, z)); r.sprite = sprite;
+            if (sprite) { float k = Mathf.Max(w / sprite.bounds.size.x, h / sprite.bounds.size.y); r.transform.localScale = new Vector3(k, k, 1); }
+            if (maskSprite)
+            {
+                r.sharedMaterial = galleryMaskedMaterial ? galleryMaskedMaterial : (galleryMaskedMaterial = new Material(Shader.Find("Sprites/Default")));
+                r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+                var m = Child<SpriteMask>(gallery, "Picture mask", new Vector3(x, y, z)); m.sprite = maskSprite;
+                var ms = maskSprite.bounds.size; m.transform.localScale = new Vector3(w / ms.x, h / ms.y, 1);
+                if (parent) m.transform.SetParent(parent, true);
+                galleryDynamic.Add(m.gameObject);
+            }
+            if (parent) r.transform.SetParent(parent, true);
+            galleryDynamic.Add(r.gameObject);
+            return r;
+        }
+        Material galleryMaskedMaterial;
         TextMesh[] GalleryText(string text, float x, float y, float size, float z)
         {
             var labels = OutlinedLabel(gallery, "Gallery text", new Vector3(x, y, z), size);
@@ -88,12 +109,12 @@ namespace SandJamTest.Scene3D
                 int n = galleryIndex + side; if (n < 0 || n >= galleryList.Count) continue;
                 GalleryArt("bg-cards-top-carCollection", side * 2.25f, 2.57f, 1.45f, 1.8f, -6.25f);
                 Sprite c, g; StyleCover(galleryList[n], out c, out g);
-                GalleryPicture(c, side * 2.25f, 2.57f, 1.3f, 1.62f, -6.27f);
+                MaskedPicture(c, side * 2.25f, 2.57f, 1.33f, 1.67f, -6.27f);
             }
             GalleryArt("bg-cards-top-carCollection", 0, 2.57f, 1.72f, 2.13f, -6.3f);
             Sprite colour, grey; StyleCover(info, out colour, out grey);
             float fraction = (float)info.Completed(won) / info.Count;
-            if (fraction >= 1 || !grey) GalleryPicture(colour, 0, 2.57f, 1.53f, 1.93f, -6.35f);
+            if (fraction >= 1 || !grey) MaskedPicture(colour, 0, 2.57f, 1.58f, 1.98f, -6.35f);
             else
             {
                 var g = GalleryPicture(grey, 0, 2.57f, 1.53f, 1.93f, -6.35f);
@@ -134,18 +155,18 @@ namespace SandJamTest.Scene3D
             galleryGrid = new GameObject("Gallery grid") { layer = gallery.Root.layer }.transform;
             galleryGrid.SetParent(gallery.Root.transform, false);
             galleryDynamic.Add(galleryGrid.gameObject);
-            const float cw = 1.17f, ch = 1.46f, gx = 1.6f, gy = 1.7f;
+            const float cw = 1.42f, ch = 1.78f, gx = 1.6f, gy = 1.95f; // original cards nearly fill a third of the width
             for (int i = 0; i < info.Count; i++)
             {
                 int level = info.Start + i; bool done = level <= won;
-                float x = (i % 3 - 1) * gx, y = -.55f - (i / 3) * gy;
+                float x = (i % 3 - 1) * gx, y = -.85f - (i / 3) * gy;
                 GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
                 if (!done) continue;
                 string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
-                GalleryPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, y, cw - .12f, ch - .12f, -6.35f, galleryGrid);
+                MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, y, cw - .1f, ch - .1f, -6.35f, galleryGrid);
             }
             int rows = (info.Count + 2) / 3;
-            galleryScrollMax = Mathf.Max(0, .55f + rows * gy - (GridTop - GridBottom));
+            galleryScrollMax = Mathf.Max(0, .85f + rows * gy - (GridTop - GridBottom));
             ClipGrid();
         }
 
@@ -173,7 +194,7 @@ namespace SandJamTest.Scene3D
             foreach (Transform card in galleryGrid)
             {
                 float y = card.position.y;
-                card.gameObject.SetActive(y < GridTop - .45f && y > GridBottom + .45f);
+                card.gameObject.SetActive(y < GridTop - .55f && y > GridBottom + .55f);
             }
         }
 

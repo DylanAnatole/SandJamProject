@@ -18,6 +18,7 @@ namespace SandJamTest.Scene3D
             {
                 if (System.Array.IndexOf(TopBarParts, child.name) < 0 && System.Array.IndexOf(NavbarParts, child.name) < 0) continue;
                 var copy = Instantiate(child.gameObject, page.Root.transform, true);
+                copy.name = child.name; // refreshes find the counters by name (no "(Clone)")
                 foreach (var hit in copy.GetComponentsInChildren<VideoUiButton>(true)) Destroy(hit.gameObject);
                 // In front of the page content (page art sits around z -11).
                 var p = copy.transform.position; copy.transform.position = new Vector3(p.x, p.y, p.z - 6.5f);
@@ -44,6 +45,7 @@ namespace SandJamTest.Scene3D
             {
                 if (label.transform.parent != page.Root.transform) continue;
                 if (label.name == "5") label.text = LivesManager.Lives.ToString();
+                else if (label.name == "2040") label.text = Campaign.Coins.ToString(); // copied placeholder text
                 else if (label.name == "Full") label.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
             }
         }
