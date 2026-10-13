@@ -60,7 +60,6 @@ namespace SandJamTest.Scene3D
 
         // The frame mesh leaves a thinner border above the picture than at its sides. Stretch the frame (and its
         // shadow) upward, bottom fixed, so the top border matches the side borders as in the original.
-        static readonly string[] FrameOutline = { "Solid board frame", "Raised board frame", "Frame shadow" };
         void EvenFrameBorder(SandJamSceneController controller)
         {
             var board = controller.Board ? controller.Board.Renderer : null;
@@ -70,15 +69,41 @@ namespace SandJamTest.Scene3D
             float side = ((b.min.x - f0.min.x) + (f0.max.x - b.max.x)) * .5f;
             float extra = (b.max.y + side) - f0.max.y;
             if (extra <= .005f) return;
+            // Only the top border grows: vertices above the picture's top edge move up, so the frame's opening
+            // still fits the picture exactly (stretching the whole frame left a gap above the picture).
+            var filter = frame.GetComponent<MeshFilter>();
+            if (filter && filter.sharedMesh)
+            {
+                var t = frame.transform; var mesh = Instantiate(filter.sharedMesh); mesh.name = filter.sharedMesh.name + " (even border)";
+                var vertices = mesh.vertices;
+                // The mesh's opening is also a little taller than the picture: its inner top edge is pulled down onto
+                // the picture's top edge, the outer edge up by `extra`, everything in between scaled.
+                float innerTop = float.MaxValue, outerTop = f0.max.y;
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    var w = t.TransformPoint(vertices[i]);
+                    if (w.y > b.max.y + .005f && Mathf.Abs(w.x - b.center.x) < b.extents.x * .8f) innerTop = Mathf.Min(innerTop, w.y);
+                }
+                float gap = innerTop < outerTop ? innerTop - b.max.y : 0;
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    var w = t.TransformPoint(vertices[i]);
+                    if (w.y <= b.max.y + .005f) continue;
+                    float k = Mathf.Clamp01((w.y - innerTop) / Mathf.Max(.0001f, outerTop - innerTop));
+                    w.y += Mathf.Lerp(-gap, extra, k); vertices[i] = t.InverseTransformPoint(w);
+                }
+                mesh.vertices = vertices; mesh.RecalculateBounds();
+                filter.sharedMesh = mesh;
+            }
+            // The flat shadow behind the frame simply follows the new outline.
             foreach (var r in controller.GetComponentsInChildren<Renderer>(true))
             {
-                if (System.Array.IndexOf(FrameOutline, r.name) < 0) continue;
-                var t = r.transform; var rb = r.bounds;
+                if (r.name != "Frame shadow" && r.name != "Raised board frame") continue;
+                var rt = r.transform; var rb = r.bounds;
                 if (rb.size.y <= 0) continue;
                 float k = (rb.size.y + extra) / rb.size.y;
-                // Scale along the world-vertical axis of the part, keeping its bottom edge in place.
-                var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y * k, ls.z);
-                var nb = r.bounds; t.position += new Vector3(0, rb.min.y - nb.min.y, 0);
+                var ls = rt.localScale; rt.localScale = new Vector3(ls.x, ls.y * k, ls.z);
+                var nb = r.bounds; rt.position += new Vector3(0, rb.min.y - nb.min.y, 0);
             }
         }
 
@@ -201,7 +226,8 @@ namespace SandJamTest.Scene3D
             r.color = Color.Lerp(tone, Color.black, .12f); // close to the frame colour: the picture sits flush in the frame
             r.sortingOrder = board.sortingOrder - 1;
             go.transform.localScale = Vector3.one;
-            var world = new Vector3(b.size.x + .14f, b.size.y + .14f, 1);
+            // It sits behind the frame (perspective shifts it), so it is made generously larger than the opening.
+            var world = new Vector3(b.size.x + .6f, b.size.y + .6f, 1);
             var parentScale = go.transform.parent ? go.transform.parent.lossyScale : Vector3.one;
             go.transform.localScale = new Vector3(world.x / parentScale.x, world.y / parentScale.y, 1);
             go.transform.rotation = board.transform.rotation;
