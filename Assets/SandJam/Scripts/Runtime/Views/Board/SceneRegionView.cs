@@ -236,7 +236,10 @@ namespace SandJamTest.Scene3D
             // Only a gentle catch-up when many grains queue at the mouth: the stream should stay one calm, unbroken
             // trickle rather than surging.
             int backlog=sand.Requested-sand.Emitted;
-            if(backlog>240) steps=Mathf.RoundToInt(steps*Mathf.Min(1.4f,1f+(backlog-240)/600f));
+            // One grain enters per step, so several cubes pouring into the same region can request sand faster
+            // than it falls. Speed the simulation up with the waiting sand so the picture keeps pace with the cubes
+            // (~0.3 s behind at most) and the last grain lands about when the last cube walks off.
+            if(backlog>40) steps=Mathf.CeilToInt(steps*Mathf.Min(5f,1f+(backlog-40)/160f));
             sand.ScheduleSteps(steps);advancing=true;
         }
         public void FinishAdvance()
