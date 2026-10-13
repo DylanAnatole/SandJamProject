@@ -41,6 +41,29 @@ namespace SandJamTest.Editor
             return id;
         }
 
+        // Scene that shows how one level is built (diagram in edit mode, the real level in Play mode).
+        const string StructureScene = "Assets/SandJam/Scenes/LevelStructure.unity";
+        [MenuItem("Sand Jam/Levels/Open level structure scene")]
+        public static void OpenStructureScene()
+        {
+            if (!UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            if (File.Exists(StructureScene)) { UnityEditor.SceneManagement.EditorSceneManager.OpenScene(StructureScene); return; }
+            CreateStructureScene();
+        }
+
+        public static void CreateStructureScene()
+        {
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Single);
+            var camera = new GameObject("Preview camera").AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.11f, .13f, .18f);
+            camera.orthographic = true; camera.transform.position = new Vector3(0, 0, -10);
+            var viewer = new GameObject("Level Structure").AddComponent<Scene3D.LevelStructureViewer>();
+            viewer.PreviewCamera = camera;
+            viewer.Catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>("Assets/SandJam/Resources/LevelPack/Catalog.asset");
+            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, StructureScene);
+            Selection.activeGameObject = viewer.gameObject;
+        }
+
         [MenuItem("Sand Jam/Levels/Check custom levels")]
         public static void CheckCustomLevels()
         {
