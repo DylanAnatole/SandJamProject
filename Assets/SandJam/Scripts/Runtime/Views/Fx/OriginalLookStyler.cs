@@ -123,40 +123,72 @@ namespace SandJamTest.Scene3D
                 var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y / Mathf.Cos(angle * Mathf.Deg2Rad), ls.z);
             }
         }
-        // Original stand (level 313): one rounded slab in the frame colour, about 11% wider than the frame. The
-        // frame's posts are plugged into a long slot in the slab's top: above the slab only the frame shows, and
-        // the slot's dark ends peek out just beside each post. Drawn as flat pieces right in front of the frame's
-        // foot (the old extruded plinth is hidden: its shading made it read as a separate part).
+        // Original stand: a solid slab with a slot cut into its top; the picture frame is plugged into the slot,
+        // like two blocks fitted together. Built as real geometry in the frame's own material, tipped a little toward
+        // the camera so the slab top and the slot mouth beside each post are visible.
+        const float StandTilt = -20f;
         void BuildFrameFeet(SandJamSceneController controller)
         {
             var renderers = controller.GetComponentsInChildren<Renderer>(true);
             var plinth = renderers.FirstOrDefault(r => r.name == "Extruded plinth");
             var frame = renderers.FirstOrDefault(r => r.name == "Solid board frame");
-            if (!plinth || !frame || plinth.transform.parent.Find("Stand front")) return;
-            Color tone = frame.sharedMaterial && frame.sharedMaterial.HasProperty("_Color") ? frame.sharedMaterial.color : new Color(.37f, .29f, .5f);
+            if (!plinth || !frame || plinth.transform.parent.Find("Frame stand")) return;
             var fb = frame.bounds; var parent = plinth.transform.parent;
             plinth.enabled = false;
-            float width = fb.size.x * 1.11f, lip = fb.min.y + .2f, topH = .13f, frontH = .25f, z = fb.min.z - .06f;
-            var top = StandPiece("Stand top", parent, Color.Lerp(tone, Color.white, .13f), 6);
-            Place(top, fb.center.x, lip - topH * .5f, width, topH + .06f, z);
-            for (int side = -1; side <= 1; side += 2)
-            {
-                // A small socket with tight corners, from under the post's outer edge outward.
-                var slot = StandPiece("Stand slot", parent, Color.Lerp(tone, Color.black, .42f), 7, 800f);
-                float x = side < 0 ? fb.min.x - .07f : fb.max.x + .07f;
-                Place(slot, x, lip - topH * .5f, .18f, .06f, z - .01f);
-            }
-            var front = StandPiece("Stand front", parent, Color.Lerp(tone, Color.black, .06f), 8);
-            Place(front, fb.center.x, lip - topH - frontH * .5f + .02f, width, frontH, z - .02f);
-            var edge = StandPiece("Stand front edge", parent, Color.Lerp(tone, Color.black, .25f), 9);
-            Place(edge, fb.center.x, lip - topH - frontH + .03f, width * .985f, .05f, z - .03f);
+            float width = fb.size.x * 1.11f, depth = .8f, height = .32f, slotDepth = .28f;
+            float slotHalfX = fb.extents.x + .07f, slotHalfZ = fb.extents.z + .02f;
+            var mesh = new Mesh { name = "Frame stand" };
+            var vertices = new System.Collections.Generic.List<Vector3>(); var normals = new System.Collections.Generic.List<Vector3>();
+            var body = new System.Collections.Generic.List<int>(); var floor = new System.Collections.Generic.List<int>();
+            float hx = width * .5f, hz = depth * .5f;
+            AddBox(vertices, normals, body, new Vector3(-hx, -height, -hz), new Vector3(hx, -slotDepth, hz));          // under the slot
+            AddBox(vertices, normals, body, new Vector3(-hx, -slotDepth, -hz), new Vector3(hx, 0, -slotHalfZ), .08f); // front lip, soft top edge
+            AddBox(vertices, normals, body, new Vector3(-hx, -slotDepth, slotHalfZ), new Vector3(hx, 0, hz));         // back lip
+            AddBox(vertices, normals, body, new Vector3(-hx, -slotDepth, -slotHalfZ), new Vector3(-slotHalfX, 0, slotHalfZ)); // left end
+            AddBox(vertices, normals, body, new Vector3(slotHalfX, -slotDepth, -slotHalfZ), new Vector3(hx, 0, slotHalfZ));   // right end
+            // Dark slot floor.
+            int f = vertices.Count; float fy = -slotDepth + .002f;
+            vertices.AddRange(new[] { new Vector3(-slotHalfX, fy, -slotHalfZ), new Vector3(-slotHalfX, fy, slotHalfZ), new Vector3(slotHalfX, fy, slotHalfZ), new Vector3(slotHalfX, fy, -slotHalfZ) });
+            for (int k = 0; k < 4; k++) normals.Add(Vector3.up);
+            floor.AddRange(new[] { f, f + 1, f + 2, f, f + 2, f + 3 });
+            mesh.SetVertices(vertices); mesh.SetNormals(normals); mesh.subMeshCount = 2;
+            mesh.SetTriangles(body, 0); mesh.SetTriangles(floor, 1); mesh.RecalculateBounds();
+            var stand = new GameObject("Frame stand") { layer = frame.gameObject.layer };
+            stand.transform.SetParent(parent, false);
+            // The slab top sits high enough to hide the frame's rounded bottom corners inside the slot.
+            stand.transform.position = new Vector3(fb.center.x, fb.min.y + .27f, fb.center.z);
+            stand.transform.rotation = Quaternion.Euler(StandTilt, 0, 0);
+            var scale = parent.lossyScale; stand.transform.localScale = new Vector3(1 / scale.x, 1 / scale.y, 1 / scale.z);
+            stand.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var bodyMaterial = new Material(frame.sharedMaterial);
+            var slotMaterial = new Material(frame.sharedMaterial);
+            if (slotMaterial.HasProperty("_Color")) slotMaterial.color = Color.Lerp(frame.sharedMaterial.color, Color.black, .55f);
+            stand.AddComponent<MeshRenderer>().sharedMaterials = new[] { bodyMaterial, slotMaterial };
             var shadow = renderers.FirstOrDefault(r => r.name == "Plinth contact shadow");
             if (shadow)
             {
                 var sb = shadow.bounds; var sl = shadow.transform.localScale;
                 shadow.transform.localScale = new Vector3(sl.x * width * 1.04f / Mathf.Max(.0001f, sb.size.x), sl.y, sl.z);
-                shadow.transform.position += new Vector3(fb.center.x - shadow.bounds.center.x, (lip - topH - frontH) - shadow.bounds.center.y, 0);
+                shadow.transform.position += new Vector3(fb.center.x - shadow.bounds.center.x, 0, 0);
             }
+        }
+        // Box; `bevel` cuts a 45° chamfer along its top-front edge (the soft rounded edge of the original slab).
+        static void AddBox(System.Collections.Generic.List<Vector3> v, System.Collections.Generic.List<Vector3> n, System.Collections.Generic.List<int> t, Vector3 a, Vector3 b, float bevel = 0)
+        {
+            void Face(Vector3 normal, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
+            {
+                int i0 = v.Count; v.Add(p0); v.Add(p1); v.Add(p2); v.Add(p3);
+                for (int k = 0; k < 4; k++) n.Add(normal);
+                t.AddRange(new[] { i0, i0 + 1, i0 + 2, i0, i0 + 2, i0 + 3 });
+            }
+            float tz = a.z + bevel, fy = b.y - bevel;
+            Face(Vector3.up, new Vector3(a.x, b.y, tz), new Vector3(a.x, b.y, b.z), new Vector3(b.x, b.y, b.z), new Vector3(b.x, b.y, tz));
+            Face(Vector3.down, new Vector3(a.x, a.y, a.z), new Vector3(b.x, a.y, a.z), new Vector3(b.x, a.y, b.z), new Vector3(a.x, a.y, b.z));
+            Face(Vector3.back, new Vector3(a.x, a.y, a.z), new Vector3(a.x, fy, a.z), new Vector3(b.x, fy, a.z), new Vector3(b.x, a.y, a.z));
+            if (bevel > 0) Face(new Vector3(0, 1, -1).normalized, new Vector3(a.x, fy, a.z), new Vector3(a.x, b.y, tz), new Vector3(b.x, b.y, tz), new Vector3(b.x, fy, a.z));
+            Face(Vector3.forward, new Vector3(b.x, a.y, b.z), new Vector3(b.x, b.y, b.z), new Vector3(a.x, b.y, b.z), new Vector3(a.x, a.y, b.z));
+            Face(Vector3.left, new Vector3(a.x, a.y, b.z), new Vector3(a.x, b.y, b.z), new Vector3(a.x, b.y, a.z), new Vector3(a.x, a.y, a.z));
+            Face(Vector3.right, new Vector3(b.x, a.y, a.z), new Vector3(b.x, b.y, a.z), new Vector3(b.x, b.y, b.z), new Vector3(b.x, a.y, b.z));
         }
 
         SpriteRenderer StandPiece(string name, Transform parent, Color color, int order, float pixelsPerUnit = 250f)
