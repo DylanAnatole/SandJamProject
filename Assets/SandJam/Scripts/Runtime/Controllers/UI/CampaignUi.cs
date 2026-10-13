@@ -179,7 +179,7 @@ namespace SandJamTest.Scene3D
         void RollCoins()
         {
             int target = Campaign.Coins;
-            bool canRoll = screen.Current == VideoScreen.Page.Result || screen.Current == VideoScreen.Page.Home;
+            bool canRoll = (screen.Current == VideoScreen.Page.Result && ResultFx.CoinsLanded) || screen.Current == VideoScreen.Page.Home;
             if (rollingCoins < 0 || target < rollingCoins) rollingCoins = target; // spending is instant
             else if (rollingCoins < target && canRoll)
             {

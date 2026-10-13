@@ -40,6 +40,7 @@ namespace SandJamTest.Scene3D
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
             if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=UiFont.Font?UiFont.Font:Controller.InterfaceFont;fx.Build(superbTitle);}
             StyleHome();
+            Result.AddComponent<ResultFx>().Build();
             gameObject.AddComponent<TextOutliner>();
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
