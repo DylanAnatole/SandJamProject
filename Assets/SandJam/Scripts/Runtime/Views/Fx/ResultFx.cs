@@ -25,6 +25,7 @@ namespace SandJamTest.Scene3D
             to = transform.Find("icon-coin");
             var backdrop = transform.Find("Dark backdrop");
             if (backdrop) { var r = backdrop.GetComponent<SpriteRenderer>(); if (r) { var c = r.color; c.a = .86f; r.color = c; } }
+            BuildCardFrame();
             var light = Resources.Load<Sprite>("Congrats/light-congrats");
             var header = transform.Find("Gold header");
             if (light && header)
@@ -50,6 +51,48 @@ namespace SandJamTest.Scene3D
                 var t = transform.Find(name); if (!t) continue;
                 foreach (var r in t.GetComponentsInChildren<SpriteRenderer>(true)) { buttons.Add(r); buttonColors.Add(r.color); }
             }
+        }
+
+        // Original card: a gold frame following the card's rounded, slightly bulging outline (the white card mask,
+        // tinted), with a darker gold edge; the glass panel is clipped just inside its own outline so its green rim
+        // (unused in the current build) disappears. Replaces the flat rectangular gold panels.
+        public const string FrameName = "Card frame", EdgeName = "Card frame edge", ClipName = "Glass clip";
+        void BuildCardFrame()
+        {
+            var mask = Resources.Load<Sprite>("VideoUI/bg-popUp-mask-levelCompleted-v2");
+            var border = transform.Find("Gold outer border"); var header = transform.Find("Gold header"); var glass = transform.Find("bg-popUp-levelCompleted-v2");
+            if (!mask || !border || !glass) return;
+            var b = border.GetComponent<Renderer>().bounds;
+            SpriteRenderer Piece(string name, Color color, float grow, float z)
+            {
+                var r = new GameObject(name) { layer = gameObject.layer }.AddComponent<SpriteRenderer>();
+                r.transform.SetParent(transform, false); r.sprite = mask; r.color = color;
+                r.transform.position = new Vector3(b.center.x, b.center.y, z);
+                var ps = transform.lossyScale; var size = mask.bounds.size;
+                r.transform.localScale = new Vector3((b.size.x + grow) / size.x / ps.x, (b.size.y + grow) / size.y / ps.y, 1);
+                return r;
+            }
+            float z = border.position.z;
+            Piece(EdgeName, new Color(.86f, .5f, .05f), .1f, z + .01f);
+            Piece(FrameName, new Color(.98f, .77f, .16f), 0, z);
+            border.GetComponent<Renderer>().enabled = false;
+            if (header) header.GetComponent<Renderer>().enabled = false;
+            var g = glass.GetComponent<SpriteRenderer>();
+            // The glass fills the card below the title, inset evenly from the gold frame.
+            float glassTop = header ? header.GetComponent<Renderer>().bounds.min.y + .05f : b.max.y - 1f;
+            float inset = .12f, glassBottom = b.min.y + inset;
+            var gsz = g.sprite.bounds.size; var tps = transform.lossyScale;
+            g.transform.position = new Vector3(b.center.x, (glassTop + glassBottom) * .5f, g.transform.position.z);
+            g.transform.localScale = new Vector3((b.size.x - 2 * inset) / gsz.x / tps.x, (glassTop - glassBottom) / gsz.y / tps.y, 1);
+            var gb = g.bounds;
+            var clip = new GameObject(ClipName) { layer = gameObject.layer }.AddComponent<SpriteMask>();
+            clip.transform.SetParent(transform, false); clip.sprite = mask;
+            clip.transform.position = gb.center;
+            var cs = mask.bounds.size; var gs = transform.lossyScale;
+            clip.transform.localScale = new Vector3(gb.size.x * .94f / cs.x / gs.x, gb.size.y * .95f / cs.y / gs.y, 1);
+            // The project's pixel sprite shader ignores sprite masks; the default sprite shader honours them.
+            g.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+            g.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
 
         void OnEnable() { time = 0; CoinsLanded = coins.Count == 0; }
