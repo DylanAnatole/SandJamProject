@@ -302,7 +302,8 @@ namespace SandJamTest.Scene3D
             Art(p, folder + title, new Vector3(0, 2.28f, -6.7f), 3.45f);
             Art(p, folder + pill, new Vector3(0, 1.55f, -6.7f), 1.95f);
             levelLabel = Label(p, name + " number", new Vector3(0, 1.57f, -6.8f), "Level 1", .042f, Color.white);
-            Label(p, name + " caption", new Vector3(0, -1.68f, -6.8f), caption, .042f, new Color(.16f, .17f, .32f));
+            // Original caption: white letters with the game's dark outline (added by TextOutliner).
+            Label(p, name + " caption", new Vector3(0, -1.68f, -6.8f), caption, .042f, Color.white);
             foreach (Transform child in p.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, -1.55f, child.localPosition.z);
             p.RightButton.transform.parent.localScale = new Vector3(1.5f, 1.5f, 1);

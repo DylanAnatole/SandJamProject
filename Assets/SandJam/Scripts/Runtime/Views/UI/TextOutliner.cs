@@ -47,6 +47,8 @@ namespace SandJamTest.Scene3D
 
     public sealed class OutlinedText : MonoBehaviour
     {
+        // Outline colour; dark captions use a light outline instead (original Hard/Bonus popups).
+        public Color Ink = TextOutliner.Ink;
         static readonly Vector2[] Directions =
         {
             new Vector2(1, 0), new Vector2(-1, 0), new Vector2(0, 1), new Vector2(0, -1),
@@ -79,7 +81,7 @@ namespace SandJamTest.Scene3D
             if (main.color.a != alpha)
             {
                 alpha = main.color.a;
-                var c = TextOutliner.Ink; c.a = alpha;
+                var c = Ink; c.a = alpha;
                 foreach (var t in copies) t.color = c;
             }
         }
