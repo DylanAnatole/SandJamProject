@@ -54,8 +54,11 @@ namespace SandJamTest.Scene3D
 
         // Home closer to the original recording (level 267): brighter level sign and stage, and a soft spotlight
         // falling from the walkway onto the PLAY button.
-        // Walkway crossing (local units of the Home page): right edge to left edge.
-        const float MascotEdgeX=3.3f, MascotWalk=2.2f, MascotLap=2.8f, MascotEnter=1f, MascotYaw=0f;
+        // Walkway crossing (local units of the Home page), edge to edge. The original crosses the visible screen in
+        // ~2.1 s (~2.25 units/s) with a step cycle of ~0.46 s (the walk clip lasts 0.83 s). Played at its own speed
+        // the legs stepped half as often as the body moved, so the feet slid forward and the cube seemed to walk
+        // backwards.
+        const float MascotEdgeX=3.3f, MascotWalk=3f, MascotLap=3.7f, MascotEnter=1f, MascotYaw=0f, MascotAnimSpeed=1.8f;
         int mascotLap=-1,mascotPasses; float mascotDirection=1;
         static readonly Color[] MascotColors={new Color(0f,.64f,1f),new Color(1f,.8f,0f),new Color(.75f,.09f,.09f),new Color(.83f,0f,.78f),
             new Color(.11f,.79f,0f),new Color(1f,.53f,0f),new Color(.44f,0f,.93f)};
@@ -81,6 +84,7 @@ namespace SandJamTest.Scene3D
         }
         void StartMascotPass()
         {
+            var mascotAnimator=Mascot.GetComponentInChildren<Animator>();if(mascotAnimator)mascotAnimator.speed=MascotAnimSpeed;
             // Passes alternate: left to right, then right to left, and so on (direction 1 walks right to left).
             mascotDirection=mascotPasses++%2==0?-1:1;
             int next=UnityEngine.Random.Range(0,MascotColors.Length-1);if(next>=mascotColor)next++;
@@ -377,7 +381,7 @@ namespace SandJamTest.Scene3D
             }
             if(Current==Page.Home)
             {
-                // Original Home (recordings): a sand cube walks across the whole walkway in ~2.2 s, then the next one
+                // Original Home (recordings): a sand cube walks across the whole walkway in ~3 s, then the next one
                 // comes - each pass a new colour (blue, yellow, red, pink...), alternating left-to-right and right-to-left.
                 float lapTime=elapsed+MascotLap-MascotEnter;
                 int lapIndex=Mathf.FloorToInt(lapTime/MascotLap);
