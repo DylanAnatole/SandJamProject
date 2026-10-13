@@ -117,13 +117,15 @@ namespace SandJamTest.Scene3D
             if (fraction >= 1 || !grey) MaskedPicture(colour, 0, 2.57f, 1.58f, 1.98f, -6.35f);
             else
             {
-                var g = GalleryPicture(grey, 0, 2.57f, 1.53f, 1.93f, -6.35f);
+                // Grey cover with the coloured part rising from the bottom, both clipped to the rounded card.
+                var g = MaskedPicture(grey, 0, 2.57f, 1.58f, 1.98f, -6.35f);
                 if (fraction > 0 && colour)
                 {
                     var rect = colour.textureRect;
                     var slice = Sprite.Create(colour.texture, new Rect(rect.x, rect.y, rect.width, Mathf.Max(1, Mathf.Round(rect.height * fraction))), new Vector2(.5f, 0), colour.pixelsPerUnit);
                     runtimeArt.Add(slice);
                     var c = GalleryPicture(slice, 0, 0, 1, 1, -6.4f);
+                    c.sharedMaterial = g.sharedMaterial; c.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
                     c.transform.localScale = g.transform.localScale;
                     c.transform.localPosition = new Vector3(0, 2.57f - g.bounds.size.y / 2, -6.4f);
                 }
