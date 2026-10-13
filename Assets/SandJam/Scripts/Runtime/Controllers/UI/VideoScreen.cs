@@ -52,6 +52,40 @@ namespace SandJamTest.Scene3D
 
         // Home closer to the original recording (level 267): brighter level sign and stage, and a soft spotlight
         // falling from the walkway onto the PLAY button.
+        // Walkway crossing (local units of the Home page): right edge to left edge.
+        const float MascotEdgeX=3.3f, MascotWalk=2.2f, MascotLap=2.8f, MascotEnter=1f, MascotYaw=0f;
+        int mascotLap=-1; float mascotDirection=1;
+        static readonly Color[] MascotColors={new Color(0f,.64f,1f),new Color(1f,.8f,0f),new Color(.75f,.09f,.09f),new Color(.83f,0f,.78f),
+            new Color(.11f,.79f,0f),new Color(1f,.53f,0f),new Color(.44f,0f,.93f)};
+        // New pass: random direction (+1 = from the right edge) and a colour different from the last one.
+        int mascotColor=-1;
+        // Legs stride toward the walking direction while the body keeps facing the camera (as in the original):
+        // after the walk animation has posed the rig, both thighs are swung around the hips.
+        Transform mascotHips,mascotLeftThigh,mascotRightThigh;
+        void LateUpdate()
+        {
+            if(Current!=Page.Home || !Mascot || !Mascot.gameObject.activeInHierarchy)return;
+            if(!mascotHips)foreach(var t in Mascot.GetComponentsInChildren<Transform>(true))
+            {
+                if(t.name.EndsWith("Hips"))mascotHips=t;else if(t.name.EndsWith("LeftUpLeg"))mascotLeftThigh=t;else if(t.name.EndsWith("RightUpLeg"))mascotRightThigh=t;
+            }
+            if(!mascotHips || !mascotLeftThigh || !mascotRightThigh)return;
+            var turn=Quaternion.AngleAxis(-80f*mascotDirection,Mascot.up);
+            foreach(var thigh in new[]{mascotLeftThigh,mascotRightThigh})
+            {
+                thigh.position=mascotHips.position+turn*(thigh.position-mascotHips.position);
+                thigh.rotation=turn*thigh.rotation;
+            }
+        }
+        void StartMascotPass()
+        {
+            mascotDirection=UnityEngine.Random.value<.5f?1:-1;
+            int next=UnityEngine.Random.Range(0,MascotColors.Length-1);if(next>=mascotColor)next++;
+            if(mascotColor<0)next=0; // the first one is blue, as in the recording
+            mascotColor=next;
+            foreach(var r in Mascot.GetComponentsInChildren<Renderer>(true))
+                foreach(var m in r.materials)if(m.HasProperty("_Color"))m.color=MascotColors[next];
+        }
         void StyleHome()
         {
             Tint(Home.transform.Find("Level sign blue"),new Color32(80,160,241,255));
@@ -265,8 +299,18 @@ namespace SandJamTest.Scene3D
             }
             if(Current==Page.Home)
             {
-                Mascot.localPosition=mascotPosition+new Vector3(Mathf.PingPong(elapsed*.4f,3),0,0);
-                Mascot.localRotation=Quaternion.Euler(0,(elapsed*.4f)%6<3?-70:70,0);
+                // Original Home (recordings): a sand cube walks across the whole walkway in ~2.2 s, then the next one
+                // comes - each pass a new colour (blue, yellow, red, pink...) and either direction.
+                float lapTime=elapsed+MascotLap-MascotEnter;
+                int lapIndex=Mathf.FloorToInt(lapTime/MascotLap);
+                float lap=lapTime-lapIndex*MascotLap;
+                bool walking=lap<MascotWalk;
+                // Kept active between passes (parked off screen): re-enabling restarted the walk animation in a
+                // side-on pose for a frame.
+                if(lapIndex!=mascotLap){mascotLap=lapIndex;StartMascotPass();}
+                float x=walking?Mathf.Lerp(MascotEdgeX*mascotDirection,-MascotEdgeX*mascotDirection,lap/MascotWalk):-6f*mascotDirection;
+                Mascot.localPosition=new Vector3(x,mascotPosition.y,mascotPosition.z);
+                Mascot.localRotation=Quaternion.Euler(0,-MascotYaw*mascotDirection,0);
             }
             if(Current==Page.Celebration && elapsed>SuperbFx.Duration && !smoke)Show(Page.Result);
             if(Current==Page.Gameplay && Controller.Game!=null)
