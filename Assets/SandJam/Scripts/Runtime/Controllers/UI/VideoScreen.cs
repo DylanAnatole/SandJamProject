@@ -55,65 +55,15 @@ namespace SandJamTest.Scene3D
         // Home closer to the original recording (level 267): brighter level sign and stage, and a soft spotlight
         // falling from the walkway onto the PLAY button.
         // Walkway crossing (local units of the Home page), edge to edge. The original crosses the visible screen in
-        // ~2.1 s (~2.25 units/s) in a quick trot: a 0.46 s step cycle (the walk clip lasts 0.83 s) with long strides.
-        // The clip's own swing is short, so the thighs' swing is widened (MascotStride) around their average pose.
-        const float MascotEdgeX=3.3f, MascotWalk=3f, MascotLap=3.7f, MascotEnter=1f, MascotYaw=0f, MascotAnimSpeed=1.8f, MascotStride=1.4f;
+        // ~2.1 s (~2.25 units/s) in a quick trot: a 0.46 s step cycle (the walk clip lasts 0.83 s). The whole
+        // character turns toward where it walks (MascotYaw, degrees from facing the camera), so the walk clip plays
+        // in its natural profile; the cube reads the same from the side.
+        const float MascotEdgeX=3.3f, MascotWalk=3f, MascotLap=3.7f, MascotEnter=1f, MascotYaw=70f, MascotAnimSpeed=1.8f;
         int mascotLap=-1,mascotPasses; float mascotDirection=1;
         static readonly Color[] MascotColors={new Color(0f,.64f,1f),new Color(1f,.8f,0f),new Color(.75f,.09f,.09f),new Color(.83f,0f,.78f),
             new Color(.11f,.79f,0f),new Color(1f,.53f,0f),new Color(.44f,0f,.93f)};
         // New pass: random direction (+1 = from the right edge) and a colour different from the last one.
         int mascotColor=-1;
-        // Legs stride toward the walking direction while the body keeps facing the camera (as in the original):
-        // after the walk animation has posed the rig, both thighs are swung around the hips.
-        Transform mascotHips,mascotLeftThigh,mascotRightThigh;
-        void LateUpdate()
-        {
-            if(Current!=Page.Home || !Mascot || !Mascot.gameObject.activeInHierarchy)return;
-            if(!mascotHips)foreach(var t in Mascot.GetComponentsInChildren<Transform>(true))
-            {
-                if(t.name.EndsWith("Hips"))mascotHips=t;else if(t.name.EndsWith("LeftUpLeg"))mascotLeftThigh=t;else if(t.name.EndsWith("RightUpLeg"))mascotRightThigh=t;
-            }
-            if(!mascotHips || !mascotLeftThigh || !mascotRightThigh)return;
-            if(!mascotStrideReady)MeasureMascotStride();
-            WidenStride(mascotLeftThigh,mascotLeftMean);WidenStride(mascotRightThigh,mascotRightMean);
-            var turn=Quaternion.AngleAxis(-80f*mascotDirection,Mascot.up);
-            foreach(var thigh in new[]{mascotLeftThigh,mascotRightThigh})
-            {
-                thigh.position=mascotHips.position+turn*(thigh.position-mascotHips.position);
-                thigh.rotation=turn*thigh.rotation;
-            }
-        }
-        // Average thigh direction (hip to knee, in the hips' space) over the walk cycle.
-        Vector3 mascotLeftMean,mascotRightMean;bool mascotStrideReady;
-        void MeasureMascotStride()
-        {
-            mascotStrideReady=true;
-            var animator=Mascot.GetComponentInChildren<Animator>();if(!animator)return;
-            var state=animator.GetCurrentAnimatorStateInfo(0);
-            Vector3 left=Vector3.zero,right=Vector3.zero;
-            const int samples=16;
-            for(int i=0;i<samples;i++)
-            {
-                animator.Play(state.fullPathHash,0,i/(float)samples);animator.Update(0);
-                left+=ThighDirection(mascotLeftThigh);right+=ThighDirection(mascotRightThigh);
-            }
-            animator.Play(state.fullPathHash,0,state.normalizedTime);animator.Update(0);
-            mascotLeftMean=left.normalized;mascotRightMean=right.normalized;
-        }
-        Vector3 ThighDirection(Transform thigh)
-        {
-            return thigh.childCount>0?mascotHips.InverseTransformDirection(thigh.GetChild(0).position-thigh.position).normalized:Vector3.down;
-        }
-        // Swings the thigh further from its average direction (same plane, no twist): longer forward and back steps.
-        void WidenStride(Transform thigh,Vector3 mean)
-        {
-            if(mean==Vector3.zero)return;
-            var swing=Quaternion.FromToRotation(mean,ThighDirection(thigh));
-            swing.ToAngleAxis(out float angle,out Vector3 axis);
-            if(angle>180)angle-=360;
-            var extra=Quaternion.AngleAxis(angle*(MascotStride-1),mascotHips.TransformDirection(axis));
-            thigh.rotation=extra*thigh.rotation;
-        }
         void StartMascotPass()
         {
             var mascotAnimator=Mascot.GetComponentInChildren<Animator>();if(mascotAnimator)mascotAnimator.speed=MascotAnimSpeed;
