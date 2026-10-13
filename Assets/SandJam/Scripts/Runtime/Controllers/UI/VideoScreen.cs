@@ -55,10 +55,12 @@ namespace SandJamTest.Scene3D
         // Home closer to the original recording (level 267): brighter level sign and stage, and a soft spotlight
         // falling from the walkway onto the PLAY button.
         // Walkway crossing (local units of the Home page), edge to edge. The original crosses the visible screen in
-        // ~2.1 s (~2.25 units/s) with a step cycle of ~0.46 s (the walk clip lasts 0.83 s). Played at its own speed
-        // the legs stepped half as often as the body moved, so the feet slid forward and the cube seemed to walk
-        // backwards.
-        const float MascotEdgeX=3.3f, MascotWalk=3f, MascotLap=3.7f, MascotEnter=1f, MascotYaw=0f, MascotAnimSpeed=1.8f;
+        // ~2.1 s (~2.25 units/s). The walk clip (0.83 s) plays at 1.5x: a 0.56 s step, a calm walk rather than
+        // the original's quicker 0.46 s trot.
+        const float MascotEdgeX=3.3f, MascotWalk=3f, MascotLap=3.7f, MascotEnter=1f, MascotYaw=0f, MascotAnimSpeed=1.5f;
+        // Requested look: the legs face away from the walking direction, so the cube shuffles along backwards
+        // (the original steps forwards; set false to get that back).
+        const bool MascotBackwards=true;
         int mascotLap=-1,mascotPasses; float mascotDirection=1;
         static readonly Color[] MascotColors={new Color(0f,.64f,1f),new Color(1f,.8f,0f),new Color(.75f,.09f,.09f),new Color(.83f,0f,.78f),
             new Color(.11f,.79f,0f),new Color(1f,.53f,0f),new Color(.44f,0f,.93f)};
@@ -75,7 +77,7 @@ namespace SandJamTest.Scene3D
                 if(t.name.EndsWith("Hips"))mascotHips=t;else if(t.name.EndsWith("LeftUpLeg"))mascotLeftThigh=t;else if(t.name.EndsWith("RightUpLeg"))mascotRightThigh=t;
             }
             if(!mascotHips || !mascotLeftThigh || !mascotRightThigh)return;
-            var turn=Quaternion.AngleAxis(-80f*mascotDirection,Mascot.up);
+            var turn=Quaternion.AngleAxis((MascotBackwards?80f:-80f)*mascotDirection,Mascot.up);
             foreach(var thigh in new[]{mascotLeftThigh,mascotRightThigh})
             {
                 thigh.position=mascotHips.position+turn*(thigh.position-mascotHips.position);

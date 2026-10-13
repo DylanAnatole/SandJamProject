@@ -555,17 +555,22 @@ namespace SandJamTest.Scene3D
             if (info.Cover != null) { colour = Resources.Load<Sprite>(info.Cover); grey = Resources.Load<Sprite>(info.Cover + "-bw"); }
             else { colour = Resources.Load<Sprite>("LevelRenders/" + info.RenderId); grey = Greyscale(colour); }
             if (!colour || !grey) return false;
+            if (info.Cover != null) { colour = CoverCrop(colour); grey = CoverCrop(grey); }
             SetText(cardName, info.Name);
             var size = grey.bounds.size;
             // The picture fills the rounded slot completely (original): it is fitted to the slot box on both axes
             // (the 84x112 renders are within a few percent of the slot's shape) and runs under the rim.
             float kx = CoverWidth / size.x, ky = CoverHeight / size.y;
             cardBw.sprite = grey; cardBw.transform.localScale = new Vector3(kx, ky, 1);
+            // Cover sprites do not all pivot on their centre (the picture drifted right and down out of the slot):
+            // each one is centred on the slot through its own bounds.
+            cardBw.transform.localPosition = Centred(grey, kx, ky, cardBw.transform.localPosition.z);
             // Original: the colour cover sits exactly on the grey one and a hard horizontal edge rises from the
             // previous completion to the new one (about 0.8 s, right after the card pops in).
             cardColor.sprite = colour;
-            cardColor.transform.localScale = new Vector3(CoverWidth / colour.bounds.size.x, CoverHeight / colour.bounds.size.y, 1);
-            cardColor.transform.localPosition = new Vector3(0, CoverY, cardColor.transform.localPosition.z);
+            float cx = CoverWidth / colour.bounds.size.x, cy = CoverHeight / colour.bounds.size.y;
+            cardColor.transform.localScale = new Vector3(cx, cy, 1);
+            cardColor.transform.localPosition = Centred(colour, cx, cy, cardColor.transform.localPosition.z);
             cardColor.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
             cardColor.gameObject.SetActive(true);
             // Original: the picture sits in a rounded slot with a soft lavender rim.
@@ -595,6 +600,25 @@ namespace SandJamTest.Scene3D
             return true;
         }
 
+        // Gallery covers (316x376) carry a transparent margin (~12 px each side) and wide rounded corners, which left
+        // gaps inside the slot; the card uses the picture inset past them, centred, so it fills the slot edge to edge.
+        readonly System.Collections.Generic.Dictionary<Sprite, Sprite> coverCrops = new System.Collections.Generic.Dictionary<Sprite, Sprite>();
+        Sprite CoverCrop(Sprite source)
+        {
+            if (coverCrops.TryGetValue(source, out var cropped)) return cropped;
+            var r = source.rect;
+            float insetX = r.width * .07f, insetY = r.height * .03f;
+            var rect = new Rect(r.x + insetX, r.y + insetY, r.width - 2 * insetX, r.height - 2 * insetY);
+            cropped = Sprite.Create(source.texture, rect, new Vector2(.5f, .5f), source.pixelsPerUnit);
+            cropped.name = source.name + " (card)";
+            coverCrops[source] = cropped; runtimeArt.Add(cropped);
+            return cropped;
+        }
+        static Vector3 Centred(Sprite sprite, float kx, float ky, float z)
+        {
+            var c = sprite.bounds.center;
+            return new Vector3(-c.x * kx, CoverY - c.y * ky, z);
+        }
         SpriteRenderer coverFrame;
         // Rim texture for a 3:4 picture: transparent inside, lavender rim, card-coloured corners outside the rounding.
         static Sprite RoundedFrame()
