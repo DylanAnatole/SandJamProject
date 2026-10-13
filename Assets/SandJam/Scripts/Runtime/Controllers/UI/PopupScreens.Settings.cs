@@ -54,8 +54,11 @@ namespace SandJamTest.Scene3D
         {
             Sized("Settings/bg-settings-slot", 0, y, 712.76f, 174.5f, -6.3f);
             Sized("Settings/bg-settings-slot-button", 205.4f, y, 279.3f, 96.6f, -6.4f);
-            var name = Label(settings, label + " label", Px(-142, y, -6.5f), label, .05f, new Color(.17f, .17f, .35f));
-            settingsDynamic.Add(name.gameObject);
+            // Original: white name with a dark outline, left-aligned in the slot.
+            var name = OutlinedLabel(settings, label + " label", Px(-318, y - 6, -6.5f), .047f);
+            SetText(name, label);
+            foreach (var t in name) { t.anchor = TextAnchor.MiddleLeft; t.alignment = TextAlignment.Left; }
+            settingsDynamic.Add(name[0].gameObject);
             var knob = Sized("Settings/button-off", 205.4f - 68, y, 123.9f, 88.2f, -6.5f);
             knobText = Label(settings, label + " knob", Px(205.4f - 68, y, -6.6f), "OFF", .03f, Color.white);
             settingsDynamic.Add(knobText.gameObject);
@@ -67,7 +70,7 @@ namespace SandJamTest.Scene3D
         {
             var art = Sized(sprite, 0, y, width, height, -6.4f);
             if (textColor == Color.white) { var l = OutlinedLabel(settings, text + " label", Px(0, y + 12, -6.6f), .06f); SetText(l, text); settingsDynamic.Add(l[0].gameObject); }
-            else settingsDynamic.Add(Label(settings, text + " label", Px(0, y + 4, -6.6f), text, .042f, textColor).gameObject);
+            else settingsDynamic.Add(Label(settings, text + " label", Px(0, y + 4, -6.6f), text, .038f, textColor).gameObject);
             settingsDynamic.Add(Hit(settings, Px(0, y, -8.5f), new Vector2(art.bounds.size.x, art.bounds.size.y), action));
         }
 
