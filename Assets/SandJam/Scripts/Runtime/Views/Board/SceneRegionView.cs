@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
 namespace SandJamTest.Scene3D
@@ -140,10 +141,13 @@ namespace SandJamTest.Scene3D
         void PaintBase()
         {
             // Run avoids dispatch/wait overhead for these small regions while using Burst native code.
+            // The Burst job also writes the colours straight into the board texture (no per-cell C# loop).
+            if(!boardIndex.IsCreated){boardIndex=new NativeArray<int>(sand.Filled.Length,Allocator.Persistent);for(int i=0;i<boardIndex.Length;i++)boardIndex[i]=sand.Rows[i]*Board.Width+sand.Cols[i];}
             new PaintRegionJob{Filled=sand.Filled,Colors=settledColors,Output=paintedColors,Empty=empty,Glow=.12f*completionGlow,
-                SettleStep=sand.SettleStep,Now=sand.StepCount+idleSteps,FreshSteps=FreshSteps,FreshLift=FreshLift}.Run();
+                SettleStep=sand.SettleStep,Now=sand.StepCount+idleSteps,FreshSteps=FreshSteps,FreshLift=FreshLift,
+                BoardIndex=boardIndex,BoardBackground=Board.BackgroundPixels,BoardPixels=Board.Pixels}.Run();
+            Board.MarkDirty();
             freshPainted=sand.StepCount+idleSteps-lastSettleStep<FreshSteps;
-            for(int i=0;i<sand.Filled.Length;i++) Board.SetBase(sand.Cols[i],sand.Rows[i],paintedColors[i]);
         }
         void PaintMoving()
         {
@@ -190,7 +194,8 @@ namespace SandJamTest.Scene3D
             counterPunch=Mathf.Max(0,counterPunch-Time.deltaTime/.18f);
             Counter.transform.localScale=counterScale*(1f+.28f*Mathf.Sin(counterPunch*Mathf.PI));
         }
-        void ReleaseColors(){if(settledColors.IsCreated)settledColors.Dispose();if(paintedColors.IsCreated)paintedColors.Dispose();}
+        NativeArray<int> boardIndex;
+        void ReleaseColors(){if(settledColors.IsCreated)settledColors.Dispose();if(paintedColors.IsCreated)paintedColors.Dispose();if(boardIndex.IsCreated)boardIndex.Dispose();}
         void OnDestroy(){if(sand!=null)sand.Dispose();ReleaseColors();if(FlowMask)Destroy(FlowMask);}
         [BurstCompile]
         public struct PaintRegionJob : IJob
@@ -199,19 +204,28 @@ namespace SandJamTest.Scene3D
             [ReadOnly] public NativeArray<Color32> Colors;
             [ReadOnly] public NativeArray<int> SettleStep;
             [WriteOnly] public NativeArray<Color32> Output;
+            // Optional: cell -> board pixel index and the board's arrays (zero-length = skip).
+            [ReadOnly] public NativeArray<int> BoardIndex;
+            [NativeDisableContainerSafetyRestriction] public NativeArray<Color32> BoardBackground, BoardPixels;
             public Color32 Empty;
             public float Glow, FreshLift;
             public int Now, FreshSteps;
             public void Execute()
             {
+                bool board=BoardIndex.Length==Output.Length;
                 for(int i=0;i<Output.Length;i++)
                 {
-                    if(Filled[i]==0){Output[i]=Empty;continue;}
-                    Color32 c=Colors[i];
-                    // Freshly landed grains catch the light, then fade into the pile.
-                    int age=Now-SettleStep[i];
-                    float fresh=age>=0 && age<FreshSteps?FreshLift*(1f-(float)age/FreshSteps):0f;
-                    Output[i]=(Color32)Color.Lerp((Color)c,Color.white,Glow+fresh);
+                    Color32 c;
+                    if(Filled[i]==0)c=Empty;
+                    else
+                    {
+                        // Freshly landed grains catch the light, then fade into the pile.
+                        int age=Now-SettleStep[i];
+                        float fresh=age>=0 && age<FreshSteps?FreshLift*(1f-(float)age/FreshSteps):0f;
+                        c=(Color32)Color.Lerp((Color)Colors[i],Color.white,Glow+fresh);
+                    }
+                    Output[i]=c;
+                    if(board){int p=BoardIndex[i];BoardBackground[p]=c;BoardPixels[p]=c;}
                 }
             }
         }

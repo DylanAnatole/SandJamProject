@@ -33,6 +33,10 @@ namespace SandJamTest.Scene3D
             var wall=(Color32)ObstacleTint;
             for(int i=0;i<level.opr.Length;i++) SetBase(level.opc[i],level.opr[i],wall);
         }
+        // Burst jobs write the board directly (one region at a time on the main thread), then mark it dirty.
+        public NativeArray<Color32> BackgroundPixels { get { return background; } }
+        public NativeArray<Color32> Pixels { get { return pixels; } }
+        public void MarkDirty() { dirty = true; }
         int Index(int x,int y) { return y*Width+x; }
         public Color32 ReadPixel(int x,int y) { return pixels[Index(x,y)]; }
         public void SetBase(int x,int y,Color32 color)

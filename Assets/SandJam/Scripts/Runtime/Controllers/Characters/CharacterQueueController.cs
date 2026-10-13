@@ -79,7 +79,7 @@ namespace SandJamTest.Scene3D
                     pair.Value.Leave();
                     if (!wasLeaving && pair.Value.Departing) GameEvents.RaiseCharacterEmptied(pair.Key.Color);
                 }
-                pair.Value.Advance(delta, Game.Slots.Contains(pair.Key) && Game.Target(pair.Key) >= 0);
+                pair.Value.Advance(delta, System.Array.IndexOf(Game.Slots, pair.Key) >= 0 && Game.Target(pair.Key) >= 0);
             }
         }
     }

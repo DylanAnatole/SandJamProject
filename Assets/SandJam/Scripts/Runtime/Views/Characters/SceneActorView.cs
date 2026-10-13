@@ -29,6 +29,7 @@ namespace SandJamTest.Scene3D
         float laneZ; bool laneZKnown;
         public static float DepthOffset(float y) { return Mathf.Min(0, y - DepthOriginY) * DepthPerUnit; }
         float travel, duration, exitDelay;
+        int shownAmmo = int.MinValue;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
         // an emptied cube pauses briefly, then runs sideways off the nearest screen edge in ~0.45 s.
@@ -102,7 +103,7 @@ namespace SandJamTest.Scene3D
             exitDelay=0; DisplayedFill=1; AmmoLabel.gameObject.SetActive(true);
             if(Motion)Motion.ResetPose();
             ClickCollider.enabled = true;
-            AmmoLabel.text = DisplayAmount.Units(shooter.Ammo, Divider).ToString();
+            shownAmmo = DisplayAmount.Units(shooter.Ammo, Divider); AmmoLabel.text = shownAmmo.ToString();
         }
 
         // Queue advance inside a lane: quick slide with a small hop, no legs.
@@ -212,8 +213,9 @@ namespace SandJamTest.Scene3D
             wasRunning = runningNow;
             ApplyJuice(delta);
             ApplyDepth();
-            string ammo = DisplayAmount.Units(Shooter.Ammo, Divider).ToString();
-            if (AmmoLabel.text != ammo) AmmoLabel.text = ammo;
+            // Text only when the shown number changes (a new string every frame for every cube adds up on mobile).
+            int shown = DisplayAmount.Units(Shooter.Ammo, Divider);
+            if (shown != shownAmmo) { shownAmmo = shown; AmmoLabel.text = shown.ToString(); }
         }
         void ApplyDepth()
         {

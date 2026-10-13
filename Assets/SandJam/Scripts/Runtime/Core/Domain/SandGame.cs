@@ -17,13 +17,16 @@ namespace SandJamTest
         public int SpentAmmo { get; private set; }
         public int Moves { get; private set; }
         public int Revision { get; private set; }
-        public int Remaining { get { return Regions.Sum(p => p.Remaining); } }
+        public int Remaining { get { int sum = 0; for (int i = 0; i < Regions.Length; i++) sum += Regions[i].Remaining; return sum; } }
         public int InitialSupply { get; private set; }
         public int Supply { get { return Lanes.Sum(l => l.Sum(s => s.Ammo)) + Slots.Where(s => s != null).Sum(s => s.Ammo); } }
 
         readonly Func<Region, bool> isCovered;
         readonly bool useSlotUnlocks;
         int openStep; // advances on every opening pass; regions opened in one pass share it (see Target)
+        int[][] prerequisites, padlocks;
+        bool[] finished;
+        readonly List<Shot> shots = new List<Shot>();
         public SandGame(LevelData data, int capacity = 5, Func<Region, bool> coverageCheck = null, bool enableSlotUnlocks = false)
         {
             Validate(data);
@@ -40,6 +43,21 @@ namespace SandJamTest
                 a.Partner = b; b.Partner = a;
             }
             Slots = new Shooter[capacity];
+            // Region links resolved once (indices), so the per-tick opening pass allocates nothing.
+            var byName = new Dictionary<string, int>();
+            for (int i = 0; i < Regions.Length; i++) byName[Regions[i].Data.name] = i;
+            prerequisites = new int[Regions.Length][];
+            padlocks = new int[Regions.Length][];
+            for (int i = 0; i < Regions.Length; i++)
+            {
+                var data_ = Regions[i].Data;
+                prerequisites[i] = (data_.prerequests ?? new string[0]).Where(byName.ContainsKey).Select(n => byName[n]).ToArray();
+                var locks = new List<int>();
+                for (int j = 0; j < Regions.Length; j++)
+                    if (Regions[j].Data.IsUnlockerPart && Regions[j].Data.unlockerPartName == data_.name) locks.Add(j);
+                padlocks[i] = locks.ToArray();
+            }
+            finished = new bool[Regions.Length];
             TotalRequired = Remaining;
             InitialSupply = Supply;
             State = GameState.Playing;
@@ -141,9 +159,9 @@ namespace SandJamTest
             if(first.IsFrozen || (first.Partner != null && first.Partner.IsFrozen))return -1;
             if (first.Partner != null)
             {
-                var queue = Lanes[lane].ToArray();
-                if (queue.Length > 1 && queue[1] == first.Partner) partnerLane = lane;
-                else for (int i = 0; i < Lanes.Length; i++)
+                int index = 0;
+                foreach (var queued in Lanes[lane]) { if (index == 1 && queued == first.Partner) partnerLane = lane; if (++index > 1) break; }
+                if (partnerLane != lane) for (int i = 0; i < Lanes.Length; i++)
                     if (i != lane && Lanes[i].Count > 0 && Lanes[i].Peek() == first.Partner) partnerLane = i;
                 if (partnerLane < 0) return -1;
             }
@@ -198,9 +216,10 @@ namespace SandJamTest
             }
         }
 
+        // The returned list is reused by the next call: callers consume it right away.
         public List<Shot> Tick(int ammoPerShooter = 20, Func<int, bool> canShoot = null)
         {
-            var shots = new List<Shot>();
+            shots.Clear();
             if (State != GameState.Playing || ammoPerShooter <= 0) return shots;
             OpenNeighbours();
             for (int slot = 0; slot < Slots.Length; slot++)
@@ -231,17 +250,18 @@ namespace SandJamTest
             Region.OpenStamp = ++openStep;
             // A region opens only when one of its prerequisite regions is completely covered with sand
             // (confirmed in play: neighbours stay locked while the previous region is still filling).
-            var finished = new HashSet<string>(Regions.Where(p => p.Remaining == 0 && (isCovered == null || isCovered(p))).Select(p => p.Data.name));
-            foreach (var region in Regions)
+            for (int i = 0; i < Regions.Length; i++) finished[i] = Regions[i].Remaining == 0 && (isCovered == null || isCovered(Regions[i]));
+            for (int i = 0; i < Regions.Length; i++)
             {
+                var region = Regions[i];
                 if (region.Open) continue;
                 // A locked part opens only when its padlock has received all of its key-cube sand.
                 if (region.Data.IsUnlockedPart)
                 {
-                    if (Regions.Any(p => p.Data.IsUnlockerPart && p.Data.unlockerPartName == region.Data.name && p.Remaining == 0)) region.Open = true;
+                    foreach (int p in padlocks[i]) if (Regions[p].Remaining == 0) { region.Open = true; break; }
                     continue;
                 }
-                if ((region.Data.prerequests ?? new string[0]).Any(finished.Contains)) region.Open = true;
+                foreach (int p in prerequisites[i]) if (finished[p]) { region.Open = true; break; }
             }
         }
 
@@ -251,10 +271,11 @@ namespace SandJamTest
             // Open regions whose prerequisites finished since the last tick before judging a loss;
             // otherwise a selection made right after sand settles could be declared "out of space" wrongly.
             OpenNeighbours();
-            if (isCovered != null && Regions.Any(p => p.Remaining == 0 && !isCovered(p))) return;
+            if (isCovered != null) for (int i = 0; i < Regions.Length; i++) if (Regions[i].Remaining == 0 && !isCovered(Regions[i])) return;
             if (Remaining == 0) { State = GameState.Won; return; }
-            if (Slots.Any(s => Target(s) >= 0)) return;
-            if (!Enumerable.Range(0, Lanes.Length).Any(CanSelectLane)) State = GameState.Lost;
+            for (int i = 0; i < Slots.Length; i++) if (Target(Slots[i]) >= 0) return;
+            for (int i = 0; i < Lanes.Length; i++) if (CanSelectLane(i)) return;
+            State = GameState.Lost;
         }
 
         public int HintLane()

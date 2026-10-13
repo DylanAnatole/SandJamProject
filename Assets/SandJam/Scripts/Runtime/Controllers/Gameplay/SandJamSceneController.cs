@@ -248,7 +248,10 @@ namespace SandJamTest.Scene3D
         // In the campaign the AudioManager plays sounds from game events; standalone test scenes play locally.
         void Play(AudioClip clip, float volume) { if (!muted && !smokeMode && clip != null && !GameServices.Ready) sound.PlayOneShot(clip, volume); }
         bool CanShoot(int slot) { return characterQueue.CanShoot(Game, slot); }
+        Func<int, bool> canShootCheck;
 
+        SceneActorView[] shooters;
+        int CompletedRegions() { int n = 0; foreach (var r in Game.Regions) if (r.Remaining == 0) n++; return n; }
         public void Advance(float delta)
         {
             Synchronize(delta);
@@ -258,17 +261,19 @@ namespace SandJamTest.Scene3D
                 while (accumulator >= ShotInterval)
                 {
                     accumulator -= ShotInterval;
-                    var shooters=Game.Slots.Select(s=>s==null?null:characterQueue.ViewFor(s)).ToArray();
-                    int completed = Game.Regions.Count(r => r.Remaining == 0);
+                    // Allocation-free per tick (runs ~50 times a second): reused arrays and plain loops.
+                    if (shooters == null || shooters.Length != Game.Slots.Length) shooters = new SceneActorView[Game.Slots.Length];
+                    for (int s = 0; s < shooters.Length; s++) shooters[s] = Game.Slots[s] == null ? null : characterQueue.ViewFor(Game.Slots[s]);
+                    int completed = CompletedRegions();
                     var previousState = Game.State;
-                    foreach (var shot in Game.Tick(AmmoPerShot, CanShoot))
+                    foreach (var shot in Game.Tick(AmmoPerShot, canShootCheck ?? (canShootCheck = CanShoot)))
                     {
                         if(Game.Regions[shot.Region].Data.ColorType!=shot.Color)throw new InvalidOperationException("Shot colour does not match receiving region");
                         projectiles.Spawn(shooters[shot.Slot], Regions[shot.Region], shot.Color, shot.Slot);
                         GameEvents.RaiseSandPoured(shot.Color, shot.Amount, Mathf.Max(1, level.uiDivider));
                     }
                     if (previousState != GameState.Won && Game.State == GameState.Won) Play(VictorySound, .45f);
-                    else if (completed < Game.Regions.Count(r => r.Remaining == 0)) Play(CompleteSound, .3f);
+                    else if (completed < CompletedRegions()) Play(CompleteSound, .3f);
                     for (int r = 0; r < Game.Regions.Length; r++)
                         if (Game.Regions[r].Remaining == 0 && !regionReported[r]) { regionReported[r] = true; GameEvents.RaiseRegionCompleted(r, Game.Regions[r].Data.ColorType); }
                 }

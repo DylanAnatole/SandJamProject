@@ -15,6 +15,8 @@ namespace SandJamTest.Editor
             using(var colors=new NativeArray<Color32>(256,Allocator.TempJob))
             using(var output=new NativeArray<Color32>(256,Allocator.TempJob))
             using(var settled=new NativeArray<int>(256,Allocator.TempJob))
+            using(var noBoard=new NativeArray<int>(0,Allocator.TempJob))
+            using(var noPixels=new NativeArray<Color32>(0,Allocator.TempJob))
             {
                 // Grains landed long ago: no fresh-grain highlight, only the region glow is tested here.
                 var settledWrite=settled;for(int i=0;i<256;i++)settledWrite[i]=-100000;
@@ -23,7 +25,7 @@ namespace SandJamTest.Editor
                 Color32 empty=new Color32(182,180,204,255);
                 foreach(float glow in new[]{0f,.03f,.06f,.12f})
                 {
-                    new SceneRegionView.PaintRegionJob{Filled=filled,Colors=colors,Output=output,Empty=empty,Glow=glow,SettleStep=settled,Now=0,FreshSteps=180,FreshLift=.32f}.Run();
+                    new SceneRegionView.PaintRegionJob{Filled=filled,Colors=colors,Output=output,Empty=empty,Glow=glow,SettleStep=settled,Now=0,FreshSteps=180,FreshLift=.32f,BoardIndex=noBoard,BoardBackground=noPixels,BoardPixels=noPixels}.Run();
                     for(int i=0;i<256;i++)
                     {
                         Color32 expected=filled[i]==0?empty:(Color32)Color.Lerp(colors[i],Color.white,glow);

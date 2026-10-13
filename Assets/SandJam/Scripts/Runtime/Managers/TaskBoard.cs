@@ -78,7 +78,13 @@ namespace SandJamTest
             SaveManager.Save();
             return s;
         }
-        public static Task Find(string id) { return All.First(t => t.Id == id); }
+        // Lookup by id without LINQ (called for every sand shot while tasks are tracked).
+        static Dictionary<string, Task> byId;
+        public static Task Find(string id)
+        {
+            if (byId == null) { byId = new Dictionary<string, Task>(); foreach (var t in All) byId[t.Id] = t; }
+            return byId[id];
+        }
         public static int MaxStars(Kind kind) { return Board(kind).ids.Sum(id => Find(id).Stars); }
         public static TimeSpan Remaining(Kind kind)
         {
@@ -109,11 +115,12 @@ namespace SandJamTest
             return coins;
         }
 
+        static readonly Kind[] Kinds = { Kind.Daily, Kind.Weekly };
         static void Count(Metric metric, int amount)
         {
             if (amount <= 0) return;
             bool changed = false;
-            foreach (Kind kind in new[] { Kind.Daily, Kind.Weekly })
+            foreach (Kind kind in Kinds)
             {
                 var s = Board(kind);
                 for (int i = 0; i < s.ids.Count; i++)
