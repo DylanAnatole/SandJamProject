@@ -21,6 +21,18 @@ Assets/SandJam/
   Fonts/             Lilita One licence
 ```
 
+## Design patterns
+
+- **Observer** – `Managers/GameEvents.cs` is the event hub. Gameplay and UI raise events (level started/won/lost,
+  region completed, cube selected/emptied, sand poured, booster used, coins, gallery changed); audio, haptics,
+  tasks, stats, effects and UI badges subscribe instead of polling each other. Always unsubscribe in OnDestroy.
+- **Singleton** – `Core/Patterns/Singleton.cs` (`Singleton<T>`): one live instance via `Instance`, duplicates destroy
+  themselves, `Persistent` keeps it across scene loads. Used by `GameServices` (persistent root) and `AudioManager`.
+  Subclasses override `OnSingletonAwake` / `OnSingletonDestroy`.
+- **Object pooling** – Unity's `UnityEngine.Pool.ObjectPool<T>`: sand pellets (`ProjectileManager`) and the
+  region-complete flashes/bubbles (`SandFx`) are reused instead of created and destroyed; particles use
+  `ParticleSystem.Emit`. Gameplay ticks allocate nothing (reused lists/arrays) to avoid GC spikes on mobile.
+
 ## Tests
 
 `Sand Jam > Tests > Run all checks` runs every editor check and logs `[Checks] PASS/FAIL` per check:

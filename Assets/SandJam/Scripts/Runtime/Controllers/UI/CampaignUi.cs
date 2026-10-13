@@ -58,9 +58,15 @@ namespace SandJamTest.Scene3D
             var homeGear = owner.Home.transform.Find("icon-settings-v2");
             if (homeGear) AddHit(homeGear, "settings");
             Campaign.Changed += Refresh;
+            // Observer: the badge reacts to the events that can change it (a won level reaches a milestone, a claim
+            // collects one) instead of polling.
+            GameEvents.GalleryChanged += RefreshBadge; GameEvents.LevelWon += OnLevelWon;
+            RefreshBadge();
             Refresh();
         }
-        void OnDestroy() { Campaign.Changed -= Refresh; }
+        void OnDestroy() { Campaign.Changed -= Refresh; GameEvents.GalleryChanged -= RefreshBadge; GameEvents.LevelWon -= OnLevelWon; }
+        void OnLevelWon(int level) { RefreshBadge(); }
+        void RefreshBadge() { if (galleryBadge) galleryBadge.SetActive(GalleryCollections.HasUnclaimedReward()); }
 
         // Original x2 button: a coin stack on the left of "X2" and the rewarded-video TV badge on its top-left corner.
         static void DecorateDouble(Transform x2)
@@ -253,7 +259,6 @@ namespace SandJamTest.Scene3D
             string join = SandQuest.Joined ? SandQuest.StepsDone + "/" + SandQuest.Steps : "JOIN";
             foreach (var label in joinLabels) if (label) label.text = join;
             if (livesStatus) livesStatus.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
-            if (galleryBadge) galleryBadge.SetActive(GalleryCollections.HasUnclaimedReward());
         }
 
         public void OpenSettings()

@@ -6,9 +6,8 @@ namespace SandJamTest
     public enum Sfx { Select, RegionComplete, Victory, Pop, Button, ClaimCoin, ClaimGift, LevelCompletePanel }
 
     // Plays the original sound effects in response to game events and honours the sound setting.
-    public sealed class AudioManager : MonoBehaviour
+    public sealed class AudioManager : Singleton<AudioManager>
     {
-        public static AudioManager Instance { get; private set; }
         readonly Dictionary<Sfx, AudioClip> clips = new Dictionary<Sfx, AudioClip>();
         static readonly Dictionary<Sfx, float> Volumes = new Dictionary<Sfx, float>
         {
@@ -27,9 +26,8 @@ namespace SandJamTest
             return manager;
         }
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            Instance = this;
             source = gameObject.AddComponent<AudioSource>(); source.playOnAwake = false;
             // Region chimes get their own source so their pitch can climb with a combo.
             chime = gameObject.AddComponent<AudioSource>(); chime.playOnAwake = false;
@@ -90,9 +88,8 @@ namespace SandJamTest
         }
         void OnBooster(string action, int paid) { Play(Sfx.Select); }
 
-        void OnDestroy()
+        protected override void OnSingletonDestroy()
         {
-            if (Instance == this) Instance = null;
             GameEvents.CharacterSelected -= OnSelected;
             GameEvents.RegionCompleted -= OnRegion;
             GameEvents.LevelWon -= OnWon;

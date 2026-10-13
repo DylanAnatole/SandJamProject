@@ -4,25 +4,20 @@ namespace SandJamTest
 {
     // Persistent root created once per run: loads the save, owns the AudioManager and records stats
     // from game events. Survives scene reloads between levels.
-    public sealed class GameServices : MonoBehaviour
+    public sealed class GameServices : Singleton<GameServices>
     {
-        public static GameServices Instance { get; private set; }
-        public static bool Ready { get { return Instance != null; } }
+        protected override bool Persistent { get { return true; } }
         float levelStartedAt = -1;
 
         // Created on demand by the campaign scene (LevelBootstrap) so test scenes stay untouched.
         public static GameServices Ensure()
         {
             if (Instance) return Instance;
-            var root = new GameObject("Game Services");
-            DontDestroyOnLoad(root);
-            return root.AddComponent<GameServices>();
+            return new GameObject("Game Services").AddComponent<GameServices>();
         }
 
-        void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
             SaveManager.Load();
             AudioManager.Create(transform);
             GameEvents.LevelStarted += OnStarted;
@@ -30,14 +25,12 @@ namespace SandJamTest
             GameEvents.LevelLost += OnLost;
         }
 
-        void OnDestroy()
+        protected override void OnSingletonDestroy()
         {
-            if (Instance != this) return;
             GameEvents.LevelStarted -= OnStarted;
             GameEvents.LevelWon -= OnWon;
             GameEvents.LevelLost -= OnLost;
             SaveManager.Save();
-            Instance = null;
         }
 
         void OnStarted(int level)

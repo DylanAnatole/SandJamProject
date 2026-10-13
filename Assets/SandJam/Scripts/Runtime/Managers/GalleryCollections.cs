@@ -74,6 +74,7 @@ namespace SandJamTest
             EconomyManager.Add(MilestoneCoins(info, milestone), "gallery");
             if (milestone == 2) foreach (var b in new[] { "rocket", "swap", "select" }) EconomyManager.AddBooster(b, 1, "gallery");
             SaveManager.Save();
+            GameEvents.RaiseGalleryChanged();
             return true;
         }
 
