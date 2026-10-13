@@ -279,8 +279,8 @@ namespace SandJamTest.Scene3D
                 "ribbon-green-v2", "bonusLevel", "bg-level-easyLevel-v2", "Beat this level to earn\nextra coins!", "hard-play", out bonusLevelLabel);
             // The bonus mascot holds a stack of coins: smaller and higher so the caption stays clear.
             var bonusMascot = bonus.Root.transform.Find("icon-easyLevel-popUp-v2");
-            bonusMascot.localScale *= .78f; bonusMascot.localPosition += new Vector3(0, .18f, 0);
-            bonus.Root.transform.Find("Bonus level popup caption").localPosition += new Vector3(0, -.32f, 0);
+            bonusMascot.localScale *= .74f; bonusMascot.localPosition += new Vector3(0, .42f, 0);
+            bonus.Root.transform.Find("Bonus level popup caption").localPosition += new Vector3(0, .12f, 0);
         }
         Popup BuildLevelKindPopup(string name, string folder, string frame, string mascot, string crest, string ribbon, string title, string pill,
             string caption, string action, out TextMesh levelLabel)
@@ -289,18 +289,24 @@ namespace SandJamTest.Scene3D
             var keep = new[] { "Dark backdrop", "bg-currency", "button-plus_0", "icon-coin", "2040", "Next" };
             foreach (Transform child in p.Root.transform)
                 if (System.Array.IndexOf(keep, child.name) < 0 && !child.name.StartsWith("Hit area")) child.gameObject.SetActive(false);
-            Art(p, folder + frame, new Vector3(0, .1f, -6.2f), 4.3f);
-            Art(p, folder + mascot, new Vector3(0, .42f, -6.5f), 2.75f);
+            // Measured on the recording (level 260): the frame reaches lower, the mascot and caption are larger and
+            // lower, the PLAY button is bigger and sits on the frame's bottom edge, and a glow of rays shines behind
+            // the crest (red for hard, gold for bonus).
+            var frameArt = Art(p, folder + frame, new Vector3(0, -.21f, -6.2f), 4.3f);
+            frameArt.transform.localScale = new Vector3(frameArt.transform.localScale.x, frameArt.transform.localScale.y * 1.17f, 1);
+            var rays = Art(p, "Congrats/light-congrats", new Vector3(0, 3.35f, -6.15f), 5.6f); // behind the frame, around the crest
+            rays.color = name.StartsWith("Hard") ? new Color(1f, .15f, .15f, .75f) : new Color(1f, .85f, .3f, .7f);
+            Art(p, folder + mascot, new Vector3(0, -.25f, -6.5f), 3.2f);
             Art(p, folder + crest, new Vector3(0, 3.05f, -6.55f), 3.1f);
             Art(p, folder + ribbon, new Vector3(0, 2.2f, -6.6f), 4.9f);
             Art(p, folder + title, new Vector3(0, 2.28f, -6.7f), 3.45f);
             Art(p, folder + pill, new Vector3(0, 1.55f, -6.7f), 1.95f);
             levelLabel = Label(p, name + " number", new Vector3(0, 1.57f, -6.8f), "Level 1", .042f, Color.white);
-            Label(p, name + " caption", new Vector3(0, -.62f, -6.8f), caption, .036f, new Color(.16f, .17f, .32f));
+            Label(p, name + " caption", new Vector3(0, -1.68f, -6.8f), caption, .042f, new Color(.16f, .17f, .32f));
             foreach (Transform child in p.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, -1.55f, child.localPosition.z);
-            p.RightButton.transform.parent.localScale = new Vector3(1.25f, 1.25f, 1);
-            p.RightButton.transform.parent.localPosition = new Vector3(0, .35f, 0);
+            p.RightButton.transform.parent.localScale = new Vector3(1.5f, 1.5f, 1);
+            p.RightButton.transform.parent.localPosition = new Vector3(0, -.38f, 0);
             Configure(p.RightButton, p.Right, action, "PLAY");
             return p;
         }        // Original NEW ART STYLE popup (current build, level 256): purple frame and ribbon, the art-style name,
