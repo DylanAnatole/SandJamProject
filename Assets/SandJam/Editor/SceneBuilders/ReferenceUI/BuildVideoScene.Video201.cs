@@ -26,11 +26,6 @@ namespace SandJamTest.Editor
                 else if(label.text=="2040")label.text="5445";
             }
             controller.AmmoPerShot=20; // One displayed unit per tick (export divider=20).
-            root.gameObject.AddComponent<Video201Smoke>();
         }
-        [MenuItem("Sand Jam/Video UI/Create Level 201 from video")]
-        public static void CreateVideo201(){CharacterVesselMeshBuilder.Generate();video201=true;try{Create();}finally{video201=false;}}
-        [MenuItem("Sand Jam/Video UI/Build Level 201 from video")]
-        public static void CreateVideo201AndBuild(){Video201Checks.Run();video201=true;try{CreateAndBuild();}finally{video201=false;}}
     }
 }

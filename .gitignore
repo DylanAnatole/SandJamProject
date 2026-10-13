@@ -56,3 +56,7 @@ Thumbs.db
 /Assets/SandJam/Generated/**/Original*
 /Documentation/**/*.png
 /Documentation/**/*.jpg
+
+# Prefab built from the original character rig (bone hierarchy of the original game): local only.
+/Assets/SandJam/Prefabs/Characters/SandCube.prefab
+/Assets/SandJam/Prefabs/Characters/SandCube.prefab.meta

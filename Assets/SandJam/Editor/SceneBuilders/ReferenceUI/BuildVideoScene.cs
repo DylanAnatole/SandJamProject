@@ -16,7 +16,7 @@ namespace SandJamTest.Editor
         static bool chainDemo, freezeDemo, video201;
         static LevelEntry packEntry;
         static string Scene { get { return packEntry!=null ? "Assets/SandJam/Scenes/"+packEntry.SceneName+".unity" : video201 ? "Assets/SandJam/Scenes/SandJamVideo201.unity" : freezeDemo ? "Assets/SandJam/Scenes/SandJamFreezeTest.unity" : chainDemo ? "Assets/SandJam/Scenes/SandJamChainTest.unity" : "Assets/SandJam/Scenes/SandJamVideoUI.unity"; } }
-        static Color VideoColor(int id){switch(id){case 1: return new Color(0.74509805f,0.09411765f,0.09411765f,1.0f);case 2: return new Color(0.11372549f,0.7921569f,0.0f,1.0f);case 3: return new Color(0.0f,0.6392157f,1.0f,1.0f);case 4: return new Color(1.0f,0.8039216f,0.0f,1.0f);case 5: return new Color(1.0f,0.5294118f,0.0f,1.0f);case 6: return new Color(0.83137256f,0.0f,0.78039217f,1.0f);case 7: return new Color(0.43529412f,0.0f,0.9254902f,1.0f);case 8: return new Color(0.07450981f,0.07450981f,0.07450981f,1.0f);case 9: return new Color(0.8666667f,0.8666667f,0.8666667f,1.0f);case 10: return new Color(0.6509804f,0.40392157f,0.22352941f,1.0f);default:return SandJamDemo.Palette(id);}}
+        static Color VideoColor(int id){switch(id){case 1: return new Color(0.74509805f,0.09411765f,0.09411765f,1.0f);case 2: return new Color(0.11372549f,0.7921569f,0.0f,1.0f);case 3: return new Color(0.0f,0.6392157f,1.0f,1.0f);case 4: return new Color(1.0f,0.8039216f,0.0f,1.0f);case 5: return new Color(1.0f,0.5294118f,0.0f,1.0f);case 6: return new Color(0.83137256f,0.0f,0.78039217f,1.0f);case 7: return new Color(0.43529412f,0.0f,0.9254902f,1.0f);case 8: return new Color(0.07450981f,0.07450981f,0.07450981f,1.0f);case 9: return new Color(0.8666667f,0.8666667f,0.8666667f,1.0f);case 10: return new Color(0.6509804f,0.40392157f,0.22352941f,1.0f);default:return new Color(.6f,.6f,.65f,1);}}
         static Font font; static Material spriteMaterial;
         static Sprite rounded, pad;
         static Color Hex(string value){Color c;ColorUtility.TryParseHtmlString("#"+value,out c);return c;}
@@ -73,7 +73,6 @@ namespace SandJamTest.Editor
         }
         static ReferenceUiPlaceholder Placeholder(Transform root,string name,string action,int price)
         {var p=Group(name,root).gameObject.AddComponent<ReferenceUiPlaceholder>();p.ActionId=action;p.DisplayPrice=price;return p;}
-        [MenuItem("Sand Jam/Video UI/Create video screens")]
         public static void Create()
         {
             if(!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
@@ -163,8 +162,6 @@ namespace SandJamTest.Editor
             controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.CompleteSound=Resources.Load<AudioClip>("Original/RegionComplete");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");controller.PlayButtonTexture=Resources.Load<Texture2D>("Original/PlayButton");
             var camera=Group("Main Camera",root).gameObject.AddComponent<Camera>();camera.tag="MainCamera";camera.transform.position=new Vector3(0,0,-30);camera.orthographic=true;camera.orthographicSize=5.375f;camera.nearClipPlane=.1f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=Hex("DDD8F8");camera.gameObject.AddComponent<AudioListener>();controller.GameCamera=camera;
             ComposeScreens(root,reference,controller);ApplyDepth(root,reference,controller);
-            if(chainDemo) { root.gameObject.AddComponent<ChainMechanicSmoke>(); foreach(var label in root.GetComponentsInChildren<TextMesh>(true)) if(label.text=="Level 147")label.text="Chain Test"; }
-            if(freezeDemo) ConfigureFreezeScreen(root);
             if(video201) ConfigureVideo201(root,reference,controller);
             if(packEntry!=null) ConfigureLevelPack(root,reference,controller);
             EditorSceneManager.SaveScene(scene,Scene);AssetDatabase.SaveAssets();
@@ -198,7 +195,6 @@ namespace SandJamTest.Editor
             };
         }
 
-        [MenuItem("Sand Jam/Create linked pair test scene")]
         public static void CreateChainScene()
         {
             chainDemo = true;

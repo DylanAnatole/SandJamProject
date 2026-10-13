@@ -48,7 +48,6 @@ namespace SandJamTest.Scene3D
             UiFont.ApplyAll();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--booster-smoke") >= 0) gameObject.AddComponent<BoosterSmoke>();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "--feeling-smoke") >= 0) gameObject.AddComponent<FeelingSmoke>();
-            if (Array.IndexOf(Environment.GetCommandLineArgs(), "--october-smoke") >= 0) gameObject.AddComponent<OctoberVideoSmoke>();
         }
 
         // Home closer to the original recording (level 267): brighter level sign and stage, and a soft spotlight

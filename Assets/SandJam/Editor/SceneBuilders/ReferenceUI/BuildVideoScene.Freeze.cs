@@ -27,17 +27,5 @@ namespace SandJamTest.Editor
             var label=Text("Freeze remaining","",actor.transform,0,0,14,Color.white,-.9f,true);label.transform.localPosition=new Vector3(0,.24f,-.85f);
             var view=actor.gameObject.AddComponent<CharacterFreezeView>();view.Actor=actor;view.Shell=shell.GetComponent<Renderer>();view.Counter=label;
         }
-        static void ConfigureFreezeScreen(Transform root)
-        {
-            root.gameObject.AddComponent<FreezeMechanicSmoke>();
-            foreach(var label in root.GetComponentsInChildren<TextMesh>(true))if(label.text=="Level 147")label.text="Ice Test";
-            var screen=root.GetComponent<VideoScreen>();
-            var hint=Text("Freeze instruction","Send a cube: -1 ice layer",screen.Gameplay.transform,241,113,16,Hex("374B78"),-2,true);
-            SetOverlayLayer(hint.transform);
-        }
-        [MenuItem("Sand Jam/Create freeze test scene")]
-        public static void CreateFreezeScene(){CharacterVesselMeshBuilder.Generate();freezeDemo=true;try{Create();}finally{freezeDemo=false;}}
-        [MenuItem("Sand Jam/Build freeze test")]
-        public static void CreateFreezeAndBuild(){FreezeMechanicChecks.Run();freezeDemo=true;try{CreateAndBuild();}finally{freezeDemo=false;}}
     }
 }
