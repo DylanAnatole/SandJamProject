@@ -187,7 +187,15 @@ namespace SandJamTest.Scene3D
 
         // Endgame rush: once every remaining cube is already in the stash there is nothing left to decide,
         // so the rest of the level plays at double speed.
-        public bool EndgameRush { get { return Game != null && Game.State == GameState.Playing && Game.Lanes.All(l => l.Count == 0); } }
+        public bool EndgameRush
+        {
+            get
+            {
+                if (Game == null || Game.State != GameState.Playing) return false;
+                foreach (var lane in Game.Lanes) if (lane.Count > 0) return false; // plain loop: read every frame, no LINQ allocation
+                return true;
+            }
+        }
 
         void FitCamera()
         {
