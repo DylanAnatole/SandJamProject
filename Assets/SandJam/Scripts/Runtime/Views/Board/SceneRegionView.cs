@@ -11,6 +11,14 @@ namespace SandJamTest.Scene3D
     public static class DisplayAmount
     {
         public static int Units(int raw,int divider) { return raw<=0?0:1+(raw-1)/Math.Max(1,divider); }
+        // Counters change many times a second while sand pours: the digits come from a cached table instead of a
+        // new string per change (zero GC in the gameplay loop).
+        static readonly string[] texts=new string[1001];
+        public static string Text(int value)
+        {
+            if(value<0 || value>=texts.Length) return value.ToString();
+            return texts[value] ?? (texts[value]=value.ToString());
+        }
     }
     public sealed class SceneRegionView : MonoBehaviour
     {
@@ -91,7 +99,7 @@ namespace SandJamTest.Scene3D
             lockIcon.gameObject.SetActive(!done);
             Counter.gameObject.SetActive(!done);
             var backing=transform.Find("Amount backing"); if(backing) backing.gameObject.SetActive(false);
-            Counter.text=done?"":DisplayAmount.Units(region.Remaining,Divider).ToString();
+            Counter.text=done?"":DisplayAmount.Text(DisplayAmount.Units(region.Remaining,Divider));
             if(done || !Board) return;
             // Diagonal stripes in the region colour, like the locked areas in the reference gif.
             Color baseColor=ColorPalette.Of(region.Data.ColorType);
@@ -135,7 +143,7 @@ namespace SandJamTest.Scene3D
             empty=region.InformationVisible && original!=null && original.init.a>0?(Color32)original.init:(Color32)Color.Lerp(EmptyTint,(Color)solid,region.InformationVisible?OpenTintStrength:0f);
             Counter.gameObject.SetActive(region.InformationVisible);
             var backing=transform.Find("Amount backing"); if(backing) backing.gameObject.SetActive(region.InformationVisible);
-            Counter.text=!region.InformationVisible || region.Remaining==0?"":DisplayAmount.Units(region.Remaining,Divider).ToString();
+            Counter.text=!region.InformationVisible || region.Remaining==0?"":DisplayAmount.Text(DisplayAmount.Units(region.Remaining,Divider));
             PaintBase(); PaintMoving();
         }
         void PaintBase()

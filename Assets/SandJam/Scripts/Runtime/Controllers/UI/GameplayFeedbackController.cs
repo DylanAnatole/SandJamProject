@@ -84,7 +84,7 @@ namespace SandJamTest.Scene3D
             for(int i=0;i<5;i++)
             {
                 int remaining=game.SlotRemaining(i);
-                locks[i].SetActive(remaining>0);counters[i].text=remaining.ToString();TintPad(i,remaining>0);
+                locks[i].SetActive(remaining>0);counters[i].text=DisplayAmount.Text(remaining);TintPad(i,remaining>0);
             }
             bool lost=screen.Current==VideoScreen.Page.Gameplay && game.State==GameState.Lost;
             failedTime=lost?failedTime+delta:0;

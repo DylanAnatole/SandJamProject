@@ -26,7 +26,9 @@ namespace SandJamTest
         public static ColorEntry Color(int type)
         {
             if (colors == null) { var c = Load<Colors>("colors"); colors = c != null && c.colors != null ? c.colors : new ColorEntry[0]; }
-            return Array.Find(colors, e => e.type == type);
+            // Plain loop: called on every region change while sand pours (a lambda here allocated a closure per call).
+            for (int i = 0; i < colors.Length; i++) if (colors[i] != null && colors[i].type == type) return colors[i];
+            return null;
         }
 
         public static Intro[] Features { get { EnsureIntros(); return intros.features ?? new Intro[0]; } }

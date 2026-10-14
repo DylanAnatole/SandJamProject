@@ -116,13 +116,18 @@ namespace SandJamTest
         }
 
         static readonly Kind[] Kinds = { Kind.Daily, Kind.Weekly };
+        static float boardsCheckedAt = -1;
         static void Count(Metric metric, int amount)
         {
             if (amount <= 0) return;
             bool changed = false;
+            // Sand events fire ~50 times a second: the day / week roll-over check (Board) runs at most every few
+            // seconds, otherwise the saved boards are used as they are (allocation-free).
+            float now = Time.realtimeSinceStartup;
+            if (now - boardsCheckedAt > 5f || boardsCheckedAt < 0) { boardsCheckedAt = now; foreach (Kind k in Kinds) Board(k); }
             foreach (Kind kind in Kinds)
             {
-                var s = Board(kind);
+                var s = Save(kind);
                 for (int i = 0; i < s.ids.Count; i++)
                 {
                     var task = Find(s.ids[i]);

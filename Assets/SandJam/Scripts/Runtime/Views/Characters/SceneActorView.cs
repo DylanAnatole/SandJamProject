@@ -103,7 +103,7 @@ namespace SandJamTest.Scene3D
             exitDelay=0; DisplayedFill=1; AmmoLabel.gameObject.SetActive(true);
             if(Motion)Motion.ResetPose();
             ClickCollider.enabled = true;
-            shownAmmo = DisplayAmount.Units(shooter.Ammo, Divider); AmmoLabel.text = shownAmmo.ToString();
+            shownAmmo = DisplayAmount.Units(shooter.Ammo, Divider); AmmoLabel.text = DisplayAmount.Text(shownAmmo);
         }
 
         // Queue advance inside a lane: quick slide with a small hop, no legs.
@@ -215,7 +215,7 @@ namespace SandJamTest.Scene3D
             ApplyDepth();
             // Text only when the shown number changes (a new string every frame for every cube adds up on mobile).
             int shown = DisplayAmount.Units(Shooter.Ammo, Divider);
-            if (shown != shownAmmo) { shownAmmo = shown; AmmoLabel.text = shown.ToString(); }
+            if (shown != shownAmmo) { shownAmmo = shown; AmmoLabel.text = DisplayAmount.Text(shown); }
         }
         void ApplyDepth()
         {
