@@ -27,6 +27,19 @@ namespace SandJamTest.Scene3D
             galleryDynamic.Add(r.gameObject);
             return r;
         }
+        // Picture size inside a card frame as actually drawn: the frame's measured size minus its rim (the nominal
+        // sizes are kept as the fallback and as the rim proportion).
+        Vector2 FrameInner(SpriteRenderer frame, float w, float h)
+        {
+            if (!frame || !frame.sprite) return new Vector2(w, h);
+            var size = frame.bounds.size; var ls = gallery.Root.transform.lossyScale;
+            float fw = size.x / ls.x, fh = size.y / ls.y, rim = Mathf.Min(fw, fh) * .055f;
+            return new Vector2(fw - 2 * rim, fh - 2 * rim);
+        }
+        float FrameCentreY(SpriteRenderer frame)
+        {
+            return frame && frame.sprite ? gallery.Root.transform.InverseTransformPoint(frame.bounds.center).y : 2.57f;
+        }
         SpriteRenderer GalleryPicture(Sprite sprite, float x, float y, float maxW, float maxH, float z, Transform parent = null)
         {
             var r = Child<SpriteRenderer>(gallery, "Picture", new Vector3(x, y, z)); r.sprite = sprite;
@@ -47,7 +60,13 @@ namespace SandJamTest.Scene3D
                 r.sharedMaterial = galleryMaskedMaterial ? galleryMaskedMaterial : (galleryMaskedMaterial = new Material(Shader.Find("Sprites/Default")));
                 r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
                 var m = Child<SpriteMask>(gallery, "Picture mask", new Vector3(x, y, z)); m.sprite = maskSprite;
-                var ms = maskSprite.bounds.size; m.transform.localScale = new Vector3(w / ms.x, h / ms.y, 1);
+                // The mask art's opaque card covers x 12-311, y 66-437 of its 324x450 texture (a transparent strip
+                // at the bottom): scale and shift it so the card itself spans w x h centred on (x, y). Fitting the
+                // whole texture left the picture short and high in its frame.
+                const float fx = 300f / 324f, fy = 372f / 450f, offsetY = (66f + 438f) / 2f / 450f - .5f;
+                var ms = maskSprite.bounds.size; float sx = w / (ms.x * fx), sy = h / (ms.y * fy);
+                m.transform.localScale = new Vector3(sx, sy, 1);
+                m.transform.localPosition = new Vector3(x, y - offsetY * ms.y * sy, z);
                 if (parent) m.transform.SetParent(parent, true);
                 galleryDynamic.Add(m.gameObject);
             }
@@ -100,25 +119,29 @@ namespace SandJamTest.Scene3D
             if (galleryList.Count == 0) { GalleryText("Beat level 15 to unlock\nyour first collection!", 0, 1.5f, .05f, -6.6f); return; }
             var info = galleryList[galleryIndex];
             int won = Campaign.LevelNumber - 1;
-            // Category tab.
-            GalleryArt("header-top-cardCollection", 0, 3.78f, 2.95f, .53f, -6.3f);
-            GalleryText(info.StyleName.ToUpperInvariant(), 0, 3.81f, .042f, -6.5f);
+            // Category tab: hangs from the top bar with a smaller caption (original gallery, recording 2026-10-08).
+            GalleryArt("header-top-cardCollection", 0, 4.0f, 3.2f, .44f, -6.3f);
+            GalleryText(info.StyleName.ToUpperInvariant(), 0, 4.02f, .032f, -6.5f);
             // Carousel: neighbours first so the selected card draws on top.
             for (int side = -1; side <= 1; side += 2)
             {
                 int n = galleryIndex + side; if (n < 0 || n >= galleryList.Count) continue;
-                GalleryArt("bg-cards-top-carCollection", side * 2.25f, 2.57f, 1.45f, 1.8f, -6.25f);
+                var sideFrame = GalleryArt("bg-cards-top-carCollection", side * 2.25f, 2.57f, 1.45f, 1.8f, -6.25f);
+                float sy = FrameCentreY(sideFrame); var ss = FrameInner(sideFrame, 1.33f, 1.67f);
                 Sprite c, g; StyleCover(galleryList[n], out c, out g);
-                MaskedPicture(c, side * 2.25f, 2.57f, 1.33f, 1.67f, -6.27f);
+                MaskedPicture(c, side * 2.25f, sy, ss.x, ss.y, -6.27f);
             }
-            GalleryArt("bg-cards-top-carCollection", 0, 2.57f, 1.72f, 2.13f, -6.3f);
+            // The card art does not pivot on its centre: pictures are centred on the frame as drawn (they used to sit
+            // high, overflowing the top edge with a gap at the bottom).
+            var mainFrame = GalleryArt("bg-cards-top-carCollection", 0, 2.57f, 1.72f, 2.13f, -6.3f);
+            float cy = FrameCentreY(mainFrame); var cs = FrameInner(mainFrame, 1.58f, 1.98f);
             Sprite colour, grey; StyleCover(info, out colour, out grey);
             float fraction = (float)info.Completed(won) / info.Count;
-            if (fraction >= 1 || !grey) MaskedPicture(colour, 0, 2.57f, 1.58f, 1.98f, -6.35f);
+            if (fraction >= 1 || !grey) MaskedPicture(colour, 0, cy, cs.x, cs.y, -6.35f);
             else
             {
                 // Grey cover with the coloured part rising from the bottom, both clipped to the rounded card.
-                var g = MaskedPicture(grey, 0, 2.57f, 1.58f, 1.98f, -6.35f);
+                var g = MaskedPicture(grey, 0, cy, cs.x, cs.y, -6.35f);
                 if (fraction > 0 && colour)
                 {
                     var rect = colour.textureRect;
@@ -127,7 +150,7 @@ namespace SandJamTest.Scene3D
                     var c = GalleryPicture(slice, 0, 0, 1, 1, -6.4f);
                     c.sharedMaterial = g.sharedMaterial; c.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
                     c.transform.localScale = g.transform.localScale;
-                    c.transform.localPosition = new Vector3(0, 2.57f - g.bounds.size.y / 2, -6.4f);
+                    c.transform.localPosition = new Vector3(0, cy - g.bounds.size.y / 2, -6.4f);
                 }
             }
             if (galleryIndex > 0) GalleryArrow(-1);
@@ -183,7 +206,13 @@ namespace SandJamTest.Scene3D
 
         void StyleCover(GalleryCollections.Info info, out Sprite colour, out Sprite grey)
         {
-            if (info.StyleCover != null) { colour = Resources.Load<Sprite>(info.StyleCover); grey = Resources.Load<Sprite>(info.StyleCover + "-bw"); }
+            // Gallery covers carry a transparent margin and an off-centre pivot: the card uses them trimmed and centred
+            // (the same crop as the CONGRATS card), so the picture fills the rounded slot.
+            if (info.StyleCover != null)
+            {
+                colour = Resources.Load<Sprite>(info.StyleCover); grey = Resources.Load<Sprite>(info.StyleCover + "-bw");
+                if (colour) colour = CoverCrop(colour); if (grey) grey = CoverCrop(grey);
+            }
             else { colour = Resources.Load<Sprite>("LevelRenders/" + info.StyleRenderId); grey = Greyscale(colour); }
         }
 
