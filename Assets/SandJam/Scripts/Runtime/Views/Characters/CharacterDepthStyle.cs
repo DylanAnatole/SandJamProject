@@ -13,6 +13,7 @@ namespace SandJamTest.Scene3D
         TextMesh[] labels;
         Color[] labelColors;
         int labelState=-1;
+        int lastState=-1; float lastAmount=-1; Color lastColor;
         static readonly int Width=Shader.PropertyToID("_OutlineWidth");
         void LateUpdate()
         {
@@ -22,19 +23,36 @@ namespace SandJamTest.Scene3D
             bool queued=lane.Contains(Actor.Shooter);
             bool front=queued && lane.Peek()==Actor.Shooter;
             bool docked=!queued;
+            PauseWhenIdle(queued);
+            // Restyle only when something it depends on changed (most cubes sit unchanged in their lanes); a half
+            // cube keeps updating for its floating "zZ".
+            float amount=Actor.DisplayedFill;
+            var color=Skin.sharedMaterial.GetColor("_Color");
+            int state=(front?1:0)|(docked?2:0);
+            if(state==lastState && amount==lastAmount && color==lastColor && !Actor.Shooter.Half)return;
+            lastState=state;lastAmount=amount;lastColor=color;
             vessel.Apply(front,docked);
             if(properties==null)properties=new MaterialPropertyBlock();
             Skin.GetPropertyBlock(properties);
-            float amount=Actor.DisplayedFill;
             // Legs only need a thin contour; the block itself carries the bold outline.
             properties.SetFloat(Width,.006f);
+            // The shader's fill effect is off for the legs; its range is not computed (reading Skin.bounds forced the
+            // skinned mesh to finish skinning right here, ~2 ms a frame for the whole queue).
             properties.SetFloat("_FillEnabled",0);properties.SetFloat("_FillAmount",amount);
-            properties.SetFloat("_FillBottom",Skin.bounds.min.y+.12f*Skin.bounds.size.y);
-            properties.SetFloat("_FillTop",Skin.bounds.max.y);
-            var color=Skin.sharedMaterial.GetColor("_Color");
             properties.SetColor("_OutlineColor",Color.Lerp(color,new Color(.045f,.025f,.07f),.6f));
             Skin.SetPropertyBlock(properties);
             StyleLabel(front || docked,color);
+        }
+        // A cube resting in its lane holds a still pose: its Animator (and skinning) is paused until it moves again,
+        // which saves ~20 rigs evaluating every frame on mobile. The state is kept across the pause.
+        void PauseWhenIdle(bool queued)
+        {
+            var motion=Actor.Motion;var animator=motion?motion.Animator:null;if(!animator)return;
+            bool idle=queued && Actor.AtRest && !Actor.Departing;
+            if(animator.enabled!=idle)return;
+            animator.keepAnimatorStateOnDisable=true;
+            animator.enabled=!idle;
+            if(!idle)motion.SetWalking(motion.Walking);
         }
         void StyleLabel(bool highlighted,Color color)
         {

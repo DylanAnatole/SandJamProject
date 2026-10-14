@@ -32,6 +32,7 @@ namespace SandJamTest.Scene3D
 
         public void Initialize(VideoScreen owner)
         {
+            useGUILayout = false; // plain GUI calls only: no per-frame IMGUI layout pass
             screen = owner; controller = owner.Controller;
             foreach (var placeholder in owner.Placeholders)
             {

@@ -53,12 +53,18 @@ namespace SandJamTest.Scene3D
             // put the blur just under its bottom edge, slightly behind so the block covers its upper half.
             float moving = Actor.AtRest ? 0 : 1;
             fade = Mathf.MoveTowards(fade, moving, Time.deltaTime * 6);
+            // Block renderers are collected once, without the text labels (a GetComponent per renderer per frame
+            // allocated an error message for every miss in the editor, ~10 KB a frame).
             if (blockRenderers == null || blockRenderers.Length == 0)
-                blockRenderers = Actor.Visual.GetComponentsInChildren<MeshRenderer>(true);
+            {
+                var all = Actor.Visual.GetComponentsInChildren<MeshRenderer>(true); var keep = new System.Collections.Generic.List<MeshRenderer>(all.Length);
+                foreach (var r in all) if (!r.TryGetComponent<TextMesh>(out _)) keep.Add(r);
+                blockRenderers = keep.ToArray();
+            }
             Bounds b = default(Bounds); bool any = false;
             foreach (var r in blockRenderers)
             {
-                if (!r || !r.enabled || !r.gameObject.activeInHierarchy || r.GetComponent<TextMesh>()) continue;
+                if (!r || !r.enabled || !r.gameObject.activeInHierarchy) continue;
                 if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
             }
             if (!any) { shadow.enabled = false; return; }

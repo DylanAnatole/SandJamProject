@@ -109,6 +109,7 @@ namespace SandJamTest.Scene3D
 
         void Awake()
         {
+            useGUILayout = false; // the debug overlay uses plain GUI calls: skip IMGUI's layout pass (it allocated every frame)
             ConfigureFiveSlots();
             Application.targetFrameRate = 60;
             FitCamera();

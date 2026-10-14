@@ -76,8 +76,11 @@ namespace SandJamTest.Scene3D
             var b = body.bounds; float h = b.size.y;
             var label = x2.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t => t.name != "Text outline");
             float z = (label ? label.transform.position.z : b.center.z) - .02f;
-            if (label) { label.text = "X2"; label.transform.position += Vector3.right * b.size.x * .13f; }
-            Icon(x2, "VideoUI/icon-coin-reward", new Vector3(b.center.x - b.size.x * .2f, b.center.y + h * .02f, z), h * .78f, body.sortingOrder + 1, 0);
+            // Original: a small coin stack inside the button's left half, "X2" beside it (the larger stack stuck out
+            // past the rounded left end).
+            float coinHeight = h * .5f, coinX = b.min.x + h * .38f + coinHeight * .7f;
+            if (label) { label.text = "X2"; label.transform.position += Vector3.right * b.size.x * .1f; }
+            Icon(x2, "VideoUI/icon-coin-reward", new Vector3(coinX, b.center.y + h * .02f, z), coinHeight, body.sortingOrder + 1, 0);
             Icon(x2, "VideoUI/iconRW", new Vector3(b.min.x + h * .1f, b.max.y - h * .02f, z - .02f), h * .62f, body.sortingOrder + 2, 12);
         }
         static void Icon(Transform parent, string sprite, Vector3 position, float height, int order, float angle)

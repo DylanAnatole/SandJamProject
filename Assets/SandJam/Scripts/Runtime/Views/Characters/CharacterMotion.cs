@@ -20,6 +20,7 @@ namespace SandJamTest.Scene3D
         }
         public void ResetPose()
         {
+            if(Animator && !Animator.enabled)Animator.enabled=true; // may have been paused while idle in a lane
             if(!Ready){posePending=true;return;}
             Animator.Rebind();SetWalking(WalkContinuously);ApplyPose();Animator.Update(0);
         }

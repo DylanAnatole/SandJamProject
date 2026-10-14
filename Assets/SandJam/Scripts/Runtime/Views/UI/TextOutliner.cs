@@ -58,10 +58,11 @@ namespace SandJamTest.Scene3D
         MeshRenderer mainRenderer;
         readonly TextMesh[] copies = new TextMesh[Directions.Length];
         string text; float size = -1, alpha = -1; Font font;
+        Vector3 lastBounds; int phase;
 
         void Awake()
         {
-            main = GetComponent<TextMesh>(); mainRenderer = GetComponent<MeshRenderer>();
+            main = GetComponent<TextMesh>(); mainRenderer = GetComponent<MeshRenderer>(); phase = GetInstanceID() & 7;
             // Older, thinner outlines (scene builder / popup helpers) are replaced by this one.
             foreach (Transform child in transform) if (child.name == "Text outline") child.gameObject.SetActive(false);
             for (int i = 0; i < copies.Length; i++)
@@ -77,7 +78,13 @@ namespace SandJamTest.Scene3D
 
         void LateUpdate()
         {
-            if (main.text != text || main.characterSize != size || main.font != font) Sync();
+            // Reading main.text allocates: only when the label's size changed, or every 8th frame for same-width edits.
+            var now = mainRenderer ? mainRenderer.bounds.size : Vector3.zero;
+            if (now != lastBounds || ((Time.frameCount + phase) & 7) == 0)
+            {
+                lastBounds = now;
+                if (main.text != text || main.characterSize != size || main.font != font) Sync();
+            }
             if (main.color.a != alpha)
             {
                 alpha = main.color.a;

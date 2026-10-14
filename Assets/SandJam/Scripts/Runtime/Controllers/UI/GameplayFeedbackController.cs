@@ -17,6 +17,7 @@ namespace SandJamTest.Scene3D
 
         public void Initialize(VideoScreen owner)
         {
+            useGUILayout = false; // plain GUI calls only: no per-frame IMGUI layout pass
             screen=owner;locks=new GameObject[5];counters=new TextMesh[5];
             locks[4]=owner.FifthSlotLock;counters[4]=owner.FifthSlotRemaining;
             for(int i=0;i<4;i++)
