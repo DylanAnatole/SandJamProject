@@ -109,11 +109,12 @@ namespace SandJamTest.Scene3D
             var confetti = root.transform.Find("Confetti"); if (confetti) Destroy(confetti.gameObject);
             // Level Complete extras do not belong to the other popups built from it.
             var fx = root.GetComponent<ResultFx>(); if (fx) Destroy(fx);
+            // The glass clip stays: it trims the glass panel's unused green rim (only one popup is open at a time, so
+            // each popup's mask only ever meets its own glass).
             foreach (Transform child in root.transform)
-                if (child.name == "Card light" || child.name == "Flying coin" || child.name == ResultFx.FrameName || child.name == ResultFx.EdgeName || child.name == ResultFx.ClipName || child.name == ResultFx.BandTopName)
+                if (child.name == "Card light" || child.name == "Flying coin" || child.name == ResultFx.FrameName || child.name == ResultFx.EdgeName || child.name == ResultFx.BandTopName)
                     Destroy(child.gameObject);
             foreach (var n in new[] { "Gold outer border", "Gold header" }) { var t = root.transform.Find(n); if (t) t.GetComponent<Renderer>().enabled = true; }
-            var glassRenderer = root.transform.Find("bg-popUp-levelCompleted-v2"); if (glassRenderer) glassRenderer.GetComponent<SpriteRenderer>().maskInteraction = SpriteMaskInteraction.None;
             var placeholder = root.GetComponentInChildren<ReferenceUiPlaceholder>(true); if (placeholder) Destroy(placeholder);
             // Let the paused board show through, unlike the full-screen result page.
             var backdrop = root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>();
