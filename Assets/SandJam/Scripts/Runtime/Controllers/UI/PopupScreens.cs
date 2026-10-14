@@ -475,14 +475,22 @@ namespace SandJamTest.Scene3D
             var white = Texture2D.whiteTexture;
             var sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
             runtimeArt.Add(sprite);
-            foreach (var part in new[] { new { y = .38f, h = .95f, z = -6.2f, c = new Color(.9f, .16f, .26f, .88f) },
-                                         new { y = .38f + .5f, h = .07f, z = -6.25f, c = new Color(1f, .5f, .55f, .95f) },
-                                         new { y = .38f - .5f, h = .07f, z = -6.25f, c = new Color(1f, .5f, .55f, .95f) } })
+            // Measured on the original (level 261): a see-through pink-red band (~76% opaque) a little below the
+            // board's middle, two solid red lines just inside its edges and a thin dark rim; white caption.
+            const float y = 1.08f;
+            var pink = new Color(.886f, .267f, .38f, .76f); var red = new Color(.875f, .204f, .29f, 1f); var rim = new Color(.3f, .12f, .22f, .55f);
+            foreach (var part in new[] { new { y = y, h = 1.25f, z = -6.2f, c = pink },
+                                         new { y = y + .475f, h = .1f, z = -6.25f, c = red },
+                                         new { y = y - .48f, h = .1f, z = -6.25f, c = red },
+                                         new { y = y + .63f, h = .03f, z = -6.25f, c = rim },
+                                         new { y = y - .63f, h = .03f, z = -6.25f, c = rim } })
             {
                 var r = Child<SpriteRenderer>(p, "Band", new Vector3(0, part.y, part.z));
                 r.sprite = sprite; r.color = part.c; r.transform.localScale = new Vector3(8f, part.h, 1);
             }
-            SetText(OutlinedLabel(p, "Out of space text", new Vector3(0, .38f, -6.4f), .07f), "OUT OF SPACE!");
+            var caption = OutlinedLabel(p, "Out of space text", new Vector3(0, y, -6.4f), .062f);
+            SetText(caption, "OUT OF SPACE!");
+            for (int i = 1; i < caption.Length; i++) caption[i].color = new Color(.32f, .07f, .14f);
             banner.SetActive(false);
         }
         void UpdateOutOfSpaceBanner()
