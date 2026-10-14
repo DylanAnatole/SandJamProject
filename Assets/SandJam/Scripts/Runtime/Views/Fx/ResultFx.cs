@@ -27,6 +27,7 @@ namespace SandJamTest.Scene3D
             if (backdrop) { var r = backdrop.GetComponent<SpriteRenderer>(); if (r) { var c = r.color; c.a = .86f; r.color = c; } }
             BuildCardFrame();
             StyleRewardBand();
+            RecordLayout();
             var light = Resources.Load<Sprite>("Congrats/light-congrats");
             var header = transform.Find("Gold header");
             if (light && header)
@@ -134,7 +135,60 @@ namespace SandJamTest.Scene3D
             }
         }
 
-        void OnEnable() { time = 0; CoinsLanded = coins.Count == 0; }
+        // Everything inside the card stays centred on the gold frame (glass, reward box, caption, buttons): the
+        // design offsets are recorded once and restored every frame, whatever else touched them.
+        static readonly string[] Inside = { "bg-popUp-levelCompleted-v2", ClipName, "bg-popUp-slot-levelCompleted-v2", "Reward caption", BandTopName,
+            "icon-coin-reward", "+ 10", "Your Reward!", "x2", "Next", "Level Complete!", "bg-level-yellow", "Level title", EdgeName };
+        readonly List<Transform> insideItems = new List<Transform>(); readonly List<float> insideOffsets = new List<float>();
+        Transform frameRoot; bool reportedDrift;
+        void RecordLayout()
+        {
+            frameRoot = transform.Find(FrameName); if (!frameRoot) return;
+            foreach (var name in Inside)
+            {
+                var t = transform.Find(name); if (!t) continue;
+                insideItems.Add(t); insideOffsets.Add(t.localPosition.x - frameRoot.localPosition.x);
+            }
+        }
+        void KeepCentred()
+        {
+            if (!frameRoot) return;
+            float fx = frameRoot.localPosition.x;
+            for (int i = 0; i < insideItems.Count; i++)
+            {
+                var t = insideItems[i]; if (!t) continue;
+                var p = t.localPosition; float want = fx + insideOffsets[i];
+                if (Mathf.Abs(p.x - want) > .0005f)
+                {
+                    if (!reportedDrift && Mathf.Abs(p.x - want) > .01f) { reportedDrift = true; Debug.Log("[ResultFx] re-centred " + t.name + " (was off by " + (p.x - want).ToString("F3") + ")"); }
+                    t.localPosition = new Vector3(want, p.y, p.z);
+                }
+            }
+        }
+        void LateUpdate() { KeepCentred(); }
+
+        void OnEnable() { time = 0; CoinsLanded = coins.Count == 0; Flatten(); }
+
+        // The card's layers spread from z -6 to -8: through any perspective view (or a camera that is not exactly
+        // in front) the glass, reward box, texts and buttons slid sideways against the gold frame. They are pressed
+        // into a thin slab (one tenth of the depth, same front-to-back order). Done on first show, after the other
+        // popups were cloned from this card, so their own added layers keep the depths they were built for.
+        bool flattened;
+        void Flatten()
+        {
+            if (flattened) return; flattened = true;
+            const float front = -6f, k = .1f;
+            var items = new List<Transform>(); var targets = new List<float>();
+            foreach (var r in GetComponentsInChildren<Renderer>(true)) Collect(r.transform, items, targets, front, k);
+            foreach (var m in GetComponentsInChildren<SpriteMask>(true)) Collect(m.transform, items, targets, front, k);
+            for (int i = 0; i < items.Count; i++) { var p = items[i].position; items[i].position = new Vector3(p.x, p.y, targets[i]); }
+        }
+        static void Collect(Transform t, List<Transform> items, List<float> targets, float front, float k)
+        {
+            float z = t.position.z;
+            if (z > front - .001f || items.Contains(t)) return; // backdrop, confetti and light behind the card stay put
+            items.Add(t); targets.Add(front + (z - front) * k);
+        }
         void OnDisable() { CoinsLanded = true; Dim(0); foreach (var c in coins) if (c) c.gameObject.SetActive(false); }
 
         void Dim(float amount)
