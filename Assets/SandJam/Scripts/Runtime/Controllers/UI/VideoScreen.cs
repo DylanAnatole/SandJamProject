@@ -36,7 +36,7 @@ namespace SandJamTest.Scene3D
             fillScale=LoadingFill.localScale;mascotPosition=Mascot.localPosition;
             // Original "Superb!": the finished, zoomed-in picture stays visible through a translucent dark layer.
             var superbBackdrop=Celebration.transform.Find("Dark backdrop");
-            if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;}}
+            if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;r.sortingOrder=14;}} // above the gameplay HUD (booster badges), below the Superb! effects
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
             if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=UiFont.Font?UiFont.Font:Controller.InterfaceFont;fx.Build(superbTitle);}
             StyleHome();
@@ -286,7 +286,9 @@ namespace SandJamTest.Scene3D
             Current=page;elapsed=0;
             if(page==Page.Loading)ShowLoadingHint();
             if(page==Page.Home && Popups)Popups.ShowSandQuestOnHome();
-            Loading.SetActive(page==Page.Loading);Home.SetActive(page==Page.Home);Gameplay.SetActive(page==Page.Gameplay);
+            Loading.SetActive(page==Page.Loading);Home.SetActive(page==Page.Home);
+            // The finished picture stays visible under the Superb! screen's dark veil (original).
+            Gameplay.SetActive(page==Page.Gameplay || page==Page.Celebration);
             Celebration.SetActive(page==Page.Celebration);Result.SetActive(page==Page.Result);
             // A Play click must not also select the character under the new screen.
             transitionFrame=Time.frameCount;Controller.enabled=false;

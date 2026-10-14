@@ -40,7 +40,8 @@ namespace SandJamTest.Scene3D
             flash.transform.localScale = new Vector3(12, 20, 1);
             // One TextMesh per letter so each can pop on its own; the original label is hidden.
             string text = title.text;
-            var outlineColor = new Color(.35f, .12f, .55f);
+            // Original: white letters with a pale lavender rim, not a dark outline.
+            var outlineColor = new Color(.8f, .8f, .9f);
             // Same glyph size as the original label (letters are children of this page, whose scale may differ).
             float size = title.characterSize * title.transform.lossyScale.x / Mathf.Max(.0001f, transform.lossyScale.x) * 1.15f;
             var faces = new List<MeshRenderer>();
@@ -71,6 +72,21 @@ namespace SandJamTest.Scene3D
             // Warm light in both bottom corners (original win screen), placed on screen once a camera is known.
             var soft = SoftDot();
             for (int i = 0; i < 2; i++) cornerGlows.Add(Sprite("Corner glow " + i, soft, centre + new Vector3(0, 0, .4f), 3.4f, new Color(1, .78f, .25f, 0)));
+            // Original (recording, level 267 win): no light rays, only a soft warm glow behind the word.
+            if (rays) { rays.gameObject.SetActive(false); rays = null; }
+            if (glow) { var g = glow.GetComponent<SpriteRenderer>(); g.sprite = soft; float k = 4.2f / soft.bounds.size.x; glow.localScale = new Vector3(k, k, 1); }
+            // Bigger, bolder confetti pieces like the original's.
+            var confetti = transform.Find("Confetti");
+            if (confetti)
+            {
+                // Plain sprite shading keeps the pieces as vivid as the original's (the scene material dulled them).
+                var vivid = new Material(Shader.Find("Sprites/Default")) { name = "Confetti vivid" };
+                foreach (Transform piece in confetti)
+                {
+                    piece.localScale *= 1.7f;
+                    var r = piece.GetComponent<SpriteRenderer>(); if (r) { r.sharedMaterial = vivid; r.sortingOrder = 19; }
+                }
+            }
         }
         static Sprite softDot;
         static Sprite SoftDot()
@@ -173,7 +189,7 @@ namespace SandJamTest.Scene3D
                 var p = letters[i].position; letters[i].position = new Vector3(wordCentreX + (letterX[i] - wordCentreX) * keep, letterBase[i] + wave, p.z);
             }
             if (rays) { rays.localRotation = Quaternion.Euler(0, 0, time * 25f); rays.localScale = raysScale * Mathf.Min(1, .3f + time * 2.5f); }
-            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .45f * g * keep); }
+            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.GetComponent<SpriteRenderer>().color = new Color(1, .6f, .25f, .55f * g * keep); }
             if (rays) rays.localScale *= Mathf.Max(.01f, keep);
             if (flash) { var c = flash.color; c.a = Mathf.Clamp01(.55f - time * 2.2f); flash.color = c; }
         }
