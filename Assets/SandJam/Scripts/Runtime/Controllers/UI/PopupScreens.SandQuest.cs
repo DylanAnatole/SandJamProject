@@ -24,13 +24,16 @@ namespace SandJamTest.Scene3D
         {
             // Offer popup.
             questOffer = Blank("Sand Quest offer popup");
-            Art(questOffer, "SandQuest/bg-sandQuest-popUp", new Vector3(0, .25f, -6.2f), 3.9f);
-            SetText(OutlinedLabel(questOffer, "Quest title", new Vector3(0, 2.42f, -6.8f), .068f), "Sand Quest");
-            Art(questOffer, "SandQuest/quest-Victory", new Vector3(0, .82f, -6.4f), 2.55f);
-            questOfferTimer = TimerPill(questOffer, new Vector3(0, -.48f, -6.6f));
-            SetText(OutlinedLabel(questOffer, "Quest offer text", new Vector3(0, -1.08f, -6.8f), .03f), "Sand Quest has started! Beat 10 levels\nto complete the challenge!");
-            GreenButton(questOffer, -1.85f, "quest-start", "Start");
-            CloseX(questOffer, new Vector3(1.72f, 2.62f, -8.5f), "quest-close");
+            // Proportions measured on the original (recording, level 268 Home): a wide panel (~84% of the screen),
+            // a big title on the ribbon, the picture inset with margins, a large Start button.
+            var offerPanel = Art(questOffer, "SandQuest/bg-sandQuest-popUp", new Vector3(0, .55f, -6.2f), 4.4f);
+            if (offerPanel.sprite) offerPanel.transform.localScale = new Vector3(4.4f / offerPanel.sprite.bounds.size.x, 5.85f / offerPanel.sprite.bounds.size.y, 1);
+            SetText(OutlinedLabel(questOffer, "Quest title", new Vector3(0, 2.7f, -6.8f), .084f), "Sand Quest");
+            Art(questOffer, "SandQuest/quest-Victory", new Vector3(0, .58f, -6.4f), 2.15f);
+            questOfferTimer = TimerPill(questOffer, new Vector3(0, -.62f, -6.6f));
+            SetText(OutlinedLabel(questOffer, "Quest offer text", new Vector3(0, -1.15f, -6.8f), .03f), "Sand Quest has started! Beat 10 levels\nto complete the challenge!");
+            GreenButton(questOffer, -1.52f, "quest-start", "Start", 1.2f);
+            CloseX(questOffer, new Vector3(1.9f, 2.82f, -8.5f), "quest-close");
 
             // Journey screen.
             questMap = Blank("Sand Quest map");
@@ -78,11 +81,11 @@ namespace SandJamTest.Scene3D
                 if (System.Array.IndexOf(keep, child.name) < 0) child.gameObject.SetActive(false);
             return p;
         }
-        void GreenButton(Popup p, float y, string action, string text)
+        void GreenButton(Popup p, float y, string action, string text, float scale = 1.05f)
         {
             foreach (Transform child in p.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, y, child.localPosition.z);
-            p.RightButton.transform.parent.localScale = new Vector3(1.05f, 1.05f, 1);
+            p.RightButton.transform.parent.localScale = new Vector3(scale, scale, 1);
             Configure(p.RightButton, p.Right, action, text);
         }
         void CloseX(Popup p, Vector3 local, string action)
