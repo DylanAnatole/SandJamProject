@@ -10,8 +10,8 @@ namespace SandJamTest.Scene3D
     {
         public SceneActorView First, Second;
         public bool IsInQueue { get; private set; } = true;
-        const float TubeRadius = .045f, RingHeight = .9f, RingMargin = .04f, TipReach = .72f;
-        const int TubeSides = 8;
+        const float TubeRadius = .062f, RingHeight = .9f, RingMargin = .04f, TipReach = .72f;
+        const int TubeSides = 12;
         Loop firstLoop, secondLoop;
 
         sealed class Loop
@@ -36,7 +36,7 @@ namespace SandJamTest.Scene3D
         void LateUpdate()
         {
             if (!First || !Second) return;
-            if (firstLoop == null) { firstLoop = Create(First, Second, 0); secondLoop = Create(Second, First, .045f); }
+            if (firstLoop == null) { firstLoop = Create(First, Second, 0); secondLoop = Create(Second, First, .07f); }
             bool visible = IsInQueue && First.gameObject.activeInHierarchy && Second.gameObject.activeInHierarchy;
             Refresh(firstLoop, visible); Refresh(secondLoop, visible);
         }
@@ -68,7 +68,7 @@ namespace SandJamTest.Scene3D
         {
             material.color = color;
             material.EnableKeyword("_EMISSION");
-            material.SetColor("_EmissionColor", color * .35f); // keeps the loop as vivid as the cube in shade
+            material.SetColor("_EmissionColor", color * .5f); // keeps the loop as vivid as the cube in shade
         }
 
         void Refresh(Loop loop, bool visible)
