@@ -10,7 +10,10 @@ namespace SandJamTest.Scene3D
         public SceneActorView Actor;
         Transform sand;
         MeshRenderer fillRenderer;
-        static Mesh frameMesh, sandMesh, legsMesh;
+        static Mesh frameMesh, sandMesh, legsMesh, glassMesh;
+        static Material glassMaterial;
+        MeshRenderer glassRenderer;
+        Vector3 labelScale;
         static int users;
         bool initialized;
         public void Initialize(SceneActorView actor, Material material)
@@ -23,10 +26,13 @@ namespace SandJamTest.Scene3D
             if(!legsMesh)throw new System.InvalidOperationException("Generated CharacterLegs resource is missing");
             skin.sharedMesh=legsMesh;
             // Reference: the count is printed on the lower front face, large, not below the block.
-            if(actor.AmmoLabel){actor.AmmoLabel.transform.localPosition+=new Vector3(0,.2f,0);actor.AmmoLabel.transform.localScale*=1.22f;}
+            if(actor.AmmoLabel){actor.AmmoLabel.transform.localPosition+=new Vector3(0,.2f,0);actor.AmmoLabel.transform.localScale*=1.22f;labelScale=actor.AmmoLabel.transform.localScale;}
             var frame=Part("Rounded vessel frame",frameMesh,material,actor.Visual);frameRenderer=frame;
             frameBlock=new MaterialPropertyBlock();frameBlock.SetFloat("_GrainStrength",0);frameBlock.SetFloat("_OutlineWidth",.007f);frame.SetPropertyBlock(frameBlock);
             fillRenderer=Part("Contained sand volume",sandMesh,material,actor.Visual);sand=fillRenderer.transform;
+            // Frosted glass walls around the draining sand (original waiting-slot boxes read as glass, not a bare cage).
+            if(!glassMaterial){var shader=Shader.Find("SandJamTest/GlassPane");if(shader)glassMaterial=new Material(shader){name="Cube glass walls"};}
+            if(glassMaterial){glassRenderer=Part("Glass walls",glassMesh,glassMaterial,actor.Visual);glassBlock=new MaterialPropertyBlock();}
             // Face-aligned pixel sand (reference blocks show square ~10-per-face speckles, about +/-10% brightness).
             sandBlock=new MaterialPropertyBlock();sandBlock.SetFloat("_OutlineWidth",0);
             sandBlock.SetTexture("_MainTex",PixelSand());sandBlock.SetVector("_MainTex_ST",new Vector4(1,1,0,0));
@@ -67,7 +73,7 @@ namespace SandJamTest.Scene3D
                 sleepIcon.color=new Color(.25f,.22f,.45f,.65f+.35f*Mathf.Sin(t*3.1f));
             }
         }
-        MaterialPropertyBlock frameBlock, sandBlock;
+        MaterialPropertyBlock frameBlock, sandBlock, glassBlock;
         static readonly Color Outline=new Color(.035f,.03f,.06f);
         public void Apply(bool front,bool docked)
         {
@@ -80,12 +86,20 @@ namespace SandJamTest.Scene3D
             // (with the number) dominates and the top is a narrow strip, as in the reference renders.
             var upright=Quaternion.Euler(BlockPitch,0,0);
             sand.localRotation=upright;frameRenderer.transform.localRotation=upright;
+            if(glassRenderer)glassRenderer.transform.localRotation=upright;
             var color=fillRenderer.sharedMaterial.GetColor("_Color");
             // Measured on the reference renders: faces read ~1.15-1.25x brighter than FinalColor with a
             // faint white lift (red 190,24,24 renders as 218,32,60), and lighting is soft.
             var lit=color*1.25f+Color.white*.06f;lit.a=1;
             sandBlock.SetColor("_Color",lit);sandBlock.SetFloat("_ShadeStrength",.55f);
             frameRenderer.enabled=glass;
+            // The original prints a smaller count on a draining glass box than on a full block.
+            if(Actor.AmmoLabel && labelScale!=Vector3.zero)Actor.AmmoLabel.transform.localScale=labelScale*(glass?.8f:1f);
+            if(glassRenderer)
+            {
+                glassRenderer.enabled=glass;
+                if(glass){var tint=Color.Lerp(color,Color.white,.5f);tint.a=1;glassBlock.SetColor("_Color",tint);glassRenderer.SetPropertyBlock(glassBlock);}
+            }
             if(glass)
             {
                 // Sand inside the glass: shrink the solid block to the cage interior and drain it from the top.
@@ -164,6 +178,11 @@ namespace SandJamTest.Scene3D
                 for(int i=0;i<low.Length;i++){int j=(i+1)%low.Length;Quad(v,t,low[i]+offset,high[i]+offset,high[j]+offset,low[j]+offset);}
             }
             frameMesh=Finish(v,t,"Rounded sand vessel frame");
+            // Glass walls: the cage's rounded outline extruded between its two rings (open top and bottom).
+            var gv=new List<Vector3>();var gt=new List<int>();
+            var bottom=Loop(.72f,.55f,.09f,.25f);var top=Loop(.72f,.55f,.09f,.835f);
+            for(int i=0;i<bottom.Length;i++){int j=(i+1)%bottom.Length;Quad(gv,gt,bottom[i],top[i],top[j],bottom[j]);}
+            glassMesh=Finish(gv,gt,"Cube glass walls");
             sandMesh=RoundedBlock(BlockSize,BevelRadius);
             halfMesh=Wedge(sandMesh);
         }
@@ -252,6 +271,6 @@ namespace SandJamTest.Scene3D
             pixelSand.SetPixels32(pixels);pixelSand.Apply(false,true);
             return pixelSand;
         }
-        void OnDestroy(){if(initialized && --users==0){Destroy(frameMesh);Destroy(sandMesh);if(halfMesh)Destroy(halfMesh);if(pixelSand)Destroy(pixelSand);}}
+        void OnDestroy(){if(initialized && --users==0){Destroy(frameMesh);Destroy(sandMesh);if(glassMesh)Destroy(glassMesh);if(glassMaterial)Destroy(glassMaterial);if(halfMesh)Destroy(halfMesh);if(pixelSand)Destroy(pixelSand);}}
     }
 }
