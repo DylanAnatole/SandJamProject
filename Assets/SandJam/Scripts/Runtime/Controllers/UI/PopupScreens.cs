@@ -65,7 +65,7 @@ namespace SandJamTest.Scene3D
             failed.Icon.gameObject.SetActive(false);
             BuildHearts(failed);
             foreach (Transform child in failed.RightButton.transform.parent) failedRightX[child] = child.localPosition.x;
-            failed.Big.transform.localPosition += new Vector3(0, -.15f, 0); ScaleText(failed.Big, .62f);
+            failed.Big.transform.localPosition += new Vector3(0, .12f, 0); ScaleText(failed.Big, .62f); // clear of the caption band
             // Original timer row: stopwatch icon left of the countdown.
             var watch = Resources.Load<Sprite>("VideoUI/icon-watch");
             if (watch)
@@ -74,6 +74,7 @@ namespace SandJamTest.Scene3D
                 w.sprite = watch; float k = .42f / watch.bounds.size.y; w.transform.localScale = new Vector3(k, k, 1);
                 failed.Big.transform.position += failed.Root.transform.right * .25f * failed.Root.transform.lossyScale.x;
             }
+            StyleFailedSlot();
             SingleButton(failed);
             AddCloseButton(failed, "home");
             BuildNoLivesButtons();
@@ -112,9 +113,12 @@ namespace SandJamTest.Scene3D
             // The glass clip stays: it trims the glass panel's unused green rim (only one popup is open at a time, so
             // each popup's mask only ever meets its own glass).
             foreach (Transform child in root.transform)
-                if (child.name == "Card light" || child.name == "Flying coin" || child.name == ResultFx.FrameName || child.name == ResultFx.EdgeName || child.name == ResultFx.BandTopName)
+                if (child.name == "Card light" || child.name == "Flying coin" || child.name == ResultFx.BandTopName)
                     Destroy(child.gameObject);
-            foreach (var n in new[] { "Gold outer border", "Gold header" }) { var t = root.transform.Find(n); if (t) t.GetComponent<Renderer>().enabled = true; }
+            // Every card keeps the Level Complete's rounded, slightly bulging frame (original: the red Level Failed
+            // card has the same shape); popups recolour it through Border. The flat rectangular panels stay hidden.
+            bool shapedFrame = root.transform.Find(ResultFx.FrameName);
+            if (!shapedFrame) foreach (var n in new[] { "Gold outer border", "Gold header" }) { var t = root.transform.Find(n); if (t) t.GetComponent<Renderer>().enabled = true; }
             var placeholder = root.GetComponentInChildren<ReferenceUiPlaceholder>(true); if (placeholder) Destroy(placeholder);
             // Let the paused board show through, unlike the full-screen result page.
             var backdrop = root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>();
@@ -125,7 +129,7 @@ namespace SandJamTest.Scene3D
             p.Big = Text(root, "+ 10");
             p.Caption = Text(root, "Your Reward!");
             p.Icon = root.transform.Find("icon-coin-reward").GetComponent<SpriteRenderer>();
-            p.Border = root.transform.Find("Gold outer border").GetComponent<SpriteRenderer>();
+            p.Border = (shapedFrame ? root.transform.Find(ResultFx.FrameName) : root.transform.Find("Gold outer border")).GetComponent<SpriteRenderer>();
             p.Ribbon = root.transform.Find("Gold header").GetComponent<SpriteRenderer>();
             var x2 = root.transform.Find("x2"); var next = root.transform.Find("Next");
             p.Left = x2.Find("x2").GetComponent<TextMesh>(); p.Right = next.Find("Next").GetComponent<TextMesh>();
@@ -184,6 +188,42 @@ namespace SandJamTest.Scene3D
                 r.transform.localScale = new Vector3(.42f / size.x, .42f / size.y, 1);
             }
             Label(p, "Stash picture plus", new Vector3(1.25f, .8f, -7.4f), "+", .07f, Color.white);
+        }
+        // Original Level Failed reward box: the hearts sit on a pale blue strip across its top, the countdown in a dark
+        // pill, "Keep Going!" on the dark band at the bottom; white title.
+        void StyleFailedSlot()
+        {
+            var slot = failed.Root.transform.Find("bg-popUp-slot-levelCompleted-v2");
+            if (!slot || hearts == null || hearts.Length == 0 || !failed.Ribbon) return;
+            var sb = slot.GetComponent<Renderer>().bounds;
+            float inset = sb.size.x * .035f, top = sb.max.y - inset, bottom = hearts[0].bounds.min.y - .12f;
+            var pale = new Color(.655f, .745f, 1f); var dark = new Color(.227f, .235f, .486f);
+            Block(failed, "Hearts strip", new Vector3(sb.center.x, (top + bottom) * .5f, 0), new Vector2(sb.size.x - 2 * inset, top - bottom), pale, -7.05f, true);
+            Block(failed, "Hearts strip square edge", new Vector3(sb.center.x, bottom + (top - bottom) * .25f, 0), new Vector2(sb.size.x - 2 * inset, (top - bottom) * .5f), pale, -7.06f, false);
+            float timerY = failed.Big.transform.position.y + .02f;
+            Block(failed, "Timer pill", new Vector3(sb.center.x, timerY, 0), new Vector2(sb.size.x * .62f, .56f), dark, -7.1f, true);
+            failed.Title.color = Color.white;
+            var ink = failed.Title.GetComponent<OutlinedText>(); if (ink) ink.Ink = new Color(.45f, .05f, .09f);
+        }
+        // Coloured panel in world size: rounded (the popup's sliced panel art) or a plain rectangle.
+        void Block(Popup p, string name, Vector3 world, Vector2 size, Color color, float z, bool rounded)
+        {
+            var r = Child<SpriteRenderer>(p, name, Vector3.zero);
+            r.transform.position = new Vector3(world.x, world.y, p.Root.transform.position.z);
+            r.transform.localPosition = new Vector3(r.transform.localPosition.x, r.transform.localPosition.y, z);
+            if (rounded && p.Ribbon.sprite)
+            {
+                r.sprite = p.Ribbon.sprite; r.drawMode = SpriteDrawMode.Sliced;
+                var lossy = r.transform.lossyScale; r.size = new Vector2(size.x / lossy.x, size.y / lossy.y);
+            }
+            else
+            {
+                var white = Texture2D.whiteTexture;
+                r.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width); runtimeArt.Add(r.sprite);
+                r.transform.localScale = Vector3.one; var b = r.bounds.size;
+                r.transform.localScale = new Vector3(size.x / b.x, size.y / b.y, 1);
+            }
+            r.color = color;
         }
         void BuildHearts(Popup p)
         {
@@ -725,6 +765,9 @@ namespace SandJamTest.Scene3D
             p.Header.text = "Level " + LevelShown;
             foreach (var label in p.Root.GetComponentsInChildren<TextMesh>(true))
                 if (label.name == "2040") label.text = Campaign.Coins.ToString();
+            // The frame's darker edge follows the popup's frame colour (gold, red...).
+            var edge = p.Root.transform.Find(ResultFx.EdgeName);
+            if (edge && p.Border) edge.GetComponent<SpriteRenderer>().color = Color.Lerp(p.Border.color, new Color(.45f, .08f, .04f), .35f);
             p.Root.SetActive(true);
             bool fullPage = p == shop || p == gallery || p == questMap;
             p.Root.transform.localScale = Vector3.one * (fullPage ? 1 : PopStart);
