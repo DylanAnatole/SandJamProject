@@ -110,7 +110,7 @@ namespace SandJamTest.Scene3D
             // Level Complete extras do not belong to the other popups built from it.
             var fx = root.GetComponent<ResultFx>(); if (fx) Destroy(fx);
             foreach (Transform child in root.transform)
-                if (child.name == "Card light" || child.name == "Flying coin" || child.name == ResultFx.FrameName || child.name == ResultFx.EdgeName || child.name == ResultFx.ClipName)
+                if (child.name == "Card light" || child.name == "Flying coin" || child.name == ResultFx.FrameName || child.name == ResultFx.EdgeName || child.name == ResultFx.ClipName || child.name == ResultFx.BandTopName)
                     Destroy(child.gameObject);
             foreach (var n in new[] { "Gold outer border", "Gold header" }) { var t = root.transform.Find(n); if (t) t.GetComponent<Renderer>().enabled = true; }
             var glassRenderer = root.transform.Find("bg-popUp-levelCompleted-v2"); if (glassRenderer) glassRenderer.GetComponent<SpriteRenderer>().maskInteraction = SpriteMaskInteraction.None;

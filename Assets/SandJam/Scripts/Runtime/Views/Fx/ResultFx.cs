@@ -26,6 +26,7 @@ namespace SandJamTest.Scene3D
             var backdrop = transform.Find("Dark backdrop");
             if (backdrop) { var r = backdrop.GetComponent<SpriteRenderer>(); if (r) { var c = r.color; c.a = .86f; r.color = c; } }
             BuildCardFrame();
+            StyleRewardBand();
             var light = Resources.Load<Sprite>("Congrats/light-congrats");
             var header = transform.Find("Gold header");
             if (light && header)
@@ -56,7 +57,7 @@ namespace SandJamTest.Scene3D
         // Original card: a gold frame following the card's rounded, slightly bulging outline (the white card mask,
         // tinted), with a darker gold edge; the glass panel is clipped just inside its own outline so its green rim
         // (unused in the current build) disappears. Replaces the flat rectangular gold panels.
-        public const string FrameName = "Card frame", EdgeName = "Card frame edge", ClipName = "Glass clip";
+        public const string FrameName = "Card frame", EdgeName = "Card frame edge", ClipName = "Glass clip", BandTopName = "Reward caption top edge";
         void BuildCardFrame()
         {
             var mask = Resources.Load<Sprite>("VideoUI/bg-popUp-mask-levelCompleted-v2");
@@ -93,6 +94,44 @@ namespace SandJamTest.Scene3D
             // The project's pixel sprite shader ignores sprite masks; the default sprite shader honours them.
             g.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
             g.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+        }
+
+        // Original reward box: "Your Reward!" sits on a dark band that is the purple box's own bottom strip (full
+        // width, square top edge, rounded bottom corners), in pale lavender, not a separate narrower pill.
+        void StyleRewardBand()
+        {
+            var slot = transform.Find("bg-popUp-slot-levelCompleted-v2"); var band = transform.Find("Reward caption");
+            if (!slot || !band) return;
+            var sb = slot.GetComponent<Renderer>().bounds; var br = band.GetComponent<SpriteRenderer>();
+            if (!br || !br.sprite) return;
+            var colour = new Color(.227f, .235f, .486f);
+            float inset = sb.size.x * .035f, width = sb.size.x - 2 * inset, height = sb.size.y * .22f, bottom = sb.min.y + inset * .9f;
+            br.color = colour;
+            band.position = new Vector3(sb.center.x, bottom + height * .5f, band.position.z);
+            band.localScale = Vector3.one;
+            var lossy = band.lossyScale;
+            if (br.drawMode != SpriteDrawMode.Simple) br.size = new Vector2(width / lossy.x, height / lossy.y); // sliced: corners keep their radius
+            else { var measured = br.bounds.size; band.localScale = new Vector3(width / measured.x, height / measured.y, 1); }
+            // Square off the top edge: a plain strip over the upper half of the band.
+            var top = new GameObject(BandTopName) { layer = gameObject.layer }.AddComponent<SpriteRenderer>();
+            top.transform.SetParent(transform, false);
+            var white = Texture2D.whiteTexture;
+            top.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
+            top.color = colour; top.sortingOrder = br.sortingOrder; top.sharedMaterial = br.sharedMaterial;
+            top.transform.position = new Vector3(sb.center.x, bottom + height * .75f, band.position.z - .001f);
+            // Size from the measured bounds (the parent chain is not uniformly scaled).
+            top.transform.localScale = Vector3.one;
+            var tb = top.bounds.size;
+            top.transform.localScale = new Vector3(width / Mathf.Max(.0001f, tb.x), height * .5f / Mathf.Max(.0001f, tb.y), 1);
+            // The reward amount sits clear of the band, as in the original.
+            var amount = transform.Find("+ 10");
+            if (amount) { float gap = amount.GetComponent<Renderer>().bounds.min.y - (bottom + height); if (gap < .08f) amount.position += new Vector3(0, .08f - gap, 0); }
+            var caption = transform.Find("Your Reward!");
+            if (caption)
+            {
+                caption.position = new Vector3(caption.position.x, bottom + height * .5f + .02f, caption.position.z);
+                var text = caption.GetComponent<TextMesh>(); if (text) text.color = new Color(.78f, .76f, .84f);
+            }
         }
 
         void OnEnable() { time = 0; CoinsLanded = coins.Count == 0; }
