@@ -154,6 +154,7 @@ namespace SandJamTest.Scene3D
                     child.position=new Vector3(child.position.x,(hTop+hBottom)*.5f,child.position.z);
                 }
             ReplaceLevelSign(bar);
+            ReplaceJoinPlaque();
             // Navbar: the original icons and captions are noticeably bigger.
             foreach(var name in new[]{"icon-shop","icon-home","icon-cards"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.15f;}
             foreach(var name in new[]{"SHOP","HOME","GALLERY"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.22f;}
@@ -226,6 +227,20 @@ namespace SandJamTest.Scene3D
                     child.position=new Vector3(child.position.x,(hTop+hBottom)*.5f,child.position.z);
                 }
             StartCoroutine(SoftSignInk());
+        }
+        // Original "JOIN" plaque under the Sand Quest chest: the gold label art (Chest_Label_Enable, 262x111), same
+        // width as the drawn pill it replaces. Kept when the art is absent.
+        void ReplaceJoinPlaque()
+        {
+            var tex=Resources.Load<Texture2D>("VideoUI/chest-label");var label=Home.transform.Find("Join label");
+            var r=label?label.GetComponent<SpriteRenderer>():null;if(!tex || !r)return;
+            var b=r.bounds;
+            r.sprite=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,.5f),100);
+            r.drawMode=SpriteDrawMode.Simple;r.color=Color.white;r.sharedMaterial=new Material(Shader.Find("Sprites/Default"));
+            float width=b.size.x*1.05f,height=width*111f/262f; // true art aspect (the import may resize it)
+            label.localScale=Vector3.one;var size=r.bounds.size;
+            label.localScale=new Vector3(width/size.x,height/size.y,1);
+            label.position=new Vector3(b.center.x,b.center.y,label.position.z);
         }
         IEnumerator SoftSignInk()
         {
