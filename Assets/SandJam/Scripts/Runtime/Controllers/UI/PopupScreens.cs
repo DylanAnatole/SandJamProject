@@ -286,12 +286,25 @@ namespace SandJamTest.Scene3D
             int w = 720, h = Mathf.RoundToInt(w * (float)cam.pixelHeight / Mathf.Max(1, cam.pixelWidth));
             var rt = RenderTexture.GetTemporary(w, h, 24);
             var previous = cam.targetTexture;
+            // Original picture: the five slots plus the extra empty white slot Play on would add, at the right end.
+            var extra = ExtraSlotPreview(slots);
+            // The camera is moved sideways for this one render so the six-slot row sits in the middle of the shot.
+            var camPosition = cam.transform.position; float camFov = cam.fieldOfView;
+            cam.fieldOfView = camFov * 1.3f; // a wider view: margins around the row as in the original picture
+            if (extra) cam.transform.position += new Vector3((slots[0].position.x + extra.transform.position.x) * .5f - camPosition.x, 0, 0);
+            // Frame the six-slot row centred, with some margin on both sides.
+            float left = cam.WorldToViewportPoint(slots[0].position).x, right = extra ? cam.WorldToViewportPoint(extra.transform.position).x : cam.WorldToViewportPoint(slots[slots.Length - 1].position).x;
+            float span = Mathf.Min(1f, (right - left) * 1.5f), centre = (left + right) * .5f;
+            float x0 = Mathf.Clamp(centre - span * .5f, 0, 1 - span), x1 = x0 + span;
             cam.targetTexture = rt; cam.Render(); cam.targetTexture = previous;
             float middle = cam.WorldToViewportPoint(slots[slots.Length / 2].position).y;
-            float x0 = .04f, x1 = .96f;
+            if (extra) DestroyImmediate(extra);
+            cam.transform.position = camPosition; cam.fieldOfView = camFov;
             // Same shape as the reward box it fills (~4:3.4), the stash in its upper third with the board's base above
             // and two lane rows below, like the original's picture.
-            int cw = Mathf.RoundToInt((x1 - x0) * w), ch = Mathf.RoundToInt(cw * .82f);
+            float aspect = .82f; float rl, rr, rt2, rb2;
+            if (RewardRegion(lose, out rl, out rr, out rt2, out rb2)) aspect = (rt2 - rb2) / Mathf.Max(.01f, rr - rl); // same shape as the box: no side crop
+            int cw = Mathf.RoundToInt((x1 - x0) * w), ch = Mathf.Min(h, Mathf.RoundToInt(cw * aspect));
             int y0 = Mathf.Clamp(Mathf.RoundToInt(middle * h) - Mathf.RoundToInt(ch * .62f), 0, h - ch);
             if (!stashShot || stashShot.width != cw || stashShot.height != ch)
             {
@@ -311,9 +324,39 @@ namespace SandJamTest.Scene3D
             FillRewardBox(lose, stashPicture);
         }
 
+        GameObject ExtraSlotPreview(Transform[] slots)
+        {
+            if (slots.Length < 2) return null;
+            var stash = slots[0].parent; var first = stash.Find("Solid waiting pad 0"); if (!first) return null;
+            var step = slots[slots.Length - 1].position - slots[slots.Length - 2].position;
+            var copy = Instantiate(first.gameObject, stash);
+            copy.name = "Extra slot preview";
+            copy.transform.position = first.position + (slots[slots.Length - 1].position - slots[0].position) + step;
+            var r = copy.GetComponent<Renderer>(); var src = first.GetComponent<Renderer>();
+            if (r && src) r.sharedMaterial = src.sharedMaterial; // the plain white tile, never the grey locked tint
+            var shadow = stash.Find("Pad shadow 0");
+            if (shadow)
+            {
+                var s = Instantiate(shadow.gameObject, stash); s.transform.position = shadow.position + (copy.transform.position - first.position);
+                s.transform.SetParent(copy.transform, true);
+            }
+            return copy;
+        }
+
         // The stash picture fills the reward box's inner area (above the caption band, under it at the bottom)
         // and is clipped to the box's rounded inner shape, as in the original; it used to run over the box's rim.
         SpriteMask stashMask;
+        bool RewardRegion(Popup p, out float left, out float right, out float top, out float pictureBottom)
+        {
+            left = right = top = pictureBottom = 0;
+            var slot = p.Root.transform.Find("bg-popUp-slot-levelCompleted-v2"); var art = slot ? slot.GetComponent<SpriteRenderer>() : null;
+            if (!art) return false;
+            var sb = art.bounds; float rimX = sb.size.x * 11f / 316f, rimY = sb.size.y * 9f / 392f;
+            left = sb.min.x + rimX; right = sb.max.x - rimX; top = sb.max.y - rimY;
+            var band = p.Root.transform.Find("Reward caption");
+            pictureBottom = band ? band.GetComponent<Renderer>().bounds.center.y : sb.min.y + rimY;
+            return true;
+        }
         void FillRewardBox(Popup p, SpriteRenderer picture)
         {
             var slot = p.Root.transform.Find("bg-popUp-slot-levelCompleted-v2"); var slotArt = slot ? slot.GetComponent<SpriteRenderer>() : null;
