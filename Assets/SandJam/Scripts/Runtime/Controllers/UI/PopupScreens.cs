@@ -752,6 +752,7 @@ namespace SandJamTest.Scene3D
             else { colour = Resources.Load<Sprite>("LevelRenders/" + info.RenderId); grey = Greyscale(colour); }
             if (!colour || !grey) return false;
             if (info.Cover != null) { colour = CoverCrop(colour); grey = CoverCrop(grey); }
+            colour = RoundedCopy(colour); grey = RoundedCopy(grey); // corners follow the rim; the glass shows around them
             SetText(cardName, info.Name);
             var size = grey.bounds.size;
             // The picture fills the rounded slot completely (original): it is fitted to the slot box on both axes
@@ -810,6 +811,38 @@ namespace SandJamTest.Scene3D
             coverCrops[source] = cropped; runtimeArt.Add(cropped);
             return cropped;
         }
+        // Copy of a sprite's area with transparent rounded corners (radius ~10% of its width, the frame rim's inner
+        // rounding). Rendered through the GPU, so the source texture need not be readable.
+        readonly System.Collections.Generic.Dictionary<Sprite, Sprite> roundedCopies = new System.Collections.Generic.Dictionary<Sprite, Sprite>();
+        Sprite RoundedCopy(Sprite source)
+        {
+            if (!source) return source;
+            if (roundedCopies.TryGetValue(source, out var done)) return done;
+            var r = source.textureRect; var tex = source.texture;
+            int w = Mathf.RoundToInt(r.width), h = Mathf.RoundToInt(r.height);
+            var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            Graphics.Blit(tex, rt, new Vector2(r.width / tex.width, r.height / tex.height), new Vector2(r.x / tex.width, r.y / tex.height));
+            var copy = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = tex.filterMode, wrapMode = TextureWrapMode.Clamp, name = source.name + " rounded" };
+            var active = RenderTexture.active; RenderTexture.active = rt;
+            copy.ReadPixels(new Rect(0, 0, w, h), 0, 0);
+            RenderTexture.active = active; RenderTexture.ReleaseTemporary(rt);
+            var px = copy.GetPixels32(); float radius = w * .1f;
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
+            {
+                // Only the four corner squares are touched: alpha falls off past the radius from the corner centre.
+                bool left = x + .5f < radius, right = x + .5f > w - radius, bottom = y + .5f < radius, top = y + .5f > h - radius;
+                if (!((left || right) && (bottom || top))) continue;
+                float cx = left ? radius : w - radius, cy = bottom ? radius : h - radius;
+                float d = Mathf.Sqrt((x + .5f - cx) * (x + .5f - cx) + (y + .5f - cy) * (y + .5f - cy));
+                float a = Mathf.Clamp01(radius + .5f - d);
+                var c = px[y * w + x]; c.a = (byte)(c.a * a); px[y * w + x] = c;
+            }
+            copy.SetPixels32(px); copy.Apply(false, true);
+            var sprite = Sprite.Create(copy, new Rect(0, 0, w, h), new Vector2(.5f, .5f), source.pixelsPerUnit);
+            sprite.name = source.name + " (rounded)";
+            roundedCopies[source] = sprite; runtimeArt.Add(copy); runtimeArt.Add(sprite);
+            return sprite;
+        }
         static Vector3 Centred(Sprite sprite, float kx, float ky, float z)
         {
             var c = sprite.bounds.center;
@@ -829,11 +862,10 @@ namespace SandJamTest.Scene3D
                 float px = Mathf.Abs(x + .5f - w / 2f) - (w / 2f - radius), py = Mathf.Abs(y + .5f - h / 2f) - (h / 2f - radius);
                 float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - radius;
                 Color c;
-                if (d > 0) c = card;                                   // outside the rounding: hide the picture's corners
+                if (d > 0) c = Color.clear;                            // outside the rounding: the glass (the picture has rounded corners)
                 else if (d > -1.5f) c = edge;                          // thin darker outline
                 else if (d > -border) c = rimColor;                    // lavender rim
                 else c = Color.clear;                                  // the picture shows through
-                if (d > 0 && (x < 1 || y < 1 || x >= w - 1 || y >= h - 1)) c = card;
                 pixels[y * w + x] = c;
             }
             texture.SetPixels(pixels); texture.Apply(false, true);
