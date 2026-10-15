@@ -68,11 +68,17 @@ namespace SandJamTest.Scene3D
             // Each loop wraps its block a little above mid height (original), as a round tube: the mesh keeps one
             // uniform scale, so the strands are never squashed into flat ribbons.
             var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
-            var ring = new Vector3(0, CharacterSandVessel.BlockSize.y * .62f, 0);
-            var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(ring)); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(ring));
-            var up = First.Visual.TransformDirection(frame.MultiplyVector(Vector3.up)).normalized;
-            var along = b - a; along -= up * Vector3.Dot(along, up); float distance = along.magnitude; if (distance < .01f) return true;
+            // Original: the cube further back wears its loop high, around its top; the front cube wears it low around its
+            // body, so the strands slope down across the gap (side by side pairs: both at the same height).
+            float h = CharacterSandVessel.BlockSize.y;
+            int order = Second.SourceOrder - First.SourceOrder; // > 0: First is the back cube (higher on screen)
+            float ha = order > 0 ? h * .86f : order < 0 ? h * .5f : h * .62f, hb = order > 0 ? h * .5f : order < 0 ? h * .86f : h * .62f;
+            var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, ha, 0))); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, hb, 0)));
+            var blockUp = First.Visual.TransformDirection(frame.MultiplyVector(Vector3.up)).normalized;
+            var along = b - a; float distance = along.magnitude; if (distance < .01f) return true;
             along /= distance;
+            // The pair's plane tilts with the slope; its up stays as close to the blocks' up as possible.
+            var up = (blockUp - along * Vector3.Dot(blockUp, along)).normalized;
             float worldScale = First.Visual.lossyScale.x;
             float scale = (CharacterSandVessel.BlockSize.x + .16f) * worldScale / PairLoopWidth; // loop just wider than the block
             float half = distance * .5f / scale; // loop centre in mesh units
@@ -91,11 +97,14 @@ namespace SandJamTest.Scene3D
             bentFor = half;
             const float inner = .9f; // loops occupy |x| >= 0.9, centred on 1.36
             var v = source.vertices;
-            float span = Mathf.Max(.2f, half - (PairLoopCentre - inner));
+            // The loops are lengthened along the pair (the block is deeper than the loop is long), so the front strand
+            // of each loop passes in front of its block like a basket, as in the original.
+            const float stretch = 1.45f;
+            float span = Mathf.Max(.2f, half - (PairLoopCentre - inner) * stretch);
             for (int i = 0; i < v.Length; i++)
             {
                 float x = v[i].x, ax = Mathf.Abs(x), sign = Mathf.Sign(x);
-                v[i].x = ax >= inner ? sign * (half + ax - PairLoopCentre) : x / inner * span;
+                v[i].x = ax >= inner ? sign * (half + (ax - PairLoopCentre) * stretch) : x / inner * span;
             }
             if (!pairBent) { pairBent = Instantiate(source); pairBent.name = "Chain (fitted)"; pairBent.ClearBlendShapes(); }
             pairBent.vertices = v; pairBent.RecalculateBounds(); pairBent.RecalculateNormals();
