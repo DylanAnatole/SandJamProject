@@ -58,6 +58,7 @@ namespace SandJamTest.Scene3D
             SingleButton(lose);
             Configure(lose.RightButton, lose.Right, "play-on", "Play on", 7f);
             PriceTag(lose, PlayOnPrice);
+            StylePlayOn(lose);
             AddCloseButton(lose, "give-up");
             // Original "Level Failed!": red frame, hearts with the lost one marked -1, refill timer, Try Again.
             failed = Build("Level failed popup");
@@ -288,8 +289,10 @@ namespace SandJamTest.Scene3D
             cam.targetTexture = rt; cam.Render(); cam.targetTexture = previous;
             float middle = cam.WorldToViewportPoint(slots[slots.Length / 2].position).y;
             float x0 = .04f, x1 = .96f;
-            int cw = Mathf.RoundToInt((x1 - x0) * w), ch = Mathf.RoundToInt(cw * .5f);
-            int y0 = Mathf.Clamp(Mathf.RoundToInt(middle * h) - Mathf.RoundToInt(ch * .6f), 0, h - ch);
+            // Same shape as the reward box it fills (~4:3.4), the stash in its upper third with the board's base above
+            // and two lane rows below, like the original's picture.
+            int cw = Mathf.RoundToInt((x1 - x0) * w), ch = Mathf.RoundToInt(cw * .82f);
+            int y0 = Mathf.Clamp(Mathf.RoundToInt(middle * h) - Mathf.RoundToInt(ch * .62f), 0, h - ch);
             if (!stashShot || stashShot.width != cw || stashShot.height != ch)
             {
                 if (stashShot) Destroy(stashShot);
@@ -305,8 +308,92 @@ namespace SandJamTest.Scene3D
                     if (child.name.StartsWith("Stash picture")) child.gameObject.SetActive(false);
             }
             stashPicture.sprite = Sprite.Create(stashShot, new Rect(0, 0, cw, ch), new Vector2(.5f, .5f), 100);
-            float k = 2.7f / stashPicture.sprite.bounds.size.x;
-            stashPicture.transform.localScale = new Vector3(k, k, 1);
+            FillRewardBox(lose, stashPicture);
+        }
+
+        // The stash picture fills the reward box's inner area (above the caption band, under it at the bottom)
+        // and is clipped to the box's rounded inner shape, as in the original; it used to run over the box's rim.
+        SpriteMask stashMask;
+        void FillRewardBox(Popup p, SpriteRenderer picture)
+        {
+            var slot = p.Root.transform.Find("bg-popUp-slot-levelCompleted-v2"); var slotArt = slot ? slot.GetComponent<SpriteRenderer>() : null;
+            if (!slotArt || !slotArt.sprite || !picture.sprite) return;
+            var sb = slotArt.bounds;
+            float rimX = sb.size.x * 11f / 316f, rimY = sb.size.y * 9f / 392f;
+            float left = sb.min.x + rimX, right = sb.max.x - rimX, top = sb.max.y - rimY, bottom = sb.min.y + rimY;
+            var band = p.Root.transform.Find("Reward caption");
+            float pictureBottom = band ? band.GetComponent<Renderer>().bounds.center.y : bottom;
+            picture.transform.localScale = Vector3.one;
+            var size = picture.bounds.size;
+            float k = Mathf.Max((right - left) / size.x, (top - pictureBottom) / size.y);
+            picture.transform.localScale = new Vector3(k, k, 1);
+            var pos = picture.transform.position;
+            picture.transform.position = new Vector3((left + right) * .5f, (top + pictureBottom) * .5f, pos.z);
+            if (!stashMask)
+            {
+                stashMask = Child<SpriteMask>(p, "Stash picture mask", Vector3.zero);
+                stashMask.sprite = slotArt.sprite;
+                stashMask.transform.position = slot.position;
+                var ls = slot.localScale; stashMask.transform.localScale = new Vector3(ls.x * (1 - 2 * 11f / 316f), ls.y * (1 - 2 * 9f / 392f), ls.z);
+                stashMask.isCustomRangeActive = true; stashMask.frontSortingOrder = 3; stashMask.backSortingOrder = 1;
+            }
+            picture.sortingOrder = 2; picture.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+            if (!picture.sharedMaterial || picture.sharedMaterial.shader.name != "Sprites/Default") picture.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+        }
+
+        // Original "Play on (coin) 400": one big green button centred on the card's bottom edge (half over it), the
+        // label, coin and price as one centred row inside it.
+        void StylePlayOn(Popup p)
+        {
+            var group = p.RightButton.transform.parent; var body = group.Find("button-green-v2");
+            var bodyR = body ? body.GetComponent<Renderer>() : null; if (!bodyR || !p.Border) return;
+            var card = p.Border.bounds; var bb = bodyR.bounds;
+            float width = card.size.x * .6f, height = width * .34f;
+            var ls = body.localScale; body.localScale = new Vector3(ls.x * width / bb.size.x, ls.y * height / bb.size.y, ls.z);
+            foreach (var hit in group.GetComponentsInChildren<BoxCollider>(true)) { var hs = hit.size; hit.size = new Vector3(hs.x * width / bb.size.x, hs.y * height / bb.size.y, hs.z); }
+            bb = bodyR.bounds;
+            group.position += new Vector3(card.center.x - bb.center.x, card.min.y + height * .12f - bb.center.y, 0);
+            bb = bodyR.bounds;
+            // Row: "Play on" + coin + price, centred in the button.
+            var root = p.Root.transform;
+            var coin = root.Find("Price coin"); var price = root.Find("Price");
+            Configure(null, p.Right, null, "Play on", 99f);
+            if (price) foreach (var t in price.GetComponentsInChildren<TextMesh>(true)) t.characterSize = p.Right.characterSize;
+            var parts = new System.Collections.Generic.List<Transform> { p.Right.transform };
+            if (coin) parts.Add(coin);
+            if (price) parts.Add(price);
+            float gap = height * .1f, total = -gap; var widths = new System.Collections.Generic.List<float>();
+            foreach (var t in parts) total += t.GetComponent<Renderer>().bounds.size.x + gap;
+            // The whole row scales to ~78% of the button's width.
+            float fit = width * .78f / Mathf.Max(.0001f, total);
+            foreach (var t in parts) t.localScale *= fit;
+            gap *= fit; total = -gap;
+            foreach (var t in parts) { float w = t.GetComponent<Renderer>().bounds.size.x; widths.Add(w); total += w + gap; }
+            float x = bb.center.x - total * .5f;
+            for (int i = 0; i < parts.Count; i++)
+            {
+                var r = parts[i].GetComponent<Renderer>(); float cx = x + widths[i] * .5f;
+                parts[i].position += new Vector3(cx - r.bounds.center.x, bb.center.y + height * .04f - r.bounds.center.y, 0);
+                if (parts[i] != p.Right.transform) parts[i].SetParent(group, true);
+                x += widths[i] + gap;
+            }
+            // The reward box reaches down to just above the button (original), its caption band following it.
+            var slot = root.Find("bg-popUp-slot-levelCompleted-v2"); var slotR = slot ? slot.GetComponent<Renderer>() : null;
+            if (slotR)
+            {
+                var sb = slotR.bounds; float newBottom = bb.max.y + height * .2f, delta = newBottom - sb.min.y;
+                if (delta < 0)
+                {
+                    float k = (sb.max.y - newBottom) / sb.size.y; var sl = slot.localScale;
+                    slot.localScale = new Vector3(sl.x, sl.y * k, sl.z);
+                    slot.position += new Vector3(0, (sb.max.y + newBottom) * .5f - slotR.bounds.center.y, 0);
+                    foreach (var name in new[] { "Reward caption", ResultFx.BandTopName })
+                    { var t = root.Find(name); if (t) t.position += new Vector3(0, delta, 0); }
+                    p.Caption.transform.position += new Vector3(0, delta, 0);
+                    var mask = root.Find("Reward band mask");
+                    if (mask) { mask.position = slot.position; var ml = slot.localScale; mask.localScale = new Vector3(ml.x * (1 - 2 * 11f / 316f), ml.y * (1 - 2 * 9f / 392f), ml.z); }
+                }
+            }
         }
 
 
