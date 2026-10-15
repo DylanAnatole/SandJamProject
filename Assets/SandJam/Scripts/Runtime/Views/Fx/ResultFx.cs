@@ -26,6 +26,7 @@ namespace SandJamTest.Scene3D
             var backdrop = transform.Find("Dark backdrop");
             if (backdrop) { var r = backdrop.GetComponent<SpriteRenderer>(); if (r) { var c = r.color; c.a = .86f; r.color = c; } }
             BuildCardFrame();
+            FitRewardBox();
             StyleRewardBand();
             LayoutButtons();
             RecordLayout();
@@ -134,6 +135,23 @@ namespace SandJamTest.Scene3D
                 caption.position = new Vector3(caption.position.x, bottom + height * .5f + .02f, caption.position.z);
                 var text = caption.GetComponent<TextMesh>(); if (text) text.color = new Color(.78f, .76f, .84f);
             }
+        }
+
+        // The purple reward box sat partly above the visible glass (its top at 1.90, the glass's at 1.69): its top
+        // comes down to leave the same margin as at its sides; the coins and the amount move down with it.
+        void FitRewardBox()
+        {
+            var slot = transform.Find("bg-popUp-slot-levelCompleted-v2"); var clip = transform.Find(ClipName);
+            if (!slot || !clip) return;
+            var sb = slot.GetComponent<Renderer>().bounds; var cb = clip.GetComponent<SpriteMask>().bounds;
+            float margin = Mathf.Max(.08f, cb.max.x - sb.max.x), top = cb.max.y - margin;
+            if (sb.max.y <= top) return;
+            float drop = sb.max.y - top, height = top - sb.min.y, k = height / sb.size.y;
+            var ls = slot.localScale; slot.localScale = new Vector3(ls.x, ls.y * k, ls.z);
+            slot.position += new Vector3(0, sb.min.y + height * .5f - slot.GetComponent<Renderer>().bounds.center.y, 0);
+            var coins = transform.Find("icon-coin-reward");
+            if (coins) { coins.localScale *= .9f; coins.position += new Vector3(0, -drop * .6f, 0); }
+            var amount = transform.Find("+ 10"); if (amount) amount.position += new Vector3(0, -drop * .35f, 0);
         }
 
         // The reward box and the two buttons share the same width inside the glass with equal side margins (the
