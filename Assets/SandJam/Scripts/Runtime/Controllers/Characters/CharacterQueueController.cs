@@ -17,7 +17,7 @@ namespace SandJamTest.Scene3D
         public void SetStashSlots(Transform[] slots) { StashSlots = slots; }
         readonly float QueueSpacing;
         public CharacterQueueController(SceneActorView[] characters, Transform[] lanes, Transform[] slots, float spacing)
-        { Characters = characters; LaneStarts = lanes; StashSlots = slots; QueueSpacing = spacing; }
+        { Characters = characters; LaneStarts = lanes; StashSlots = slots; QueueSpacing = spacing * .87f; } // smaller cubes queue closer, as in the original
         public SceneActorView ViewFor(Shooter shooter) { return actors[shooter]; }
         public bool CanShoot(SandGame game, int slot)
         { var shooter = game.Slots[slot]; return shooter != null && actors[shooter].AtRest; }

@@ -85,11 +85,13 @@ namespace SandJamTest.Scene3D
         float ExitTarget { get { return -Mathf.Sign(destination.x - from.x) * ExitYaw; } }
         void ShowLegs(bool visible) { if (legs && legs.enabled != visible) legs.enabled = visible; }
 
+        public const float CubeScale = .9f;
         public void Bind(Shooter shooter, Vector3 position)
         {
             Shooter = shooter;
             gameObject.SetActive(true);
-            if (baseScale == Vector3.zero) { baseScale = Visual.localScale;baseRotation=Visual.localRotation;basePosition=Visual.localPosition; }
+            if (baseScale == Vector3.zero) { baseScale = Visual.localScale * CubeScale; // original cubes are ~14% smaller
+               baseRotation=Visual.localRotation;basePosition=Visual.localPosition; }
             squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = basePosition;
             Visual.localScale = baseScale;
             Visual.localRotation = baseRotation;
