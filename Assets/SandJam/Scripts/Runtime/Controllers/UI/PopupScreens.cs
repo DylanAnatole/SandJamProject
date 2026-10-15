@@ -203,9 +203,22 @@ namespace SandJamTest.Scene3D
             Block(failed, "Hearts strip", new Vector3(sb.center.x, (top + bottom) * .5f, 0), new Vector2(sb.size.x - 2 * inset, top - bottom), pale, -7.05f, true);
             Block(failed, "Hearts strip square edge", new Vector3(sb.center.x, bottom + (top - bottom) * .25f, 0), new Vector2(sb.size.x - 2 * inset, (top - bottom) * .5f), pale, -7.06f, false);
             float timerY = failed.Big.transform.position.y + .02f;
-            Block(failed, "Timer pill", new Vector3(sb.center.x, timerY, 0), new Vector2(sb.size.x * .62f, .56f), dark, -7.1f, true);
+            Block(failed, "Timer pill", new Vector3(sb.center.x, timerY, 0), new Vector2(sb.size.x * .5f, .56f), dark, -7.1f, true);
             failed.Title.color = Color.white;
-            var ink = failed.Title.GetComponent<OutlinedText>(); if (ink) ink.Ink = new Color(.45f, .05f, .09f);
+            // Original Try Again: a larger button.
+            var tryAgain = failed.RightButton.transform.parent; tryAgain.localScale *= 1.22f;
+            tryAgain.position += new Vector3(0, .3f, 0); // clear of the glass's bottom edge
+            ScaleText(failed.Title, 1.2f); // original title is larger
+        }
+        // Stopwatch and countdown as one centred group in the timer pill (original), whatever the text width.
+        void LayoutTimerRow()
+        {
+            var watch = failed.Root.transform.Find("Timer watch"); var pill = failed.Root.transform.Find("Timer pill");
+            var text = failed.Big.GetComponent<Renderer>(); if (!watch || !pill || !text) return;
+            var wr = watch.GetComponent<Renderer>(); float ww = wr.bounds.size.x, tw = text.bounds.size.x, gap = .08f;
+            float total = ww + gap + tw, left = pill.GetComponent<Renderer>().bounds.center.x - total * .5f;
+            watch.position += new Vector3(left + ww * .5f - wr.bounds.center.x, 0, 0);
+            failed.Big.transform.position += new Vector3(left + ww + gap + tw * .5f - text.bounds.center.x, 0, 0);
         }
         // Coloured panel in world size: rounded (the popup's sliced panel art) or a plain rectangle.
         void Block(Popup p, string name, Vector3 world, Vector2 size, Color color, float z, bool rounded)
@@ -543,7 +556,10 @@ namespace SandJamTest.Scene3D
             failedIsNoLives = noLives;
             failed.Title.text = noLives ? "Level Failed!" : "Level Failed!";
             Configure(null, failed.Caption, null, noLives || !LivesManager.CanPlay ? "You Have No Lives!" : "Keep Going!", 18f);
-            failed.Big.text = TimerText;
+            failed.Big.text = TimerText; LayoutTimerRow();
+            // White title with a dark red outline (the outline component is added after the popup is built).
+            var title = failed.Title.GetComponent<OutlinedText>(); if (!title) title = failed.Title.gameObject.AddComponent<OutlinedText>();
+            title.SetInk(new Color(.5f, .04f, .08f));
             RefreshHearts(justLost);
             bool canPlay = LivesManager.CanPlay;
             LayoutNoLives(!canPlay);
@@ -1021,7 +1037,7 @@ namespace SandJamTest.Scene3D
         {
             if (!screen.Feedback.FailureVisible) gaveUp = false;
             if (!Open) { UpdateOutOfSpaceBanner(); return; }
-            if (Open == failed.Root && Time.frameCount % 15 == 0) failed.Big.text = TimerText;
+            if (Open == failed.Root && Time.frameCount % 15 == 0) { failed.Big.text = TimerText; LayoutTimerRow(); }
             // Pop-in: the original popups zoom in from about half size with a small overshoot; the HARD / BONUS
             // level cards grow more slowly (recording of level 260).
             bool slow = Open == hard.Root || Open == bonus.Root;

@@ -76,6 +76,9 @@ namespace SandJamTest.Scene3D
             }
         }
 
+        // Outline colour change after creation: the copies are recoloured on the next frame.
+        public void SetInk(Color ink) { Ink = ink; alpha = -1; }
+
         void LateUpdate()
         {
             // Reading main.text allocates: only when the label's size changed, or every 8th frame for same-width edits.
