@@ -173,7 +173,7 @@ namespace SandJamTest.Scene3D
                     GalleryHit(mx[m], 1.24f, .55f, .62f, "gallery-claim:" + m);
                 }
             }
-            GalleryArt("Group 10298", 0, .34f, 1.9f, .48f, -6.3f);
+            GalleryArt("Group 10298", 0, .34f, 1.9f, .48f, -6.3f).color = new Color(.42f, .5f, .72f); // original: a dark navy pill
             GalleryText("Claim All Cards", 0, .35f, .036f, -6.4f);
             GalleryHit(0, .34f, 1.9f, .5f, "gallery-claim-all");
             // Picture grid (3 columns), scrolled inside the band between the button and the navbar.
@@ -188,7 +188,10 @@ namespace SandJamTest.Scene3D
                 GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
                 if (!done) continue;
                 string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
-                MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, y, cw - .1f, ch - .1f, -6.35f, galleryGrid);
+                // Inside the slot frame's blue rim: rows 12-383 and columns 12-311 of the 324x450 art (measured top down;
+                // the art has a transparent strip at the bottom, so that area sits above the sprite's centre).
+                float vw = cw * 300f / 324f, vh = ch * 372f / 450f, vy = y + ch * (.5f - (12f + 384f) / 2f / 450f), rim = cw * .025f;
+                MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
             }
             int rows = (info.Count + 2) / 3;
             galleryScrollMax = Mathf.Max(0, .85f + rows * gy - (GridTop - GridBottom));
