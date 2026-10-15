@@ -46,6 +46,10 @@ namespace SandJamTest.Scene3D
             if (badge) { levelBadge = badge.GetComponentInChildren<SpriteRenderer>(true); if (levelBadge) badgeColor = levelBadge.color; }
             coinBar = owner.Gameplay.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(r => r.name == "Coin bar");
             if (coinBar) { coinColor = coinBar.color; GoldRim(coinBar); }
+            // Home lives / coin bars and the coin bar of the result card (cloned into every popup) have it too.
+            foreach (var root in new[] { owner.Home, owner.Result })
+                foreach (var bar in root.GetComponentsInChildren<SpriteRenderer>(true))
+                    if (bar.name == "bg-currency") GoldRim(bar);
             // Sand Quest chest ("JOIN"): opens the event; shows the run progress while joined.
             var chest = owner.Home.transform.Find("Chest_Enable");
             if (chest) AddHit(chest, "sand-quest");

@@ -59,11 +59,12 @@ namespace SandJamTest.Scene3D
 
             // Fixed header drawn over the scrolling list.
             // Fixed SAND SHOP header under the Home top bar, drawn over the scrolling list.
-            var header = ShopArt("Shop/bg-header1-shop", 168, 0, 5.4f, -7.4f, null); header.transform.localPosition = new Vector3(0, 3.7f, -7.4f);
+            // Original: the band spans ~80% of the screen, the title tab ~45%.
+            var header = ShopArt("Shop/bg-header1-shop", 168, 0, 4.2f, -7.4f, null); header.transform.localPosition = new Vector3(0, 3.7f, -7.4f);
             var bar = Child<SpriteRenderer>(shop, "Header bar", new Vector3(0, 4.1f, -7.3f));
             var white = Texture2D.whiteTexture; bar.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
             runtimeArt.Add(bar.sprite); bar.color = new Color(.15f, .3f, .48f); bar.transform.localScale = new Vector3(8, 1.6f, 1);
-            SetText(OutlinedLabel(shop, "Shop title", new Vector3(0, 3.7f, -7.6f), .055f), "SAND SHOP");
+            SetText(OutlinedLabel(shop, "Shop title", new Vector3(0, 3.7f, -7.6f), .048f), "SAND SHOP");
             // Bottom strip behind the navbar so scrolled cards never show under it.
             var foot = Child<SpriteRenderer>(shop, "Footer bar", new Vector3(0, -5.1f, -7.3f)); foot.sprite = bar.sprite;
             foot.color = bar.color; foot.transform.localScale = new Vector3(8, 1.8f, 1);
@@ -95,10 +96,11 @@ namespace SandJamTest.Scene3D
         void PriceButton(float x, float y, float w, string text, string action, bool coinIcon)
         {
             var b = ShopArt("Shop/button-green", x, y, w * ShopUnit, -6.7f, shopContent);
-            if (b.sprite) b.transform.localScale = new Vector3(w * ShopUnit / b.sprite.bounds.size.x, 38 * ShopUnit / b.sprite.bounds.size.y, 1);
-            if (coinIcon) ShopArt("Shop/icon-coin_1", x - w * .28f, y, 22 * ShopUnit, -6.8f, shopContent);
-            ShopText(text, x + (coinIcon ? 10 : 0), y - 1, .038f, -6.9f, true, Color.white);
-            ShopHit(x, y, w, 40, action);
+            // Original price buttons: chunky (about a third as tall as wide) with a big caption.
+            if (b.sprite) b.transform.localScale = new Vector3(w * ShopUnit / b.sprite.bounds.size.x, 45 * ShopUnit / b.sprite.bounds.size.y, 1);
+            if (coinIcon) ShopArt("Shop/icon-coin_1", x - w * .3f, y, 26 * ShopUnit, -6.8f, shopContent);
+            ShopText(text, x + (coinIcon ? 10 : 0), y - 1, text.Length > 9 ? .042f : .046f, -6.9f, true, Color.white);
+            ShopHit(x, y, w, 46, action);
         }
 
         void RemoveAdsCard(float y)
