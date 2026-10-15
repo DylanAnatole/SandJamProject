@@ -81,9 +81,9 @@ namespace SandJamTest.Scene3D
         {
             foreach(var name in new[]{"image-1-splashScene","Voodoo","Entertain the world","logo","Loading hint"}){var t=Loading.transform.Find(name);if(t)t.gameObject.SetActive(false);}
             var header=Loading.transform.Find("header-splashScene");
-            if(header){header.localScale*=1.24f;header.localPosition=new Vector3(-.2f,2.55f,header.localPosition.z);}
+            if(header){header.localScale*=1.34f;header.localPosition=new Vector3(-.32f,2.38f,header.localPosition.z);}
             var label=Loading.transform.Find("Loading...");if(label)label.localScale*=1.5f;
-            foreach(var name in new[]{"bg-fillbar-splashScene","Loading fill","Loading..."}){var t=Loading.transform.Find(name);if(t)t.localPosition+=new Vector3(0,-1.1f,0);}
+            foreach(var name in new[]{"bg-fillbar-splashScene","Loading fill","Loading..."}){var t=Loading.transform.Find(name);if(t)t.localPosition+=new Vector3(0,-1.0f,0);}
             fillScale=LoadingFill.localScale;
         }
         void StyleHome()
