@@ -27,6 +27,7 @@ namespace SandJamTest.Scene3D
             if (backdrop) { var r = backdrop.GetComponent<SpriteRenderer>(); if (r) { var c = r.color; c.a = .86f; r.color = c; } }
             BuildCardFrame();
             StyleRewardBand();
+            LayoutButtons();
             RecordLayout();
             var light = Resources.Load<Sprite>("Congrats/light-congrats");
             var header = transform.Find("Gold header");
@@ -133,6 +134,31 @@ namespace SandJamTest.Scene3D
                 caption.position = new Vector3(caption.position.x, bottom + height * .5f + .02f, caption.position.z);
                 var text = caption.GetComponent<TextMesh>(); if (text) text.color = new Color(.78f, .76f, .84f);
             }
+        }
+
+        // The reward box and the two buttons share the same width inside the glass with equal side margins (the
+        // buttons used to sit off-centre: 0.35 margin on the left, 0.12 on the right), the buttons split by a small
+        // gap and centred in the space between the reward box and the bottom of the glass.
+        void LayoutButtons()
+        {
+            var slot = transform.Find("bg-popUp-slot-levelCompleted-v2"); var clip = transform.Find(ClipName);
+            if (!slot || !clip) return;
+            var sb = slot.GetComponent<Renderer>().bounds; var cb = clip.GetComponent<SpriteMask>().bounds;
+            float left = sb.min.x, right = sb.max.x, gap = .14f, width = (right - left - gap) * .5f;
+            float centreY = (sb.min.y + cb.min.y) * .5f;
+            Fit(transform.Find("x2"), "button-yellow-v2", left, left + width, centreY);
+            Fit(transform.Find("Next"), "button-green-v2", right - width, right, centreY);
+        }
+        static void Fit(Transform button, string bodyName, float min, float max, float centreY)
+        {
+            if (!button) return;
+            var body = button.Find(bodyName); var r = body ? body.GetComponent<Renderer>() : null; if (!r) return;
+            var bb = r.bounds; float k = (max - min) / Mathf.Max(.0001f, bb.size.x);
+            // Only the button art and its touch area stretch; the caption and icons keep their size.
+            var ls = body.localScale; body.localScale = new Vector3(ls.x * k, ls.y, ls.z);
+            foreach (var hit in button.GetComponentsInChildren<BoxCollider>(true)) { var size = hit.size; hit.size = new Vector3(size.x * k, size.y, size.z); }
+            var nb = r.bounds;
+            button.position += new Vector3((min + max) * .5f - nb.center.x, centreY - nb.center.y, 0);
         }
 
         // Everything inside the card stays centred on the gold frame (glass, reward box, caption, buttons): the

@@ -149,6 +149,7 @@ namespace SandJamTest.Scene3D
         static void SingleButton(Popup p)
         {
             p.LeftButton.transform.parent.gameObject.SetActive(false);
+            var group = p.RightButton.transform.parent; var gp = group.localPosition; group.localPosition = new Vector3(0, gp.y, gp.z); // the card layout shifts the pair
             foreach (Transform child in p.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, child.localPosition.y, child.localPosition.z);
         }

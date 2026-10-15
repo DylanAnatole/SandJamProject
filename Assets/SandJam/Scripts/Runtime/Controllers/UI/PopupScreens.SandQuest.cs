@@ -83,6 +83,7 @@ namespace SandJamTest.Scene3D
         }
         void GreenButton(Popup p, float y, string action, string text, float scale = 1.05f)
         {
+            var group = p.RightButton.transform.parent; group.localPosition = new Vector3(0, 0, group.localPosition.z);
             foreach (Transform child in p.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, y, child.localPosition.z);
             p.RightButton.transform.parent.localScale = new Vector3(scale, scale, 1);
