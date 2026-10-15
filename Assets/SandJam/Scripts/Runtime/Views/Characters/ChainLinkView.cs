@@ -48,44 +48,58 @@ namespace SandJamTest.Scene3D
         static Mesh pairMesh; static bool pairLoaded;
         static Mesh PairMesh() { if (!pairLoaded) { pairLoaded = true; pairMesh = Resources.Load<Mesh>("Mechanics/ChainBackLoop"); } return pairMesh; }
         const float PairLoopCentre = 1.36f, PairLoopWidth = 1.3f;
-        SkinnedMeshRenderer pair; Material pairFirst, pairSecond;
+        MeshRenderer pair; MeshFilter pairFilter; Material pairFirst, pairSecond; Mesh pairBent; float bentFor = -1;
         bool UpdatePair(bool visible)
         {
-            var mesh = PairMesh(); if (!mesh) return false;
+            var mesh = PairMesh(); if (!mesh || !mesh.isReadable) return false;
             if (!pair)
             {
                 var go = new GameObject("Chain (original)"); go.transform.SetParent(First.transform.parent, false);
-                pair = go.AddComponent<SkinnedMeshRenderer>(); pair.sharedMesh = mesh; pair.updateWhenOffscreen = true;
-                pair.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                pairFirst = new Material(Shader.Find("Standard")) { name = "Chain first" }; pairFirst.SetFloat("_Glossiness", .78f);
+                pairFilter = go.AddComponent<MeshFilter>();
+                pair = go.AddComponent<MeshRenderer>(); pair.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                pairFirst = new Material(Shader.Find("Standard")) { name = "Chain first" }; pairFirst.SetFloat("_Glossiness", .8f);
                 pairSecond = new Material(pairFirst) { name = "Chain second" };
                 pair.sharedMaterials = new[] { pairFirst, pairSecond };
             }
             pair.enabled = visible;
             if (!visible) return true;
             Paint(pairFirst, ColorOf(First)); Paint(pairSecond, ColorOf(Second));
-            // Vivid like the original strands (the plain lit material washed them out).
-            pairFirst.SetColor("_EmissionColor", pairFirst.color * .75f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .75f);
-            // Block frame of each cube: top-face centre in world space, and the block's own up.
+            pairFirst.SetColor("_EmissionColor", pairFirst.color * .6f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .6f);
+            // Each loop wraps its block a little above mid height (original), as a round tube: the mesh keeps one
+            // uniform scale, so the strands are never squashed into flat ribbons.
             var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
-            // The loops hug the blocks just under their top edge, a little wider than the block (as in the original).
-            var top = new Vector3(0, CharacterSandVessel.BlockSize.y * .82f, 0);
-            var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(top)); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(top));
+            var ring = new Vector3(0, CharacterSandVessel.BlockSize.y * .62f, 0);
+            var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(ring)); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(ring));
             var up = First.Visual.TransformDirection(frame.MultiplyVector(Vector3.up)).normalized;
             var along = b - a; along -= up * Vector3.Dot(along, up); float distance = along.magnitude; if (distance < .01f) return true;
             along /= distance;
+            float worldScale = First.Visual.lossyScale.x;
+            float scale = (CharacterSandVessel.BlockSize.x + .16f) * worldScale / PairLoopWidth; // loop just wider than the block
+            float half = distance * .5f / scale; // loop centre in mesh units
+            if (Mathf.Abs(half - bentFor) > .01f) Bend(mesh, half);
             var t = pair.transform;
             t.position = (a + b) * .5f;
             t.rotation = Quaternion.LookRotation(Vector3.Cross(along, up), up); // local +x = along (First at -x)
-            var worldScale = First.Visual.lossyScale.x;
-            float sx = distance / (2 * PairLoopCentre);
-            float sz = (CharacterSandVessel.BlockSize.x + .1f) * worldScale / PairLoopWidth;
             var ps = t.parent ? t.parent.lossyScale : Vector3.one;
-            t.localScale = new Vector3(sx / ps.x, sz * 1.25f / ps.y, sz / ps.z); // strands as thick as the original's
-            // Breathing as in the original clip (0 -> 15 -> 0 over 0.83 s).
-            float phase = Mathf.Repeat(Time.time, .8333f) / .8333f;
-            if (mesh.blendShapeCount > 0) pair.SetBlendShapeWeight(0, 15f * Mathf.Sin(phase * Mathf.PI));
+            t.localScale = new Vector3(scale / ps.x, scale / ps.y, scale / ps.z);
             return true;
+        }
+        // Copy of the chain mesh with its two loops moved to +-half (their shape untouched) and the crossing strands
+        // stretched or shortened to fill the gap.
+        void Bend(Mesh source, float half)
+        {
+            bentFor = half;
+            const float inner = .9f; // loops occupy |x| >= 0.9, centred on 1.36
+            var v = source.vertices;
+            float span = Mathf.Max(.2f, half - (PairLoopCentre - inner));
+            for (int i = 0; i < v.Length; i++)
+            {
+                float x = v[i].x, ax = Mathf.Abs(x), sign = Mathf.Sign(x);
+                v[i].x = ax >= inner ? sign * (half + ax - PairLoopCentre) : x / inner * span;
+            }
+            if (!pairBent) { pairBent = Instantiate(source); pairBent.name = "Chain (fitted)"; pairBent.ClearBlendShapes(); }
+            pairBent.vertices = v; pairBent.RecalculateBounds(); pairBent.RecalculateNormals();
+            pairFilter.sharedMesh = pairBent;
         }
 
         void LateUpdate()
@@ -260,7 +274,7 @@ namespace SandJamTest.Scene3D
 
         void OnDestroy()
         {
-            if (pair) Destroy(pair.gameObject); if (pairFirst) Destroy(pairFirst); if (pairSecond) Destroy(pairSecond);
+            if (pair) Destroy(pair.gameObject); if (pairFirst) Destroy(pairFirst); if (pairSecond) Destroy(pairSecond); if (pairBent) Destroy(pairBent);
             foreach (var loop in new[] { firstLoop, secondLoop })
             {
                 if (loop == null) continue;
