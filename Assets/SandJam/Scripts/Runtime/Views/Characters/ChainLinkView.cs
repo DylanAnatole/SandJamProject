@@ -72,7 +72,7 @@ namespace SandJamTest.Scene3D
             // body, so the strands slope down across the gap (side by side pairs: both at the same height).
             float h = CharacterSandVessel.BlockSize.y;
             int order = Second.SourceOrder - First.SourceOrder; // > 0: First is the back cube (higher on screen)
-            float ha = order > 0 ? h * .86f : order < 0 ? h * .5f : h * .62f, hb = order > 0 ? h * .5f : order < 0 ? h * .86f : h * .62f;
+            float ha = order > 0 ? h * .86f : order < 0 ? h * .5f : h * .86f, hb = order > 0 ? h * .5f : order < 0 ? h * .86f : h * .86f; // side by side: both around the top, clear of the counts
             var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, ha, 0))); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, hb, 0)));
             var blockUp = First.Visual.TransformDirection(frame.MultiplyVector(Vector3.up)).normalized;
             var along = b - a; float distance = along.magnitude; if (distance < .01f) return true;
