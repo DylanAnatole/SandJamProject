@@ -221,6 +221,7 @@ namespace SandJamTest.Scene3D
             failed.Big.transform.position += new Vector3(left + ww + gap + tw * .5f - text.bounds.center.x, 0, 0);
         }
         // Coloured panel in world size: rounded (the popup's sliced panel art) or a plain rectangle.
+        Material plainSprite;
         void Block(Popup p, string name, Vector3 world, Vector2 size, Color color, float z, bool rounded)
         {
             var r = Child<SpriteRenderer>(p, name, Vector3.zero);
@@ -228,7 +229,8 @@ namespace SandJamTest.Scene3D
             r.transform.localPosition = new Vector3(r.transform.localPosition.x, r.transform.localPosition.y, z);
             if (rounded && p.Ribbon.sprite)
             {
-                r.sprite = p.Ribbon.sprite; r.drawMode = SpriteDrawMode.Sliced;
+                // A Full Rect white rounded panel: slicing the ribbon art (tight mesh) logged a tiling warning each time.
+                r.sprite = CampaignUi.RoundedWhite(); r.drawMode = SpriteDrawMode.Sliced; r.sharedMaterial = plainSprite ? plainSprite : (plainSprite = new Material(Shader.Find("Sprites/Default")));
                 var lossy = r.transform.lossyScale; r.size = new Vector2(size.x / lossy.x, size.y / lossy.y);
             }
             else

@@ -115,7 +115,7 @@ namespace SandJamTest.Scene3D
             rim.size = new Vector2((b.size.x + 2 * grow) / lossy.x, (b.size.y + 2 * grow) / lossy.y);
         }
         static Sprite roundedWhite;
-        static Sprite RoundedWhite()
+        internal static Sprite RoundedWhite()
         {
             if (roundedWhite) return roundedWhite;
             const int n = 48; const float r = 16;
