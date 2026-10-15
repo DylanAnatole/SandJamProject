@@ -54,6 +54,7 @@ namespace SandJamTest.Scene3D
                         var ls = child.localScale; child.localScale = new Vector3(ls.x, ls.y, PadThickness);
                     }
             EvenFrameBorder(controller);
+            RoundFrame(controller);
             WhiteRailEdges(controller);
             TiltLaneWalls(controller);
             BuildFrameFeet(controller);
@@ -61,6 +62,69 @@ namespace SandJamTest.Scene3D
 
         // The frame mesh leaves a thinner border above the picture than at its sides. Stretch the frame (and its
         // shadow) upward, bottom fixed, so the top border matches the side borders as in the original.
+        // Original frame: generously rounded outer corners and a rounded opening (the picture's corners tucked under
+        // the frame). The modelled frame was square; it is rebuilt as a rounded ring with outer and inner walls in the
+        // same material, its face just in front of the picture.
+        const int CornerSteps = 10;
+        void RoundFrame(SandJamSceneController controller)
+        {
+            var board = controller.Board ? controller.Board.Renderer : null;
+            var frame = controller.GetComponentsInChildren<MeshRenderer>(true).FirstOrDefault(f => f.name == "Solid board frame");
+            if (!board || !frame) return;
+            var o = frame.bounds; var b = board.bounds;
+            float front = Mathf.Min(o.min.z, b.min.z - .02f), back = o.max.z;
+            var outer = RoundedLoop(o.min.x, o.max.x, o.min.y, o.max.y, .34f);
+            var inner = RoundedLoop(b.min.x, b.max.x, b.min.y, b.max.y, .16f);
+            var v = new System.Collections.Generic.List<Vector3>(); var n = new System.Collections.Generic.List<Vector3>(); var t = new System.Collections.Generic.List<int>();
+            int count = outer.Count;
+            // Face.
+            for (int i = 0; i < count; i++) { v.Add(new Vector3(outer[i].x, outer[i].y, front)); n.Add(Vector3.back); v.Add(new Vector3(inner[i].x, inner[i].y, front)); n.Add(Vector3.back); }
+            for (int i = 0; i < count; i++) { int j = (i + 1) % count, a = i * 2, c = j * 2; t.AddRange(new[] { a, a + 1, c, a + 1, c + 1, c }); } // clockwise as seen by the camera
+            // Walls (outer facing out, inner facing in).
+            Wall(outer, front, back, true, v, n, t); Wall(inner, front, back, false, v, n, t);
+            var mesh = new Mesh { name = "Rounded board frame" };
+            mesh.SetVertices(v); mesh.SetNormals(n); mesh.SetTriangles(t, 0); mesh.RecalculateBounds();
+            var go = new GameObject("Rounded board frame") { layer = frame.gameObject.layer };
+            go.transform.SetParent(frame.transform.parent, false);
+            go.transform.position = Vector3.zero; go.transform.rotation = Quaternion.identity;
+            var ps = go.transform.parent ? go.transform.parent.lossyScale : Vector3.one;
+            go.transform.localScale = new Vector3(1 / ps.x, 1 / ps.y, 1 / ps.z);
+            go.transform.position = Vector3.zero;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>(); r.sharedMaterials = frame.sharedMaterials.Length > 0 ? new[] { frame.sharedMaterials[0] } : frame.sharedMaterials;
+            r.shadowCastingMode = frame.shadowCastingMode; r.receiveShadows = frame.receiveShadows;
+            // Measured face colour of the original frame (86,114,163): a little deeper and bluer than the old frame.
+            if (r.sharedMaterial && r.sharedMaterial.HasProperty("_Color")) { var m = r.material; m.color = m.color * new Color(.87f, .87f, 1.02f, 1); }
+            frame.enabled = false;
+        }
+        static System.Collections.Generic.List<Vector2> RoundedLoop(float x0, float x1, float y0, float y1, float radius)
+        {
+            radius = Mathf.Min(radius, (x1 - x0) * .5f, (y1 - y0) * .5f);
+            var centres = new[] { new Vector2(x1 - radius, y1 - radius), new Vector2(x0 + radius, y1 - radius), new Vector2(x0 + radius, y0 + radius), new Vector2(x1 - radius, y0 + radius) };
+            var list = new System.Collections.Generic.List<Vector2>();
+            for (int c = 0; c < 4; c++)
+                for (int k = 0; k <= CornerSteps; k++)
+                {
+                    float a = (c * 90 + k * 90f / CornerSteps) * Mathf.Deg2Rad;
+                    list.Add(centres[c] + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius);
+                }
+            return list;
+        }
+        static void Wall(System.Collections.Generic.List<Vector2> loop, float front, float back, bool outward, System.Collections.Generic.List<Vector3> v, System.Collections.Generic.List<Vector3> n, System.Collections.Generic.List<int> t)
+        {
+            int count = loop.Count, start = v.Count;
+            Vector2 centre = Vector2.zero; foreach (var p in loop) centre += p; centre /= count;
+            for (int i = 0; i < count; i++)
+            {
+                var dir = (loop[i] - centre).normalized; var normal = new Vector3(dir.x, dir.y, 0) * (outward ? 1 : -1);
+                v.Add(new Vector3(loop[i].x, loop[i].y, front)); n.Add(normal); v.Add(new Vector3(loop[i].x, loop[i].y, back)); n.Add(normal);
+            }
+            for (int i = 0; i < count; i++)
+            {
+                int j = (i + 1) % count, a = start + i * 2, c = start + j * 2;
+                if (outward) t.AddRange(new[] { a, a + 1, c, c, a + 1, c + 1 }); else t.AddRange(new[] { a, c, a + 1, a + 1, c, c + 1 });
+            }
+        }
         void EvenFrameBorder(SandJamSceneController controller)
         {
             var board = controller.Board ? controller.Board.Renderer : null;
