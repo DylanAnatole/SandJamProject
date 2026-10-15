@@ -126,6 +126,7 @@ namespace SandJamTest.Scene3D
             top.transform.localScale = Vector3.one;
             var tb = top.bounds.size;
             top.transform.localScale = new Vector3(width / Mathf.Max(.0001f, tb.x), height * .5f / Mathf.Max(.0001f, tb.y), 1);
+            ClipBandToBox(slot, br, top);
             // The reward amount sits clear of the band, as in the original.
             var amount = transform.Find("+ 10");
             if (amount) { float gap = amount.GetComponent<Renderer>().bounds.min.y - (bottom + height); if (gap < .08f) amount.position += new Vector3(0, .08f - gap, 0); }
@@ -134,6 +135,36 @@ namespace SandJamTest.Scene3D
             {
                 caption.position = new Vector3(caption.position.x, bottom + height * .5f + .02f, caption.position.z);
                 var text = caption.GetComponent<TextMesh>(); if (text) text.color = new Color(.78f, .76f, .84f);
+            }
+        }
+
+        // The band is clipped to the reward box's inner shape (the box art minus its pale rim, so the rounded bottom
+        // corners match): it used to run over the rim at the sides and corners. Its own sorting order keeps this
+        // mask off the glass, and the texts on it draw above it.
+        const int BandOrder = 5;
+        void ClipBandToBox(Transform slot, SpriteRenderer band, SpriteRenderer top)
+        {
+            var slotArt = slot.GetComponent<SpriteRenderer>(); if (!slotArt || !slotArt.sprite) return;
+            var mask = new GameObject("Reward band mask") { layer = gameObject.layer }.AddComponent<SpriteMask>();
+            mask.transform.SetParent(transform, false);
+            mask.sprite = slotArt.sprite;
+            mask.transform.position = slot.position; mask.transform.rotation = slot.rotation;
+            // Rim: ~11 px of 316 at the sides, ~9 px of 392 at the bottom.
+            var ls = slot.localScale; mask.transform.localScale = new Vector3(ls.x * (1 - 2 * 11f / 316f), ls.y * (1 - 2 * 9f / 392f), ls.z);
+            mask.isCustomRangeActive = true; mask.frontSortingOrder = BandOrder + 1; mask.backSortingOrder = BandOrder - 1; // front bound is exclusive
+            var plain = new Material(Shader.Find("Sprites/Default")) { name = "Reward band" };
+            foreach (var r in new[] { band, top })
+            {
+                r.sortingOrder = BandOrder; r.sharedMaterial = plain; r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+            }
+            // The glass clip only ever meant the glass panel (sorting order 0).
+            var clip = transform.Find(ClipName) ? transform.Find(ClipName).GetComponent<SpriteMask>() : null;
+            var glass = transform.Find("bg-popUp-levelCompleted-v2") ? transform.Find("bg-popUp-levelCompleted-v2").GetComponent<SpriteRenderer>() : null;
+            if (clip && glass) { clip.isCustomRangeActive = true; clip.frontSortingOrder = glass.sortingOrder + 1; clip.backSortingOrder = glass.sortingOrder - 1; }
+            foreach (var name in new[] { "Your Reward!", "+ 10" })
+            {
+                var t = transform.Find(name); if (!t) continue;
+                foreach (var r in t.GetComponentsInChildren<Renderer>(true)) r.sortingOrder = BandOrder + 1;
             }
         }
 
