@@ -153,6 +153,7 @@ namespace SandJamTest.Scene3D
                     child.localScale=new Vector3(child.localScale.x,child.localScale.y*(hTop-hBottom)/Mathf.Max(.001f,hb.size.y),1);
                     child.position=new Vector3(child.position.x,(hTop+hBottom)*.5f,child.position.z);
                 }
+            ReplaceLevelSign(bar);
             // Navbar: the original icons and captions are noticeably bigger.
             foreach(var name in new[]{"icon-shop","icon-home","icon-cards"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.15f;}
             foreach(var name in new[]{"SHOP","HOME","GALLERY"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.22f;}
@@ -190,6 +191,56 @@ namespace SandJamTest.Scene3D
             cone.transform.position=new Vector3(0,(top+bottom)/2,(walkway?walkway.position.z:stage.position.z)-.02f);
             var size=cone.sprite.bounds.size;var parent=cone.transform.parent.lossyScale;
             cone.transform.localScale=new Vector3(3.2f/size.x/parent.x,(top-bottom)/size.y/parent.y,1);
+        }
+        // Original Home level sign: the brushed blue panel art (Group 10295), ~86% as wide as the drawn sign, hung
+        // from two thin dark rods; the number and LEVEL in white with only a soft blue edge.
+        void ReplaceLevelSign(SpriteRenderer bar)
+        {
+            var tex=Resources.Load<Texture2D>("VideoUI/home-level-sign");var rim=Home.transform.Find("Level sign rim");
+            if(!tex || !rim)return;
+            var rr=rim.GetComponent<Renderer>();var rb=rr.bounds;
+            var go=new GameObject("Level sign art"){layer=Home.layer};go.transform.SetParent(Home.transform,false);
+            var art=go.AddComponent<SpriteRenderer>();
+            art.sprite=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,.5f),100);
+            art.sharedMaterial=new Material(Shader.Find("Sprites/Default"));art.sortingOrder=rr.sortingOrder;
+            // Original: ~34% of the screen width (150 px of 444), its own 0.8 aspect, top where the drawn sign's top was.
+            float width=5.0f*.34f,height=width*753f/606f; // art is 606x753 (the imported texture may be resized square)
+            go.transform.localScale=Vector3.one;var size=art.bounds.size;
+            go.transform.localScale=new Vector3(width/size.x,height/size.y,1);
+            go.transform.position=new Vector3(rb.center.x,rb.max.y-height*.5f,rim.position.z);
+            foreach(var name in new[]{"Level sign blue","Sign inset","Level sign rim","Level sign shadow"}){var t=Home.transform.Find(name);if(t){var r=t.GetComponent<Renderer>();if(r)r.enabled=false;}}
+            // Number and LEVEL centred on the new panel (upper two thirds / lower band).
+            var number=Home.transform.Find("147");var level=Home.transform.Find("LEVEL");var ab=art.bounds;
+            if(number){number.position=new Vector3(ab.center.x,ab.min.y+ab.size.y*.6f,number.position.z);number.localScale*=.88f;}
+            if(level)level.position=new Vector3(ab.center.x,ab.min.y+ab.size.y*.22f,level.position.z);
+            // Thin dark rods from the top bar to the sign.
+            if(bar)foreach(Transform child in Home.transform)
+                if(child.name.StartsWith("Hanger"))
+                {
+                    var hr=child.GetComponent<SpriteRenderer>();if(!hr)continue;
+                    // Straight square-ended rods (~0.09 wide), not stretched pills.
+                    hr.sprite=SquareSprite();hr.drawMode=SpriteDrawMode.Simple;hr.color=new Color32(84,124,172,255);
+                    float hTop=bar.bounds.min.y+.02f,hBottom=ab.max.y-.03f;
+                    child.localScale=Vector3.one;var hb=hr.bounds;
+                    child.localScale=new Vector3(.09f/Mathf.Max(.0001f,hb.size.x),(hTop-hBottom)/Mathf.Max(.0001f,hb.size.y),1);
+                    child.position=new Vector3(child.position.x,(hTop+hBottom)*.5f,child.position.z);
+                }
+            StartCoroutine(SoftSignInk());
+        }
+        IEnumerator SoftSignInk()
+        {
+            // The outline component is added by TextOutliner a moment after the page is built.
+            for(int i=0;i<30;i++)
+            {
+                bool done=true;
+                foreach(var name in new[]{"147","LEVEL"})
+                {
+                    var t=Home.transform.Find(name);var o=t?t.GetComponent<OutlinedText>():null;
+                    if(o)o.SetInk(new Color(.2f,.42f,.72f));else if(t)done=false;
+                }
+                if(done)yield break;
+                yield return new WaitForSecondsRealtime(.2f);
+            }
         }
         static Sprite whiteRounded;
         static Sprite WhiteRounded()
