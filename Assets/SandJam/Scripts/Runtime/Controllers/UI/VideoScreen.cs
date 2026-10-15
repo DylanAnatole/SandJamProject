@@ -278,6 +278,14 @@ namespace SandJamTest.Scene3D
             walkwaySprite=Sprite.Create(t,new Rect(0,0,w,h),new Vector2(.5f,.5f),w/width);
             return walkwaySprite;
         }
+        // Original Superb! screen: the coin counter stays bright above the dark veil (the rest of the HUD dims).
+        Renderer[] coinWallet;
+        void LiftCoinWallet(bool lift)
+        {
+            if(coinWallet==null){var w=Gameplay.transform.Find("HUD - visual controls only/Coin wallet - UI only");if(!w)foreach(var t in Gameplay.GetComponentsInChildren<Transform>(true))if(t.name=="Coin wallet - UI only"){w=t;break;}
+                coinWallet=w?w.GetComponentsInChildren<Renderer>(true):new Renderer[0];}
+            foreach(var r in coinWallet)if(r)r.sortingOrder=lift?16:0;
+        }
         void OnDestroy(){SandBoardTextureView.ObstacleTint=new Color(.16f,.27f,.34f);}
         public void Show(Page page)
         {
@@ -289,6 +297,7 @@ namespace SandJamTest.Scene3D
             Loading.SetActive(page==Page.Loading);Home.SetActive(page==Page.Home);
             // The finished picture stays visible under the Superb! screen's dark veil (original).
             Gameplay.SetActive(page==Page.Gameplay || page==Page.Celebration);
+            LiftCoinWallet(page==Page.Celebration);
             Celebration.SetActive(page==Page.Celebration);Result.SetActive(page==Page.Result);
             // A Play click must not also select the character under the new screen.
             transitionFrame=Time.frameCount;Controller.enabled=false;
