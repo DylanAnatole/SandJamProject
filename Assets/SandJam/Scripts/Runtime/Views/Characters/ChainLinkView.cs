@@ -22,20 +22,76 @@ namespace SandJamTest.Scene3D
             public Material Material;
             public Vector3 BuiltFor = new Vector3(float.NaN, 0, 0);
             public float Lift; // keeps the two crossing points from z-fighting
+            public SkinnedMeshRenderer Original; // the original chain loop mesh, when available
         }
+        // Original chain (Character prefab "ChainRight"): the pCube3 loop mesh, a long flat rounded loop lying on the
+        // block's top and reaching toward the partner; its blend shape breathes 0 -> 15 -> 0 every 0.83 s.
+        static Mesh originalLoop; static bool originalLoaded;
+        static Mesh OriginalLoop() { if (!originalLoaded) { originalLoaded = true; originalLoop = Resources.Load<Mesh>("Mechanics/ChainLoop"); } return originalLoop; }
+        // Mesh extents along the loop (x: -0.55 .. 2.41) and across it (z: +-0.57).
+        const float LoopMinX = -.547f, LoopLength = 2.961f, LoopHalfWidth = .567f;
 
         public void SetInQueue(bool inQueue)
         {
             IsInQueue = inQueue;
             // Hide at once on selection (LateUpdate would leave one frame with the loops still drawn).
-            if (!inQueue) foreach (var loop in new[] { firstLoop, secondLoop }) if (loop != null && loop.Renderer) loop.Renderer.enabled = false;
+            if (!inQueue && pair) pair.enabled = false;
+            if (!inQueue) foreach (var loop in new[] { firstLoop, secondLoop }) if (loop != null) { if (loop.Renderer) loop.Renderer.enabled = false; if (loop.Original) loop.Original.enabled = false; }
         }
         // True when both loops are drawn (used by the chain smoke test).
-        public bool LoopsVisible { get { return firstLoop != null && firstLoop.Renderer.enabled && secondLoop.Renderer.enabled; } }
+        public bool LoopsVisible { get { return pair ? pair.enabled : firstLoop != null && Shown(firstLoop) && Shown(secondLoop); } }
+        static bool Shown(Loop l) { return l.Original ? l.Original.enabled : l.Renderer.enabled; }
+
+        // Original chain (Character prefab "ChainBack", mesh NurbsPath): ONE piece for the pair - a rounded square
+        // loop around each block's top (submesh 0 at -x, submesh 1 at +x, each in its block's colour) and two strands
+        // crossing in an X between them. Loop centres sit ~1.36 mesh units either side of the middle; 1.3 wide.
+        static Mesh pairMesh; static bool pairLoaded;
+        static Mesh PairMesh() { if (!pairLoaded) { pairLoaded = true; pairMesh = Resources.Load<Mesh>("Mechanics/ChainBackLoop"); } return pairMesh; }
+        const float PairLoopCentre = 1.36f, PairLoopWidth = 1.3f;
+        SkinnedMeshRenderer pair; Material pairFirst, pairSecond;
+        bool UpdatePair(bool visible)
+        {
+            var mesh = PairMesh(); if (!mesh) return false;
+            if (!pair)
+            {
+                var go = new GameObject("Chain (original)"); go.transform.SetParent(First.transform.parent, false);
+                pair = go.AddComponent<SkinnedMeshRenderer>(); pair.sharedMesh = mesh; pair.updateWhenOffscreen = true;
+                pair.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                pairFirst = new Material(Shader.Find("Standard")) { name = "Chain first" }; pairFirst.SetFloat("_Glossiness", .78f);
+                pairSecond = new Material(pairFirst) { name = "Chain second" };
+                pair.sharedMaterials = new[] { pairFirst, pairSecond };
+            }
+            pair.enabled = visible;
+            if (!visible) return true;
+            Paint(pairFirst, ColorOf(First)); Paint(pairSecond, ColorOf(Second));
+            // Vivid like the original strands (the plain lit material washed them out).
+            pairFirst.SetColor("_EmissionColor", pairFirst.color * .75f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .75f);
+            // Block frame of each cube: top-face centre in world space, and the block's own up.
+            var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
+            // The loops hug the blocks just under their top edge, a little wider than the block (as in the original).
+            var top = new Vector3(0, CharacterSandVessel.BlockSize.y * .82f, 0);
+            var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(top)); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(top));
+            var up = First.Visual.TransformDirection(frame.MultiplyVector(Vector3.up)).normalized;
+            var along = b - a; along -= up * Vector3.Dot(along, up); float distance = along.magnitude; if (distance < .01f) return true;
+            along /= distance;
+            var t = pair.transform;
+            t.position = (a + b) * .5f;
+            t.rotation = Quaternion.LookRotation(Vector3.Cross(along, up), up); // local +x = along (First at -x)
+            var worldScale = First.Visual.lossyScale.x;
+            float sx = distance / (2 * PairLoopCentre);
+            float sz = (CharacterSandVessel.BlockSize.x + .1f) * worldScale / PairLoopWidth;
+            var ps = t.parent ? t.parent.lossyScale : Vector3.one;
+            t.localScale = new Vector3(sx / ps.x, sz * 1.25f / ps.y, sz / ps.z); // strands as thick as the original's
+            // Breathing as in the original clip (0 -> 15 -> 0 over 0.83 s).
+            float phase = Mathf.Repeat(Time.time, .8333f) / .8333f;
+            if (mesh.blendShapeCount > 0) pair.SetBlendShapeWeight(0, 15f * Mathf.Sin(phase * Mathf.PI));
+            return true;
+        }
 
         void LateUpdate()
         {
             if (!First || !Second) return;
+            if (UpdatePair(IsInQueue && First.gameObject.activeInHierarchy && Second.gameObject.activeInHierarchy)) return;
             if (firstLoop == null) { firstLoop = Create(First, Second, 0); secondLoop = Create(Second, First, .07f); }
             bool visible = IsInQueue && First.gameObject.activeInHierarchy && Second.gameObject.activeInHierarchy;
             Refresh(firstLoop, visible); Refresh(secondLoop, visible);
@@ -54,6 +110,15 @@ namespace SandJamTest.Scene3D
             Paint(loop.Material, ColorOf(owner));
             loop.Renderer.sharedMaterial = loop.Material;
             loop.Renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var mesh = OriginalLoop();
+            if (mesh)
+            {
+                var go = new GameObject("Chain loop (original)"); go.transform.SetParent(owner.Visual, false);
+                loop.Original = go.AddComponent<SkinnedMeshRenderer>(); loop.Original.sharedMesh = mesh;
+                loop.Original.sharedMaterials = new[] { loop.Material, loop.Material };
+                loop.Original.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; loop.Original.updateWhenOffscreen = true;
+                loop.Renderer.enabled = false; loop.Renderer.gameObject.SetActive(false);
+            }
             return loop;
         }
 
@@ -73,8 +138,19 @@ namespace SandJamTest.Scene3D
 
         void Refresh(Loop loop, bool visible)
         {
-            loop.Renderer.enabled = visible;
-            if (!visible) return;
+            if (loop.Original)
+            {
+                loop.Original.enabled = visible;
+                if (!visible) return;
+                // Breathing, offset per loop so the pair does not pulse in sync.
+                float t = Mathf.Repeat(Time.time + loop.Lift * 3, .8333f) / .8333f;
+                loop.Original.SetBlendShapeWeight(0, 15f * Mathf.Sin(t * Mathf.PI));
+            }
+            else
+            {
+                loop.Renderer.enabled = visible;
+                if (!visible) return;
+            }
             // Block frame: pivot at the bottom of the sand block, pitched like the block itself.
             var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
             // Partner's top-face centre expressed in this block's frame.
@@ -84,7 +160,28 @@ namespace SandJamTest.Scene3D
             if ((partnerLocal - loop.BuiltFor).sqrMagnitude < .0004f) return;
             loop.BuiltFor = partnerLocal;
             Paint(loop.Material, ColorOf(loop.Owner));
-            Build(loop, frame, partnerLocal);
+            if (loop.Original) Place(loop, frame, partnerLocal); else Build(loop, frame, partnerLocal);
+        }
+
+        // The original loop lies flat on the block's top: its near end just behind the block's far edge, its far end
+        // past the middle of the gap so it hooks through the partner's loop; as wide as the block's top.
+        void Place(Loop loop, Matrix4x4 frame, Vector3 partnerTop)
+        {
+            var size = CharacterSandVessel.BlockSize;
+            var centre = new Vector3(0, size.y * RingHeight + loop.Lift * .5f, 0);
+            var toward = partnerTop - centre; toward.y = 0;
+            float distance = toward.magnitude; if (distance < .01f) return;
+            var dir = toward / distance;
+            float half = (Mathf.Abs(dir.x) > Mathf.Abs(dir.z) ? size.x : size.z) * .5f + RingMargin;
+            float near = -half, far = distance * TipReach;
+            float sx = (far - near) / LoopLength, sz = ((Mathf.Abs(dir.x) > Mathf.Abs(dir.z) ? size.z : size.x) * .5f + RingMargin) / LoopHalfWidth;
+            // Loop axis (mesh +x) along the partner direction, lying in the block's top plane.
+            var along = Quaternion.FromToRotation(Vector3.right, dir);
+            var start = centre + dir * near;
+            var t = loop.Original.transform;
+            t.localRotation = frame.rotation * along;
+            t.localPosition = frame.MultiplyPoint3x4(start - dir * (LoopMinX * sx));
+            t.localScale = new Vector3(sx, .045f / 1.0f, sz);
         }
 
         void Build(Loop loop, Matrix4x4 frame, Vector3 partnerTop)
@@ -163,10 +260,12 @@ namespace SandJamTest.Scene3D
 
         void OnDestroy()
         {
+            if (pair) Destroy(pair.gameObject); if (pairFirst) Destroy(pairFirst); if (pairSecond) Destroy(pairSecond);
             foreach (var loop in new[] { firstLoop, secondLoop })
             {
                 if (loop == null) continue;
                 if (loop.Renderer) Destroy(loop.Renderer.gameObject);
+                if (loop.Original) Destroy(loop.Original.gameObject);
                 if (loop.Mesh) Destroy(loop.Mesh);
                 if (loop.Material) Destroy(loop.Material);
             }
