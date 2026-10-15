@@ -197,7 +197,7 @@ namespace SandJamTest.Scene3D
         void LateUpdate()
         {
             if(!Counter) return;
-            if(!counterScaleKnown){counterScale=Counter.transform.localScale;counterScaleKnown=true;}
+            if(!counterScaleKnown){counterScale=Counter.transform.localScale*.8f;Counter.transform.localScale=counterScale;counterScaleKnown=true;} // original counters are ~20% smaller
             if(counterPunch<=0) return;
             counterPunch=Mathf.Max(0,counterPunch-Time.deltaTime/.18f);
             Counter.transform.localScale=counterScale*(1f+.28f*Mathf.Sin(counterPunch*Mathf.PI));
