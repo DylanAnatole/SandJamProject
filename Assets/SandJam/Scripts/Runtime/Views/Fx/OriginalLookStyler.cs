@@ -54,6 +54,7 @@ namespace SandJamTest.Scene3D
                         var ls = child.localScale; child.localScale = new Vector3(ls.x, ls.y, PadThickness);
                     }
             EvenFrameBorder(controller);
+            WhiteRailEdges(controller);
             TiltLaneWalls(controller);
             BuildFrameFeet(controller);
         }
@@ -111,6 +112,19 @@ namespace SandJamTest.Scene3D
         // ends lean toward the camera, so the walls fan out with the lanes.
         static readonly string[] LaneWalls = { "Left lane rail", "Left lane bank", "Right booster rail", "Right booster bank",
             "Left solid rail", "Left rail top", "Right solid rail", "Right rail top" };
+        // Original lanes: the walls' lane-facing edge shows as a bright white strip beside the dark wall top (both
+        // walls, every level). The solid rail under each wall top is that strip; it shared the dark top colour.
+        void WhiteRailEdges(SandJamSceneController controller)
+        {
+            foreach (var r in controller.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                if (r.name != "Left solid rail" && r.name != "Right solid rail") continue;
+                var m = r.material; // per-level instance, freed with the scene
+                if (m.HasProperty("_Color")) m.color = new Color(.96f, .95f, .97f);
+                if (m.HasProperty("_ShadeStrength")) m.SetFloat("_ShadeStrength", .35f);
+                if (m.HasProperty("_GrainStrength")) m.SetFloat("_GrainStrength", 0);
+            }
+        }
         void TiltLaneWalls(SandJamSceneController controller)
         {
             float angle = Mathf.Atan(SceneActorView.DepthPerUnit) * Mathf.Rad2Deg;

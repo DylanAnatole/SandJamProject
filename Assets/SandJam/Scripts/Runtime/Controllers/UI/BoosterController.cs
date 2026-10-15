@@ -65,6 +65,35 @@ namespace SandJamTest.Scene3D
                 if (price) foreach (var label in price.GetComponentsInChildren<TextMesh>(true)) label.text = "Use";
                 var coin = placeholder.transform.Find("Price coin"); if (coin) coin.gameObject.SetActive(false);
             }
+            if (owner.Levels) MatchOriginalButtonLayout();
+        }
+
+        // Original gameplay HUD: the booster buttons are ~15% larger and run off the right screen edge, their left
+        // edge at ~85% of the screen width (ours sat fully on screen with a margin).
+        void MatchOriginalButtonLayout()
+        {
+            foreach (var pair in buttons)
+            {
+                var image = pair.Value; var root = placeholders.ContainsKey(pair.Key) ? placeholders[pair.Key].transform : image.parent;
+                var r = image.GetComponent<SpriteRenderer>(); if (!r) continue;
+                Camera cam = null;
+                foreach (var c in Camera.allCameras) if ((c.cullingMask & (1 << image.gameObject.layer)) != 0) { cam = c; break; }
+                if (!cam) continue;
+                var pivot = r.bounds.center;
+                root.localScale *= 1.15f;
+                root.position += pivot - r.bounds.center; // grow about the button's centre
+                var b = r.bounds; float z = cam.WorldToScreenPoint(b.center).z;
+                var target = cam.ViewportToWorldPoint(new Vector3(.852f, 0, z));
+                root.position += new Vector3(target.x - b.min.x, 0, 0);
+                // The price (shown while none are owned) stays on screen: icon and price centred in the visible part.
+                float visibleRight = cam.ViewportToWorldPoint(new Vector3(.975f, 0, z)).x, visibleCentre = (r.bounds.min.x + visibleRight) * .5f;
+                foreach (var name in new[] { "Price", "Price coin", "Booster icon" })
+                {
+                    var t = root.Find(name); if (!t) foreach (var c in root.GetComponentsInChildren<Transform>(true)) if (c.name == name) { t = c; break; }
+                    if (!t || t == image) continue;
+                    t.position += new Vector3(visibleCentre - r.bounds.center.x, 0, 0);
+                }
+            }
         }
 
         // Original HUD: a yellow quantity badge on the booster's left edge when the player owns some;
@@ -82,7 +111,7 @@ namespace SandJamTest.Scene3D
             var size = image.sprite.bounds.size;
             badge.transform.localPosition = new Vector3(-size.x * .5f, -size.y * .22f, -.05f);
             var lossy = image.transform.lossyScale;
-            float worldHeight = .3f;
+            float worldHeight = .24f; // original badge: small, on the button's left edge
             badge.transform.localScale = new Vector3(worldHeight / (sprite.bounds.size.y * lossy.x), worldHeight / (sprite.bounds.size.y * lossy.y), 1);
             var r = badge.AddComponent<SpriteRenderer>(); r.sprite = sprite; r.sortingOrder = image.sortingOrder + 2;
             var text = new GameObject("Quantity") { layer = badge.layer };
@@ -108,7 +137,20 @@ namespace SandJamTest.Scene3D
                 if (locked) continue;
                 var price = pair.Value.transform.Find("Price"); if (price) price.gameObject.SetActive(!owned);
                 var coin = pair.Value.transform.Find("Price coin"); if (coin) coin.gameObject.SetActive(!owned);
+                CentreIcon(action, pair.Value.transform, owned);
             }
+        }
+        // Original: with boosters in stock (no price shown) the icon sits larger in the middle of the button.
+        readonly Dictionary<string, Vector3> iconPositions = new Dictionary<string, Vector3>(), iconScales = new Dictionary<string, Vector3>();
+        void CentreIcon(string action, Transform root, bool owned)
+        {
+            var icon = root.Find("Booster icon"); Transform button; if (!icon || !buttons.TryGetValue(action, out button)) return;
+            if (!iconPositions.ContainsKey(action)) { iconPositions[action] = icon.localPosition; iconScales[action] = icon.localScale; }
+            icon.localPosition = iconPositions[action]; icon.localScale = iconScales[action];
+            if (!owned) return;
+            icon.localScale = iconScales[action] * 1.2f;
+            var ib = icon.GetComponent<Renderer>(); var bb = button.GetComponent<Renderer>();
+            if (ib && bb) icon.position += new Vector3(0, bb.bounds.center.y - ib.bounds.center.y, 0);
         }
         void OnEnable() { GameEvents.CoinsChanged += OnWallet; GameEvents.BoosterUsed += OnBooster; }
         void OnWallet(int balance, int delta, string reason) { RefreshBadges(); }

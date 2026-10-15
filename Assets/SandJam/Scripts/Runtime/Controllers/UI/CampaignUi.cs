@@ -45,7 +45,7 @@ namespace SandJamTest.Scene3D
             var badge = owner.Gameplay.transform.Find("HUD - visual controls only/Level badge");
             if (badge) { levelBadge = badge.GetComponentInChildren<SpriteRenderer>(true); if (levelBadge) badgeColor = levelBadge.color; }
             coinBar = owner.Gameplay.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(r => r.name == "Coin bar");
-            if (coinBar) coinColor = coinBar.color;
+            if (coinBar) { coinColor = coinBar.color; GoldRim(coinBar); }
             // Sand Quest chest ("JOIN"): opens the event; shows the run progress while joined.
             var chest = owner.Home.transform.Find("Chest_Enable");
             if (chest) AddHit(chest, "sand-quest");
@@ -93,6 +93,39 @@ namespace SandJamTest.Scene3D
             var r = go.AddComponent<SpriteRenderer>(); r.sprite = art; r.sortingOrder = order;
             float s = height / art.bounds.size.y / Mathf.Max(.0001f, parent.lossyScale.y);
             go.transform.localScale = new Vector3(s, s, 1);
+        }
+
+        // Original gameplay HUD: the coin bar has a thin gold rim (every gameplay frame of both recordings).
+        static void GoldRim(SpriteRenderer bar)
+        {
+            var rim = new GameObject("Coin bar gold rim") { layer = bar.gameObject.layer }.AddComponent<SpriteRenderer>();
+            rim.transform.SetParent(bar.transform.parent, false);
+            // White rounded panel tinted gold (tinting the bar's own light-blue art came out olive).
+            rim.sprite = RoundedWhite(); rim.drawMode = SpriteDrawMode.Sliced;
+            rim.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+            rim.sortingLayerID = bar.sortingLayerID; rim.sortingOrder = bar.sortingOrder - 1;
+            rim.color = new Color(1f, .76f, .12f);
+            var b = bar.bounds; const float grow = .03f;
+            rim.transform.position = new Vector3(b.center.x, b.center.y, bar.transform.position.z + .01f);
+            var lossy = rim.transform.lossyScale;
+            rim.size = new Vector2((b.size.x + 2 * grow) / lossy.x, (b.size.y + 2 * grow) / lossy.y);
+        }
+        static Sprite roundedWhite;
+        static Sprite RoundedWhite()
+        {
+            if (roundedWhite) return roundedWhite;
+            const int n = 48; const float r = 16;
+            var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+            {
+                float px = Mathf.Abs(x + .5f - n / 2f) - (n / 2f - r), py = Mathf.Abs(y + .5f - n / 2f) - (n / 2f - r);
+                float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - r;
+                t.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(.5f - d)));
+            }
+            t.Apply();
+            // 100 px per unit: a 0.16 corner radius, close to the bar's own rounding.
+            roundedWhite = Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), 100, 0, SpriteMeshType.FullRect, new Vector4(17, 17, 17, 17));
+            return roundedWhite;
         }
 
         GameObject galleryBadge;
