@@ -674,7 +674,7 @@ namespace SandJamTest.Scene3D
             }
             var caption = OutlinedLabel(p, "Out of space text", new Vector3(0, y, -6.4f), .062f);
             SetText(caption, "OUT OF SPACE!");
-            for (int i = 1; i < caption.Length; i++) caption[i].color = new Color(.32f, .07f, .14f);
+            OutlinedText.Add(caption[0], new Color(.32f, .07f, .14f));
             banner.SetActive(false);
         }
         void UpdateOutOfSpaceBanner()
@@ -719,21 +719,13 @@ namespace SandJamTest.Scene3D
             hit.gameObject.layer = 9; hit.size = new Vector3(30, 40, .2f);
             hit.gameObject.AddComponent<VideoUiButton>().Action = "congrats-continue";
         }
-        // White caption with a dark purple outline (four offset copies behind it). Returns [label, outlines...].
+        // White caption with a dark purple outline (OutlinedText). Returned as an array so callers can treat any label
+        // and its parts alike; the outline copies follow the label by themselves.
         TextMesh[] OutlinedLabel(Popup p, string name, Vector3 local, float size)
         {
             var main = Label(p, name, local, "", size, Color.white);
-            var all = new System.Collections.Generic.List<TextMesh> { main };
-            foreach (var o in new[] { new Vector2(1, 1), new Vector2(-1, 1), new Vector2(1, -1), new Vector2(-1, -1) })
-            {
-                var shadow = Instantiate(main.gameObject, main.transform);
-                shadow.name = "Text outline";
-                shadow.transform.localPosition = new Vector3(o.x, o.y, 0) * size * .55f + new Vector3(0, 0, .05f);
-                shadow.transform.localScale = Vector3.one;
-                var t = shadow.GetComponent<TextMesh>(); t.color = new Color(.23f, .16f, .42f);
-                all.Add(t);
-            }
-            return all.ToArray();
+            OutlinedText.Add(main, new Color(.23f, .16f, .42f));
+            return new[] { main };
         }
         static void SetText(TextMesh[] labels, string text) { foreach (var t in labels) if (t) t.text = text; }
 

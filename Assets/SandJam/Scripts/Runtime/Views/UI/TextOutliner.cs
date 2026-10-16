@@ -45,10 +45,23 @@ namespace SandJamTest.Scene3D
         }
     }
 
+    // The one text outline used by the game: eight copies of the label behind it, in the Ink colour, kept in sync
+    // with the label's text, font, size and fade. Add it with OutlinedText.Add(label, ink) or let TextOutliner give
+    // it to white labels on the UI screens.
     public sealed class OutlinedText : MonoBehaviour
     {
         // Outline colour; dark captions use a light outline instead (original Hard/Bonus popups).
         public Color Ink = TextOutliner.Ink;
+        // Outline radius as a fraction of the line height.
+        public float Thickness = .08f;
+
+        public static OutlinedText Add(TextMesh label, Color ink, float thickness = .08f)
+        {
+            var o = label.GetComponent<OutlinedText>();
+            if (!o) { o = label.gameObject.AddComponent<OutlinedText>(); }
+            o.Thickness = thickness; o.SetInk(ink);
+            return o;
+        }
         static readonly Vector2[] Directions =
         {
             new Vector2(1, 0), new Vector2(-1, 0), new Vector2(0, 1), new Vector2(0, -1),
@@ -74,10 +87,17 @@ namespace SandJamTest.Scene3D
                 r.sortingLayerID = mainRenderer.sortingLayerID; r.sortingOrder = mainRenderer.sortingOrder; // same order: depth puts it just behind the letters
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
             }
+            Recolour(); // right away: code reading the label's colours this frame must not see default white copies
+        }
+        void Recolour()
+        {
+            if (!main) return;
+            alpha = main.color.a; var c = Ink; c.a = alpha;
+            foreach (var t in copies) if (t) t.color = c;
         }
 
         // Outline colour change after creation: the copies are recoloured on the next frame.
-        public void SetInk(Color ink) { Ink = ink; alpha = -1; }
+        public void SetInk(Color ink) { Ink = ink; Recolour(); }
 
         void LateUpdate()
         {
@@ -88,12 +108,7 @@ namespace SandJamTest.Scene3D
                 lastBounds = now;
                 if (main.text != text || main.characterSize != size || main.font != font) Sync();
             }
-            if (main.color.a != alpha)
-            {
-                alpha = main.color.a;
-                var c = Ink; c.a = alpha;
-                foreach (var t in copies) t.color = c;
-            }
+            if (main.color.a != alpha) Recolour();
         }
 
         void Sync()
@@ -111,7 +126,7 @@ namespace SandJamTest.Scene3D
             float scale = Mathf.Max(.0001f, Mathf.Abs(transform.lossyScale.y));
             float line = mainRenderer.bounds.size.y / scale / lines;
             if (line <= 0) { size = -1; return; } // not laid out yet; try again next frame
-            float r = line * .08f;
+            float r = line * Thickness;
             for (int i = 0; i < copies.Length; i++)
                 copies[i].transform.localPosition = new Vector3(Directions[i].x * r, Directions[i].y * r - r * .45f, .01f);
         }
