@@ -142,14 +142,7 @@ namespace SandJamTest.Scene3D
             foreach(var name in new[]{"generalBackground-main","bg-navbar"}){var t=Home.transform.Find(name);if(t){var ls=t.localScale;t.localScale=new Vector3(ls.x*1.12f,ls.y,ls.z);}}
             // Hangers run from the top bar down to the sign.
             var rimNow=Home.transform.Find("Level sign rim");
-            if(rimNow && bar)foreach(Transform child in Home.transform)
-                if(child.name.StartsWith("Hanger"))
-                {
-                    var hr=child.GetComponent<SpriteRenderer>();if(!hr)continue;
-                    float hTop=bar.bounds.min.y+.02f,hBottom=rimNow.GetComponent<Renderer>().bounds.max.y-.02f;var hb=hr.bounds;
-                    child.localScale=new Vector3(child.localScale.x,child.localScale.y*(hTop-hBottom)/Mathf.Max(.001f,hb.size.y),1);
-                    child.position=new Vector3(child.position.x,(hTop+hBottom)*.5f,child.position.z);
-                }
+            if(rimNow && bar)FitHangers(bar,rimNow.GetComponent<Renderer>().bounds.max.y-.02f,false);
             ReplaceLevelSign(bar);
             ReplaceJoinPlaque();
             // Navbar: the original icons and captions are noticeably bigger.
@@ -192,6 +185,22 @@ namespace SandJamTest.Scene3D
         }
         // Original Home level sign: the brushed blue panel art (Group 10295), ~86% as wide as the drawn sign, hung
         // from two thin dark rods; the number and LEVEL in white with only a soft blue edge.
+        // Hangers run from just under the top bar down to the sign (bottom). rods: straight square-ended dark rods
+        // (~0.09 wide, with the sign art) instead of the stretched template pills.
+        void FitHangers(SpriteRenderer bar,float bottom,bool rods)
+        {
+            float top=bar.bounds.min.y+.02f;
+            foreach(Transform child in Home.transform)
+            {
+                if(!child.name.StartsWith("Hanger"))continue;
+                var hr=child.GetComponent<SpriteRenderer>();if(!hr)continue;
+                if(rods){hr.sprite=SpriteFactory.White;hr.drawMode=SpriteDrawMode.Simple;hr.color=new Color32(84,124,172,255);child.localScale=Vector3.one;}
+                var hb=hr.bounds;var ls=child.localScale;
+                float sx=rods?.09f/Mathf.Max(.0001f,hb.size.x):ls.x;
+                child.localScale=new Vector3(sx,ls.y*(top-bottom)/Mathf.Max(.0001f,hb.size.y),1);
+                child.position=new Vector3(child.position.x,(top+bottom)*.5f,child.position.z);
+            }
+        }
         void ReplaceLevelSign(SpriteRenderer bar)
         {
             var tex=Resources.Load<Texture2D>("VideoUI/home-level-sign");var rim=Home.transform.Find("Level sign rim");
@@ -211,17 +220,7 @@ namespace SandJamTest.Scene3D
             if(number){number.position=new Vector3(ab.center.x,ab.min.y+ab.size.y*.6f,number.position.z);number.localScale*=.88f;}
             if(level)level.position=new Vector3(ab.center.x,ab.min.y+ab.size.y*.22f,level.position.z);
             // Thin dark rods from the top bar to the sign.
-            if(bar)foreach(Transform child in Home.transform)
-                if(child.name.StartsWith("Hanger"))
-                {
-                    var hr=child.GetComponent<SpriteRenderer>();if(!hr)continue;
-                    // Straight square-ended rods (~0.09 wide), not stretched pills.
-                    hr.sprite=SpriteFactory.White;hr.drawMode=SpriteDrawMode.Simple;hr.color=new Color32(84,124,172,255);
-                    float hTop=bar.bounds.min.y+.02f,hBottom=ab.max.y-.03f;
-                    child.localScale=Vector3.one;var hb=hr.bounds;
-                    child.localScale=new Vector3(.09f/Mathf.Max(.0001f,hb.size.x),(hTop-hBottom)/Mathf.Max(.0001f,hb.size.y),1);
-                    child.position=new Vector3(child.position.x,(hTop+hBottom)*.5f,child.position.z);
-                }
+            if(bar)FitHangers(bar,ab.max.y-.03f,true);
             StartCoroutine(SoftSignInk());
         }
         // Original "JOIN" plaque under the Sand Quest chest: the gold label art (Chest_Label_Enable, 262x111), same

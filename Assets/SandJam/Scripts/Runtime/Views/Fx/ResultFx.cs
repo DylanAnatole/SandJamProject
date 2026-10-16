@@ -60,7 +60,7 @@ namespace SandJamTest.Scene3D
         // Original card: a gold frame following the card's rounded, slightly bulging outline (the white card mask,
         // tinted), with a darker gold edge; the glass panel is clipped just inside its own outline so its green rim
         // (unused in the current build) disappears. Replaces the flat rectangular gold panels.
-        public const string FrameName = "Card frame", EdgeName = "Card frame edge", ClipName = "Glass clip", BandTopName = "Reward caption top edge";
+        public const string SlotName = "bg-popUp-slot-levelCompleted-v2", BandName = "Reward caption", FrameName = "Card frame", EdgeName = "Card frame edge", ClipName = "Glass clip", BandTopName = "Reward caption top edge";
         void BuildCardFrame()
         {
             var mask = Resources.Load<Sprite>("VideoUI/bg-popUp-mask-levelCompleted-v2");
@@ -103,7 +103,7 @@ namespace SandJamTest.Scene3D
         // width, square top edge, rounded bottom corners), in pale lavender, not a separate narrower pill.
         void StyleRewardBand()
         {
-            var slot = transform.Find("bg-popUp-slot-levelCompleted-v2"); var band = transform.Find("Reward caption");
+            var slot = transform.Find(SlotName); var band = transform.Find(BandName);
             if (!slot || !band) return;
             var sb = slot.GetComponent<Renderer>().bounds; var br = band.GetComponent<SpriteRenderer>();
             if (!br || !br.sprite) return;
@@ -164,13 +164,21 @@ namespace SandJamTest.Scene3D
             }
         }
 
+        // The reward box (slot) and the visible glass (clip mask) bounds.
+        bool SlotAndGlass(out Transform slot, out Bounds slotBounds, out Bounds glassBounds)
+        {
+            slot = transform.Find(SlotName); var clip = transform.Find(ClipName);
+            slotBounds = glassBounds = default(Bounds);
+            if (!slot || !clip) return false;
+            slotBounds = slot.GetComponent<Renderer>().bounds; glassBounds = clip.GetComponent<SpriteMask>().bounds;
+            return true;
+        }
+
         // The purple reward box sat partly above the visible glass (its top at 1.90, the glass's at 1.69): its top
         // comes down to leave the same margin as at its sides; the coins and the amount move down with it.
         void FitRewardBox()
         {
-            var slot = transform.Find("bg-popUp-slot-levelCompleted-v2"); var clip = transform.Find(ClipName);
-            if (!slot || !clip) return;
-            var sb = slot.GetComponent<Renderer>().bounds; var cb = clip.GetComponent<SpriteMask>().bounds;
+            Transform slot; Bounds sb, cb; if (!SlotAndGlass(out slot, out sb, out cb)) return;
             float margin = Mathf.Max(.08f, cb.max.x - sb.max.x), top = cb.max.y - margin;
             if (sb.max.y <= top) return;
             float drop = sb.max.y - top, height = top - sb.min.y, k = height / sb.size.y;
@@ -186,9 +194,7 @@ namespace SandJamTest.Scene3D
         // gap and centred in the space between the reward box and the bottom of the glass.
         void LayoutButtons()
         {
-            var slot = transform.Find("bg-popUp-slot-levelCompleted-v2"); var clip = transform.Find(ClipName);
-            if (!slot || !clip) return;
-            var sb = slot.GetComponent<Renderer>().bounds; var cb = clip.GetComponent<SpriteMask>().bounds;
+            Transform slot; Bounds sb, cb; if (!SlotAndGlass(out slot, out sb, out cb)) return;
             float left = sb.min.x, right = sb.max.x, gap = .14f, width = (right - left - gap) * .5f;
             float centreY = (sb.min.y + cb.min.y) * .5f;
             Fit(transform.Find("x2"), "button-yellow-v2", left, left + width, centreY);
@@ -208,7 +214,7 @@ namespace SandJamTest.Scene3D
 
         // Everything inside the card stays centred on the gold frame (glass, reward box, caption, buttons): the
         // design offsets are recorded once and restored every frame, whatever else touched them.
-        static readonly string[] Inside = { "bg-popUp-levelCompleted-v2", ClipName, "bg-popUp-slot-levelCompleted-v2", "Reward caption", BandTopName,
+        static readonly string[] Inside = { "bg-popUp-levelCompleted-v2", ClipName, SlotName, BandName, BandTopName,
             "icon-coin-reward", "+ 10", "Your Reward!", "x2", "Next", "Level Complete!", "bg-level-yellow", "Level title", EdgeName };
         readonly List<Transform> insideItems = new List<Transform>(); readonly List<float> insideOffsets = new List<float>();
         Transform frameRoot; bool reportedDrift;

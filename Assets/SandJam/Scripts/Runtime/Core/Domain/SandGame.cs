@@ -165,9 +165,14 @@ namespace SandJamTest
                     if (i != lane && Lanes[i].Count > 0 && Lanes[i].Peek() == first.Partner) partnerLane = i;
                 if (partnerLane < 0) return -1;
             }
+            return FreeSlotFor(first);
+        }
+        // First open, empty stash slot for the shooter (a chained pair needs two side by side); -1 when none.
+        int FreeSlotFor(Shooter shooter)
+        {
             for (int i = 0; i < Slots.Length; i++)
                 if (Slots[i] == null && SlotRemaining(i) == 0 &&
-                    (first.Partner == null || i + 1 < Slots.Length && Slots[i + 1] == null && SlotRemaining(i + 1) == 0)) return i;
+                    (shooter.Partner == null || i + 1 < Slots.Length && Slots[i + 1] == null && SlotRemaining(i + 1) == 0)) return i;
             return -1;
         }
 

@@ -35,7 +35,7 @@ namespace SandJamTest.Scene3D
 
         // Shared building blocks (see PopupScreens / PopupScreens.Kit).
         protected Popup Build(string name) { return Host.Build(name); }
-        protected Popup Blank(string name) { return Host.Blank(name); }
+        protected Popup Blank(string name, bool keepHitAreas = false) { return Host.Blank(name, keepHitAreas); }
         protected SpriteRenderer Art(Popup p, string sprite, Vector3 local, float width) { return Host.Art(p, sprite, local, width); }
         protected TextMesh Label(Popup p, string name, Vector3 local, string text, float size, Color color) { return Host.Label(p, name, local, text, size, color); }
         protected TextMesh[] OutlinedLabel(Popup p, string name, Vector3 local, float size) { return Host.OutlinedLabel(p, name, local, size); }

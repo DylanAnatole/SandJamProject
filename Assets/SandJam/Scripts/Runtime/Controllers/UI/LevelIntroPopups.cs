@@ -51,10 +51,7 @@ namespace SandJamTest.Scene3D
         Popup BuildLevelKindPopup(string name, string folder, string frame, string mascot, string crest, string ribbon, string title, string pill,
             string caption, string action, out TextMesh levelLabel)
         {
-            var p = Build(name);
-            var keep = new[] { "Dark backdrop", "bg-currency", "button-plus_0", "icon-coin", "2040", "Next" };
-            foreach (Transform child in p.Root.transform)
-                if (System.Array.IndexOf(keep, child.name) < 0 && !child.name.StartsWith("Hit area")) child.gameObject.SetActive(false);
+            var p = Blank(name, true);
             // Measured on the recording (level 260): the frame reaches lower, the mascot and caption are larger and
             // lower, the PLAY button is bigger and sits on the frame's bottom edge, and a glow of rays shines behind
             // the crest (red for hard, gold for bonus).
@@ -80,10 +77,7 @@ namespace SandJamTest.Scene3D
         // the finished picture of the level about to be played and a green NEXT button under the frame.
         void BuildArtStylePopup()
         {
-            artStyle = Build("Art style popup");
-            var keep = new[] { "Dark backdrop", "bg-currency", "button-plus_0", "icon-coin", "2040", "Next" };
-            foreach (Transform child in artStyle.Root.transform)
-                if (System.Array.IndexOf(keep, child.name) < 0 && !child.name.StartsWith("Hit area")) child.gameObject.SetActive(false);
+            artStyle = Blank("Art style popup", true);
             Art(artStyle, "ArtStyle/bg-popUp-newArtStyle-v2", new Vector3(0, .55f, -6.2f), 3.9f);
             // White rounded slot framing the 84x112 picture (stretched from the feature-slot art).
             var slot = Art(artStyle, "ArtStyle/bg-popUp-slot-newFeature-v2", new Vector3(0, .03f, -6.4f), 3.15f);
@@ -179,7 +173,7 @@ namespace SandJamTest.Scene3D
         bool captionBandGrown;
         void GrowCaptionBand()
         {
-            var band = intro.Root.transform.Find("Reward caption"); var strip = intro.Root.transform.Find(ResultFx.BandTopName);
+            var band = intro.Root.transform.Find(ResultFx.BandName); var strip = intro.Root.transform.Find(ResultFx.BandTopName);
             var stripArt = strip ? strip.GetComponent<SpriteRenderer>() : null;
             if (!band || !stripArt) return;
             var bandBounds = band.GetComponent<Renderer>().bounds; var sb = stripArt.bounds;

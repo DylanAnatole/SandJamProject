@@ -6,12 +6,13 @@ namespace SandJamTest.Scene3D
     // touch area. Popup modules reach them through PopupModule.
     public sealed partial class PopupScreens
     {
-        internal Popup Blank(string name)
+        // The result card with only the backdrop, coin bar and button group left (optionally its touch areas too).
+        static readonly string[] BlankKeep = { "Dark backdrop", "bg-currency", "button-plus_0", "icon-coin", "2040", "Next" };
+        internal Popup Blank(string name, bool keepHitAreas = false)
         {
             var p = Build(name);
-            var keep = new[] { "Dark backdrop", "bg-currency", "button-plus_0", "icon-coin", "2040", "Next" };
             foreach (Transform child in p.Root.transform)
-                if (System.Array.IndexOf(keep, child.name) < 0) child.gameObject.SetActive(false);
+                if (System.Array.IndexOf(BlankKeep, child.name) < 0 && !(keepHitAreas && child.name.StartsWith("Hit area"))) child.gameObject.SetActive(false);
             return p;
         }
         internal void GreenButton(Popup p, float y, string action, string text, float scale = 1.05f)

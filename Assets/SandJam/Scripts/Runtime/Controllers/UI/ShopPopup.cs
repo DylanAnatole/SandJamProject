@@ -79,6 +79,23 @@ namespace SandJamTest.Scene3D
             if (parent) r.transform.SetParent(parent, true);
             return r;
         }
+        // Art stretched to width x height (canvas pixels), e.g. 9-sliced-looking panels and buttons.
+        SpriteRenderer ShopPanel(string sprite, float x, float y, float width, float height, float z)
+        {
+            var r = ShopArt(sprite, x, y, width * ShopUnit, z, shopContent);
+            if (r.sprite) r.transform.localScale = new Vector3(width * ShopUnit / r.sprite.bounds.size.x, height * ShopUnit / r.sprite.bounds.size.y, 1);
+            return r;
+        }
+        // The three booster icons in a row with an "xN" count at each icon's lower right.
+        void BoosterRow(float x0, float dx, float y, float iconSize, string count, float countDx, float countDy, float countSize)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                float x = x0 + i * dx;
+                ShopArt(BoosterIcons[i], x, y, iconSize * ShopUnit, -6.5f, shopContent);
+                ShopText(count, x + countDx, y + countDy, countSize, -6.6f, true, Color.white);
+            }
+        }
         TextMesh[] ShopText(string text, float x, float y, float size, float z, bool outlined, Color color)
         {
             var labels = outlined ? OutlinedLabel(shop, "Shop text", new Vector3(ShopX(x), ShopY(y), z), size)
@@ -94,9 +111,8 @@ namespace SandJamTest.Scene3D
         }
         void PriceButton(float x, float y, float w, string text, string action, bool coinIcon)
         {
-            var b = ShopArt("Shop/button-green", x, y, w * ShopUnit, -6.7f, shopContent);
             // Original price buttons: chunky (about a third as tall as wide) with a big caption.
-            if (b.sprite) b.transform.localScale = new Vector3(w * ShopUnit / b.sprite.bounds.size.x, 45 * ShopUnit / b.sprite.bounds.size.y, 1);
+            ShopPanel("Shop/button-green", x, y, w, 45, -6.7f);
             if (coinIcon) ShopArt("Shop/icon-coin_1", x - w * .3f, y, 26 * ShopUnit, -6.8f, shopContent);
             ShopText(text, x + (coinIcon ? 10 : 0), y - 1, text.Length > 9 ? .042f : .046f, -6.9f, true, Color.white);
             ShopHit(x, y, w, 46, action);
@@ -118,12 +134,7 @@ namespace SandJamTest.Scene3D
             ShopArt("Shop/bg-slot-noAdsPack-shop_0", 203, y - 21, 197 * ShopUnit, -6.4f, shopContent);
             ShopArt("Shop/icon-coin_1", 128, y - 27, 30 * ShopUnit, -6.5f, shopContent);
             ShopText("1000", 128, y - 4, .026f, -6.6f, true, Color.white);
-            for (int i = 0; i < 3; i++)
-            {
-                float x = 173 + i * 44;
-                ShopArt(BoosterIcons[i], x, y - 27, 32 * ShopUnit, -6.5f, shopContent);
-                ShopText("x3", x + 4, y - 6, .027f, -6.6f, true, Color.white);
-            }
+            BoosterRow(173, 44, y - 27, 32, "x3", 4, 21, .027f);
             PriceButton(167, y + 53, 135, "499000 VND", "shop-iap", false);
         }
         void Bundle(float y, string card, string slot, string title, int coins, int each, string price)
@@ -133,58 +144,41 @@ namespace SandJamTest.Scene3D
             ShopArt("Shop/icon-coin2-shop", 60, y - 22, 52 * ShopUnit, -6.5f, shopContent);
             ShopText(coins.ToString(), 60, y + 10, .034f, -6.7f, true, Color.white);
             ShopArt(slot, 203, y - 21, 197 * ShopUnit, -6.4f, shopContent);
-            for (int i = 0; i < 3; i++)
-            {
-                float x = 145 + i * 57;
-                ShopArt(BoosterIcons[i], x, y - 27, 36 * ShopUnit, -6.5f, shopContent);
-                ShopText("x" + each, x + 4, y - 6, .03f, -6.6f, true, Color.white);
-            }
+            BoosterRow(145, 57, y - 27, 36, "x" + each, 4, 21, .03f);
             PriceButton(167, y + 53, 135, price, "shop-iap", false);
         }
         void SectionHeader(float y, string sprite, string title)
         {
-            var r = ShopArt(sprite, 168, y, 300 * ShopUnit, -6.3f, shopContent);
-            if (r.sprite) r.transform.localScale = new Vector3(300 * ShopUnit / r.sprite.bounds.size.x, 43 * ShopUnit / r.sprite.bounds.size.y, 1);
+            ShopPanel(sprite, 168, y, 300, 43, -6.3f);
             ShopText(title, 168, y - 1, .042f, -6.5f, true, Color.white);
         }
-        void Cell(string card, float x, float y)
+        // One small shop cell (coins or boosters): card, inner slot and a touch area for the whole cell.
+        void SectionCell(string section, float x, float y, string action)
         {
-            var r = ShopArt(card, x, y, 92 * ShopUnit, -6.3f, shopContent);
-            if (r.sprite) r.transform.localScale = new Vector3(92 * ShopUnit / r.sprite.bounds.size.x, 140 * ShopUnit / r.sprite.bounds.size.y, 1);
+            ShopPanel("Shop/bg-" + section + "-shop", x, y, 92, 140, -6.3f);
+            ShopPanel("Shop/bg-slot-" + section + "-shop", x, y - 15, 80, 95, -6.4f);
+            ShopHit(x, y, 92, 140, action);
         }
         void CoinCell(float x, float y, string icon, int coins, string price)
         {
-            Cell("Shop/bg-coinSection-shop", x, y);
-            var slot = ShopArt("Shop/bg-slot-coinSection-shop", x, y - 15, 80 * ShopUnit, -6.4f, shopContent);
-            if (slot.sprite) slot.transform.localScale = new Vector3(80 * ShopUnit / slot.sprite.bounds.size.x, 95 * ShopUnit / slot.sprite.bounds.size.y, 1);
+            SectionCell("coinSection", x, y, "shop-iap");
             ShopArt(icon, x, y - 28, 52 * ShopUnit, -6.5f, shopContent);
             ShopText(coins.ToString(), x, y + 12, .032f, -6.6f, true, Color.white);
             ShopText(price, x, y + 50, .032f, -6.6f, true, Color.white);
-            ShopHit(x, y, 92, 140, "shop-iap");
         }
         void BoosterCell(float x, float y, int booster, int count, int price)
         {
-            Cell("Shop/bg-boosterSection-shop", x, y);
-            var slot = ShopArt("Shop/bg-slot-boosterSection-shop", x, y - 15, 80 * ShopUnit, -6.4f, shopContent);
-            if (slot.sprite) slot.transform.localScale = new Vector3(80 * ShopUnit / slot.sprite.bounds.size.x, 95 * ShopUnit / slot.sprite.bounds.size.y, 1);
+            SectionCell("boosterSection", x, y, "shop-buy:" + BoosterActions[booster] + ":" + count + ":" + price);
             ShopArt(BoosterIcons[booster], x, y - 32, 48 * ShopUnit, -6.5f, shopContent);
             ShopText("x" + count, x, y + 10, .036f, -6.6f, true, Color.white);
             ShopArt("Shop/icon-coin_1", x - 26, y + 50, 18 * ShopUnit, -6.6f, shopContent);
             ShopText(price.ToString(), x + 6, y + 50, .032f, -6.6f, true, Color.white);
-            ShopHit(x, y, 92, 140, "shop-buy:" + BoosterActions[booster] + ":" + count + ":" + price);
         }
         void BigBoosterBundle(float y, int each, int price)
         {
-            var r = ShopArt("Shop/bg-boosterSection-big-shop", 168, y, 300 * ShopUnit, -6.3f, shopContent);
-            if (r.sprite) r.transform.localScale = new Vector3(300 * ShopUnit / r.sprite.bounds.size.x, 160 * ShopUnit / r.sprite.bounds.size.y, 1);
-            var slot = ShopArt("Shop/bg-slot-boosterSection-big-shop", 168, y - 30, 270 * ShopUnit, -6.4f, shopContent);
-            if (slot.sprite) slot.transform.localScale = new Vector3(270 * ShopUnit / slot.sprite.bounds.size.x, 70 * ShopUnit / slot.sprite.bounds.size.y, 1);
-            for (int i = 0; i < 3; i++)
-            {
-                float x = 85 + i * 83;
-                ShopArt(BoosterIcons[i], x, y - 34, 44 * ShopUnit, -6.5f, shopContent);
-                ShopText("x" + each, x + 22, y - 18, .036f, -6.6f, true, Color.white);
-            }
+            ShopPanel("Shop/bg-boosterSection-big-shop", 168, y, 300, 160, -6.3f);
+            ShopPanel("Shop/bg-slot-boosterSection-big-shop", 168, y - 30, 270, 70, -6.4f);
+            BoosterRow(85, 83, y - 34, 44, "x" + each, 22, 16, .036f);
             PriceButton(167, y + 42, 135, price.ToString(), "shop-buy:all:" + each + ":" + price, true);
         }
 

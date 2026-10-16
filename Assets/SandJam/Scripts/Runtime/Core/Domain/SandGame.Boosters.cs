@@ -38,10 +38,7 @@ namespace SandJamTest
         {
             if (shooter == null || shooter.IsFrozen || (shooter.Partner != null && shooter.Partner.IsFrozen) || !Lanes.Any(l => l.Contains(shooter))) return -1;
             if (shooter.Partner != null && !Lanes.Any(l => l.Contains(shooter.Partner))) return -1;
-            for (int i = 0; i < Slots.Length; i++)
-                if (Slots[i] == null && SlotRemaining(i) == 0 &&
-                    (shooter.Partner == null || i + 1 < Slots.Length && Slots[i + 1] == null && SlotRemaining(i + 1) == 0)) return i;
-            return -1;
+            return FreeSlotFor(shooter);
         }
 
         public bool SelectPriority(Shooter shooter)

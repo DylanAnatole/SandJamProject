@@ -37,13 +37,14 @@ namespace SandJamTest
             return sprite;
         }
 
-        // Anti-aliased coverage of pixel (x, y) inside a w x h rounded rectangle with the given corner radius.
-        public static float RoundedRectAlpha(int x, int y, int w, int h, float radius)
+        // Signed distance (pixels, negative inside) from pixel (x, y) to the edge of a w x h rounded rectangle.
+        public static float RoundedRectDistance(int x, int y, int w, int h, float radius)
         {
             float px = Mathf.Abs(x + .5f - w / 2f) - (w / 2f - radius), py = Mathf.Abs(y + .5f - h / 2f) - (h / 2f - radius);
-            float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - radius;
-            return Mathf.Clamp01(.5f - d);
+            return new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - radius;
         }
+        // Anti-aliased coverage of pixel (x, y) inside that rounded rectangle.
+        public static float RoundedRectAlpha(int x, int y, int w, int h, float radius) { return Mathf.Clamp01(.5f - RoundedRectDistance(x, y, w, h, radius)); }
 
         static Sprite disc, softDot;
         // Hard-edged white disc, 1 unit across.

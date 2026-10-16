@@ -178,7 +178,7 @@ namespace SandJamTest.Scene3D
         // pill, "Keep Going!" on the dark band at the bottom; white title.
         void StyleFailedSlot()
         {
-            var slot = failed.Root.transform.Find("bg-popUp-slot-levelCompleted-v2");
+            var slot = failed.Root.transform.Find(ResultFx.SlotName);
             if (!slot || hearts == null || hearts.Length == 0 || !failed.Ribbon) return;
             var sb = slot.GetComponent<Renderer>().bounds;
             float inset = sb.size.x * .035f, top = sb.max.y - inset, bottom = hearts[0].bounds.min.y - .12f;
@@ -341,16 +341,15 @@ namespace SandJamTest.Scene3D
         // The stash picture fills the reward box's inner area (above the caption band, under it at the bottom)
         // and is clipped to the box's rounded inner shape, as in the original; it used to run over the box's rim.
         // Inside of the card's white picture slot (inside its rim), down to the middle of the caption band.
-        const string SlotName = "bg-popUp-slot-levelCompleted-v2";
         static readonly Vector2 SlotRim = new Vector2(11f / 316f, 9f / 392f);
         bool RewardRegion(Popup p, out float left, out float right, out float top, out float pictureBottom)
         {
             left = right = top = pictureBottom = 0;
-            var slot = p.Root.transform.Find(SlotName); var art = slot ? slot.GetComponent<SpriteRenderer>() : null;
+            var slot = p.Root.transform.Find(ResultFx.SlotName); var art = slot ? slot.GetComponent<SpriteRenderer>() : null;
             if (!art) return false;
             var sb = art.bounds; float rimX = sb.size.x * SlotRim.x, rimY = sb.size.y * SlotRim.y;
             left = sb.min.x + rimX; right = sb.max.x - rimX; top = sb.max.y - rimY;
-            var band = p.Root.transform.Find("Reward caption");
+            var band = p.Root.transform.Find(ResultFx.BandName);
             pictureBottom = band ? band.GetComponent<Renderer>().bounds.center.y : sb.min.y + rimY;
             return true;
         }
@@ -369,7 +368,7 @@ namespace SandJamTest.Scene3D
             var maskObject = p.Root.transform.Find("Picture mask"); // the card has other masks (glass, caption band)
             if (!maskObject)
             {
-                var slot = p.Root.transform.Find(SlotName);
+                var slot = p.Root.transform.Find(ResultFx.SlotName);
                 var mask = Child<SpriteMask>(p, "Picture mask", Vector3.zero);
                 mask.sprite = slot.GetComponent<SpriteRenderer>().sprite;
                 mask.transform.position = slot.position;
@@ -417,7 +416,7 @@ namespace SandJamTest.Scene3D
                 x += widths[i] + gap;
             }
             // The reward box reaches down to just above the button (original), its caption band following it.
-            var slot = root.Find("bg-popUp-slot-levelCompleted-v2"); var slotR = slot ? slot.GetComponent<Renderer>() : null;
+            var slot = root.Find(ResultFx.SlotName); var slotR = slot ? slot.GetComponent<Renderer>() : null;
             if (slotR)
             {
                 var sb = slotR.bounds; float newBottom = bb.max.y + height * .2f, delta = newBottom - sb.min.y;
@@ -426,7 +425,7 @@ namespace SandJamTest.Scene3D
                     float k = (sb.max.y - newBottom) / sb.size.y; var sl = slot.localScale;
                     slot.localScale = new Vector3(sl.x, sl.y * k, sl.z);
                     slot.position += new Vector3(0, (sb.max.y + newBottom) * .5f - slotR.bounds.center.y, 0);
-                    foreach (var name in new[] { "Reward caption", ResultFx.BandTopName })
+                    foreach (var name in new[] { ResultFx.BandName, ResultFx.BandTopName })
                     { var t = root.Find(name); if (t) t.position += new Vector3(0, delta, 0); }
                     p.Caption.transform.position += new Vector3(0, delta, 0);
                     var mask = root.Find("Reward band mask");
@@ -736,9 +735,7 @@ namespace SandJamTest.Scene3D
             var pixels = new Color[w * h];
             for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
             {
-                // Signed distance to the rounded rectangle whose outer edge is the texture border.
-                float px = Mathf.Abs(x + .5f - w / 2f) - (w / 2f - radius), py = Mathf.Abs(y + .5f - h / 2f) - (h / 2f - radius);
-                float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - radius;
+                float d = SpriteFactory.RoundedRectDistance(x, y, w, h, radius); // the outer edge is the texture border
                 Color c;
                 if (d > 0) c = Color.clear;                            // outside the rounding: the glass (the picture has rounded corners)
                 else if (d > -1.5f) c = edge;                          // thin darker outline
