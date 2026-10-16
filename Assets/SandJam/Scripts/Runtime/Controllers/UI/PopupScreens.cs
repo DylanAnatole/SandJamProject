@@ -245,7 +245,7 @@ namespace SandJamTest.Scene3D
                 bool have = i < lives;
                 hearts[i].sprite = have || !lost ? full : lost;
                 hearts[i].color = have || lost ? Color.white : new Color(.32f, .18f, .62f);
-                if (hearts[i].sprite) { float s = .52f / hearts[i].sprite.bounds.size.y; hearts[i].transform.localScale = new Vector3(s, s, 1); }
+                hearts[i].SetLocalHeight(.52f);
             }
             bool show = justLost && lives < hearts.Length;
             lostHeartLabel.gameObject.SetActive(show);
@@ -439,7 +439,7 @@ namespace SandJamTest.Scene3D
         {
             var r = Child<SpriteRenderer>(p, System.IO.Path.GetFileName(sprite), local);
             r.sprite = Resources.Load<Sprite>(sprite.Contains("/") ? sprite : "HardLevel/" + sprite);
-            if (r.sprite) { float s = width / r.sprite.bounds.size.x; r.transform.localScale = new Vector3(s, s, 1); }
+            r.SetLocalWidth(width);
             return r;
         }
         void ShowFailed(bool justLost, bool noLives)
@@ -656,7 +656,7 @@ namespace SandJamTest.Scene3D
                 coverFrame.sprite = RoundedFrame(); runtimeArt.Add(coverFrame.sprite); runtimeArt.Add(coverFrame.sprite.texture);
             }
             const float rim = .06f;
-            coverFrame.transform.localScale = new Vector3((CoverWidth + rim) / coverFrame.sprite.bounds.size.x, (CoverHeight + rim) / coverFrame.sprite.bounds.size.y, 1);
+            coverFrame.SetLocalSize(CoverWidth + rim, CoverHeight + rim);
             if (!coverMask)
             {
                 coverMask = Child<SpriteMask>(congrats, "Cover fill mask", new Vector3(0, 0, -6.45f));
@@ -775,12 +775,6 @@ namespace SandJamTest.Scene3D
             return sprite;
         }
         void OnDestroy() { foreach (var o in runtimeArt) if (o) Destroy(o); if (stashShot) Destroy(stashShot); }
-        internal static void FitIcon(SpriteRenderer icon, float height)
-        {
-            if (!icon.sprite) return;
-            float s = height / icon.sprite.bounds.size.y;
-            icon.transform.localScale = new Vector3(s, s, 1);
-        }
         // Scales a label together with its outline copies.
         internal static void ScaleText(TextMesh label, float factor)
         {

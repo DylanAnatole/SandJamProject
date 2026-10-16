@@ -81,7 +81,7 @@ namespace SandJamTest.Scene3D
             Art(artStyle, "ArtStyle/bg-popUp-newArtStyle-v2", new Vector3(0, .55f, -6.2f), 3.9f);
             // White rounded slot framing the 84x112 picture (stretched from the feature-slot art).
             var slot = Art(artStyle, "ArtStyle/bg-popUp-slot-newFeature-v2", new Vector3(0, .03f, -6.4f), 3.15f);
-            if (slot.sprite) slot.transform.localScale = new Vector3(3.15f / slot.sprite.bounds.size.x, 4.1f / slot.sprite.bounds.size.y, 1);
+            slot.SetLocalSize(3.15f, 4.1f);
             artStylePicture = Child<SpriteRenderer>(artStyle, "Art style picture", new Vector3(0, .03f, -6.5f));
             Art(artStyle, "ArtStyle/ribbon-purple-v2", new Vector3(0, 3.05f, -6.6f), 4.3f);
             Art(artStyle, "ArtStyle/text-newArtStyle-v2", new Vector3(0, 3.12f, -6.7f), 2.8f);

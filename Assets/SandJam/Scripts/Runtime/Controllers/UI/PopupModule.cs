@@ -41,7 +41,6 @@ namespace SandJamTest.Scene3D
         protected TextMesh[] OutlinedLabel(Popup p, string name, Vector3 local, float size) { return Host.OutlinedLabel(p, name, local, size); }
         protected static T Child<T>(Popup p, string name, Vector3 local) where T : Component { return PopupScreens.Child<T>(p, name, local); }
         protected static void SetText(TextMesh[] labels, string text) { PopupScreens.SetText(labels, text); }
-        protected static void FitIcon(SpriteRenderer icon, float height) { PopupScreens.FitIcon(icon, height); }
         protected static void ScaleText(TextMesh label, float factor) { PopupScreens.ScaleText(label, factor); }
         protected void Configure(VideoUiButton button, TextMesh label, string action, string text, float fitChars = 5.5f) { Host.Configure(button, label, action, text, fitChars); }
         protected void GreenButton(Popup p, float y, string action, string text, float scale = 1.05f) { Host.GreenButton(p, y, action, text, scale); }
@@ -56,5 +55,7 @@ namespace SandJamTest.Scene3D
         protected void Close() { Host.Close(); }
         protected static T Instantiate<T>(T original, Transform parent) where T : Object { return Object.Instantiate(original, parent); }
         protected static void Destroy(Object o) { Object.Destroy(o); }
+        // Destroys the objects a popup built for its current content and empties the list.
+        protected static void DestroyAll(List<GameObject> objects) { foreach (var o in objects) if (o) Object.Destroy(o); objects.Clear(); }
     }
 }

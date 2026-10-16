@@ -17,13 +17,18 @@ namespace SandJamTest.Scene3D
         readonly DragScroller scroll = new DragScroller();
         const float GridTop = .02f, GridBottom = -4.2f;
 
+        // Moves a built piece under parent (when given) and records it for the next refresh to destroy.
+        T Track<T>(T piece, Transform parent) where T : Component
+        {
+            if (parent) piece.transform.SetParent(parent, true);
+            galleryDynamic.Add(piece.gameObject);
+            return piece;
+        }
         SpriteRenderer GalleryArt(string sprite, float x, float y, float w, float h, float z, Transform parent = null)
         {
             var r = Art(gallery, sprite.Contains("/") ? sprite : "GalleryPage/" + sprite, new Vector3(x, y, z), w);
-            if (r.sprite) r.transform.localScale = new Vector3(w / r.sprite.bounds.size.x, h / r.sprite.bounds.size.y, 1);
-            if (parent) r.transform.SetParent(parent, true);
-            galleryDynamic.Add(r.gameObject);
-            return r;
+            r.SetLocalSize(w, h);
+            return Track(r, parent);
         }
         // Picture size inside a card frame as actually drawn: the frame's measured size minus its rim (the nominal
         // sizes are kept as the fallback and as the rim proportion).
@@ -42,9 +47,7 @@ namespace SandJamTest.Scene3D
         {
             var r = Child<SpriteRenderer>(gallery, "Picture", new Vector3(x, y, z)); r.sprite = sprite;
             if (sprite) { float k = Mathf.Min(maxW / sprite.bounds.size.x, maxH / sprite.bounds.size.y); r.transform.localScale = new Vector3(k, k, 1); }
-            if (parent) r.transform.SetParent(parent, true);
-            galleryDynamic.Add(r.gameObject);
-            return r;
+            return Track(r, parent);
         }
         // Original cards: the picture fills the card's opening and is clipped to its rounded shape by the card
         // mask, leaving the blue slot frame around it.
@@ -65,12 +68,9 @@ namespace SandJamTest.Scene3D
                 var ms = maskSprite.bounds.size; float sx = w / (ms.x * fx), sy = h / (ms.y * fy);
                 m.transform.localScale = new Vector3(sx, sy, 1);
                 m.transform.localPosition = new Vector3(x, y - offsetY * ms.y * sy, z);
-                if (parent) m.transform.SetParent(parent, true);
-                galleryDynamic.Add(m.gameObject);
+                Track(m, parent);
             }
-            if (parent) r.transform.SetParent(parent, true);
-            galleryDynamic.Add(r.gameObject);
-            return r;
+            return Track(r, parent);
         }
         TextMesh[] GalleryText(string text, float x, float y, float size, float z)
         {
@@ -96,7 +96,7 @@ namespace SandJamTest.Scene3D
             backdrop.color = new Color(.1f, .3f, .55f, 1);
             var top = Art(gallery, "GalleryPage/bg-topTexture-cardCollection", new Vector3(0, 3.2f, -6.05f), 5.8f);
             var bottom = Art(gallery, "GalleryPage/bg-bottom-cardCollection", new Vector3(0, -2.4f, -6.08f), 5.8f);
-            if (bottom.sprite) bottom.transform.localScale = new Vector3(5.8f / bottom.sprite.bounds.size.x, 5.6f / bottom.sprite.bounds.size.y, 1);
+            bottom.SetLocalSize(5.8f, 5.6f);
             AddPageChrome(gallery, "icon-cards");
         }
 
@@ -111,8 +111,7 @@ namespace SandJamTest.Scene3D
 
         void RefreshGallery()
         {
-            foreach (var o in galleryDynamic) if (o) Destroy(o);
-            galleryDynamic.Clear();
+            DestroyAll(galleryDynamic);
             scroll.Value = 0;
             if (galleryList.Count == 0) { GalleryText("Beat level 15 to unlock\nyour first collection!", 0, 1.5f, .05f, -6.6f); return; }
             var info = galleryList[galleryIndex];

@@ -41,8 +41,7 @@ namespace SandJamTest.Scene3D
         public void ShowSettings()
         {
             bool inGame = screen.Current == VideoScreen.Page.Gameplay;
-            foreach (var o in settingsDynamic) if (o) Destroy(o);
-            settingsDynamic.Clear();
+            DestroyAll(settingsDynamic);
             // Game: panel 1221.7 tall centred at y 130.75; MainMenu: 1081.5 tall at y 145.6 (260.6 - 115).
             settingsCentre = inGame ? new Vector2(0, 130.75f) : new Vector2(0, 145.6f);
             settingsHeight = inGame ? 1221.7f : 1081.5f;
@@ -91,7 +90,7 @@ namespace SandJamTest.Scene3D
         SpriteRenderer Sized(string sprite, float x, float y, float width, float height, float z)
         {
             var r = Art(settings, sprite, Px(x, y, z), width * CanvasUnit);
-            if (r.sprite) r.transform.localScale = new Vector3(width * CanvasUnit / r.sprite.bounds.size.x, height * CanvasUnit / r.sprite.bounds.size.y, 1);
+            r.SetLocalSize(width * CanvasUnit, height * CanvasUnit);
             settingsDynamic.Add(r.gameObject);
             return r;
         }

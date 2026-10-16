@@ -15,6 +15,19 @@ namespace SandJamTest
             t.localScale = new Vector3(width / Mathf.Max(.0001f, size.x), height / Mathf.Max(.0001f, size.y), z);
         }
 
+        // Scales a sprite so it measures width x height in its parent's units (non-uniform stretch; z scale 1).
+        public static void SetLocalSize(this SpriteRenderer r, float width, float height)
+        {
+            if (!r.sprite) return;
+            var size = r.sprite.bounds.size;
+            r.transform.localScale = new Vector3(width / size.x, height / size.y, 1);
+        }
+
+        // Uniform scale so the sprite is this wide / tall in its parent's units.
+        public static void SetLocalWidth(this SpriteRenderer r, float width) { if (r.sprite) SetUniform(r, width / r.sprite.bounds.size.x); }
+        public static void SetLocalHeight(this SpriteRenderer r, float height) { if (r.sprite) SetUniform(r, height / r.sprite.bounds.size.y); }
+        static void SetUniform(SpriteRenderer r, float k) { r.transform.localScale = new Vector3(k, k, 1); }
+
         // World bounds around all the renderers (empty bounds at the origin when there are none).
         public static Bounds CombinedBounds(this IList<Renderer> renderers)
         {

@@ -18,7 +18,7 @@ namespace SandJamTest.Scene3D
         SpriteRenderer Ui(Popup p, string sprite, Vector2 centre, float unit, float x, float y, float w, float h, float z)
         {
             var r = Art(p, sprite, new Vector3((centre.x + x) * unit, (centre.y + y) * unit, z), w * unit);
-            if (r.sprite) r.transform.localScale = new Vector3(w * unit / r.sprite.bounds.size.x, h * unit / r.sprite.bounds.size.y, 1);
+            r.SetLocalSize(w * unit, h * unit);
             return r;
         }
         Vector3 LivesPos(float x, float y, float z) { return new Vector3((LivesCentre.x + x) * LivesUnit, (LivesCentre.y + y) * LivesUnit, z); }

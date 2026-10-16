@@ -83,7 +83,7 @@ namespace SandJamTest.Scene3D
         SpriteRenderer ShopPanel(string sprite, float x, float y, float width, float height, float z)
         {
             var r = ShopArt(sprite, x, y, width * ShopUnit, z, shopContent);
-            if (r.sprite) r.transform.localScale = new Vector3(width * ShopUnit / r.sprite.bounds.size.x, height * ShopUnit / r.sprite.bounds.size.y, 1);
+            r.SetLocalSize(width * ShopUnit, height * ShopUnit);
             return r;
         }
         // The three booster icons in a row with an "xN" count at each icon's lower right.

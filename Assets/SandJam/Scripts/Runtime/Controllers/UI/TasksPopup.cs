@@ -23,7 +23,7 @@ namespace SandJamTest.Scene3D
         SpriteRenderer PanelArt(Popup p, string sprite, float x, float y, float w, float h, float z, List<GameObject> owner = null)
         {
             var r = Art(p, "Tasks/" + sprite, PanelPos(x, y, z), w * PanelUnit);
-            if (r.sprite) r.transform.localScale = new Vector3(w * PanelUnit / r.sprite.bounds.size.x, h * PanelUnit / r.sprite.bounds.size.y, 1);
+            r.SetLocalSize(w * PanelUnit, h * PanelUnit);
             if (owner != null) owner.Add(r.gameObject);
             return r;
         }
@@ -64,8 +64,7 @@ namespace SandJamTest.Scene3D
 
         void RefreshRewardsPanel()
         {
-            foreach (var o in rewardsDynamic) if (o) Destroy(o);
-            rewardsDynamic.Clear();
+            DestroyAll(rewardsDynamic);
             bool canClaim = DailyRewards.CanClaim; int next = DailyRewards.NextDay;
             for (int day = 0; day < 7; day++)
             {
@@ -117,8 +116,7 @@ namespace SandJamTest.Scene3D
 
         void RefreshTasksPanel()
         {
-            foreach (var o in tasksDynamic) if (o) Destroy(o);
-            tasksDynamic.Clear();
+            DestroyAll(tasksDynamic);
             var p = tasksPanel; var d = tasksDynamic;
             bool weekly = shownKind == TaskBoard.Kind.Weekly;
             var board = TaskBoard.Board(shownKind);
@@ -229,7 +227,7 @@ namespace SandJamTest.Scene3D
             var art = new GameObject(sprite) { layer = root.layer }.AddComponent<SpriteRenderer>();
             art.transform.SetParent(root.transform, false);
             art.sprite = Resources.Load<Sprite>("Tasks/" + sprite);
-            if (art.sprite) { float s = 300 * HomeUnit / art.sprite.bounds.size.x; art.transform.localScale = new Vector3(s, s, 1); }
+            art.SetLocalWidth(300 * HomeUnit);
             art.transform.localPosition = new Vector3(0, .1f, 0);
             var text = new GameObject("Label") { layer = root.layer }.AddComponent<TextMesh>();
             text.transform.SetParent(root.transform, false); text.transform.localPosition = new Vector3(0, -.38f, -.1f);
@@ -243,10 +241,10 @@ namespace SandJamTest.Scene3D
             badge.transform.SetParent(root.transform, false); badge.transform.localPosition = new Vector3(.42f, .52f, -.15f);
             var dot = new GameObject("circle") { layer = root.layer }.AddComponent<SpriteRenderer>();
             dot.transform.SetParent(badge.transform, false); dot.sprite = Resources.Load<Sprite>("Tasks/circle"); dot.color = new Color(1, .29f, .29f);
-            if (dot.sprite) { float s = .3f / dot.sprite.bounds.size.x; dot.transform.localScale = new Vector3(s, s, 1); }
+            dot.SetLocalWidth(.3f);
             var mark = new GameObject("indicator") { layer = root.layer }.AddComponent<SpriteRenderer>();
             mark.transform.SetParent(badge.transform, false); mark.transform.localPosition = new Vector3(0, 0, -.05f); mark.sprite = Resources.Load<Sprite>("Tasks/indicator");
-            if (mark.sprite) { float s = .22f / mark.sprite.bounds.size.y; mark.transform.localScale = new Vector3(s, s, 1); }
+            mark.SetLocalHeight(.22f);
             var hit = new GameObject("Hit area - " + action) { layer = 9 };
             hit.transform.SetParent(root.transform, false);
             hit.AddComponent<BoxCollider>().size = new Vector3(1.1f, 1.25f, .2f);

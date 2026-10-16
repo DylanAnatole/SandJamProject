@@ -37,8 +37,7 @@ namespace SandJamTest
             if (d.lives <= 0) return;
             if (d.lives >= Max) d.nextLifeUtcTicks = (DateTime.UtcNow + RefillTime).Ticks;
             d.lives--;
-            SaveManager.Save();
-            GameEvents.RaiseSettingsChanged();
+            Changed();
         }
 
         // Original "Speed Up" (rewarded video): the next heart arrives 15 minutes sooner.
@@ -50,16 +49,16 @@ namespace SandJamTest
             if (d.lives >= Max) return;
             d.nextLifeUtcTicks -= SpeedUpTime.Ticks;
             Tick();
-            SaveManager.Save();
-            GameEvents.RaiseSettingsChanged();
+            Changed();
         }
 
         public static void Refill()
         {
             SaveManager.Data.lives = Max; SaveManager.Data.nextLifeUtcTicks = 0;
-            SaveManager.Save();
-            GameEvents.RaiseSettingsChanged();
+            Changed();
         }
+        // Lives are saved at once and the HUD hearts / popups refresh.
+        static void Changed() { SaveManager.Save(); GameEvents.RaiseSettingsChanged(); }
 
         // Grants every heart whose refill time has passed (including time spent offline).
         static void Tick()

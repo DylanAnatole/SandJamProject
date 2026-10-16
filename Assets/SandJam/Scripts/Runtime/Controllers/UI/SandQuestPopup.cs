@@ -28,7 +28,7 @@ namespace SandJamTest.Scene3D
             // Proportions measured on the original (recording, level 268 Home): a wide panel (~84% of the screen),
             // a big title on the ribbon, the picture inset with margins, a large Start button.
             var offerPanel = Art(questOffer, "SandQuest/bg-sandQuest-popUp", new Vector3(0, .55f, -6.2f), 4.4f);
-            if (offerPanel.sprite) offerPanel.transform.localScale = new Vector3(4.4f / offerPanel.sprite.bounds.size.x, 5.85f / offerPanel.sprite.bounds.size.y, 1);
+            offerPanel.SetLocalSize(4.4f, 5.85f);
             SetText(OutlinedLabel(questOffer, "Quest title", new Vector3(0, 2.7f, -6.8f), .084f), "Sand Quest");
             Art(questOffer, "SandQuest/quest-Victory", new Vector3(0, .58f, -6.4f), 2.15f);
             questOfferTimer = TimerPill(questOffer, new Vector3(0, -.62f, -6.6f));
@@ -39,7 +39,7 @@ namespace SandJamTest.Scene3D
             // Journey screen.
             questMap = Blank("Sand Quest map");
             var body = Art(questMap, "SandQuest/quest-map", new Vector3(0, MapCenterY, -6.2f), MapWidth);
-            if (body.sprite) body.transform.localScale = new Vector3(MapWidth / body.sprite.bounds.size.x, MapHeight / body.sprite.bounds.size.y, 1);
+            body.SetLocalSize(MapWidth, MapHeight);
             Art(questMap, "SandQuest/bg-sandQuest", new Vector3(0, 3.82f, -6.3f), MapWidth);
             SetText(OutlinedLabel(questMap, "Quest title", new Vector3(0, 4.62f, -6.8f), .07f), "Sand Quest");
             Label(questMap, "Quest goal", new Vector3(0, 3.9f, -6.8f), "Beat 10 levels to complete the challenge!", .03f, new Color(.85f, .45f, .12f));
