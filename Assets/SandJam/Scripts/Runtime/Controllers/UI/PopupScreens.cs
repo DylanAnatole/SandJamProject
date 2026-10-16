@@ -340,40 +340,41 @@ namespace SandJamTest.Scene3D
 
         // The stash picture fills the reward box's inner area (above the caption band, under it at the bottom)
         // and is clipped to the box's rounded inner shape, as in the original; it used to run over the box's rim.
-        SpriteMask stashMask;
+        // Inside of the card's white picture slot (inside its rim), down to the middle of the caption band.
+        const string SlotName = "bg-popUp-slot-levelCompleted-v2";
+        static readonly Vector2 SlotRim = new Vector2(11f / 316f, 9f / 392f);
         bool RewardRegion(Popup p, out float left, out float right, out float top, out float pictureBottom)
         {
             left = right = top = pictureBottom = 0;
-            var slot = p.Root.transform.Find("bg-popUp-slot-levelCompleted-v2"); var art = slot ? slot.GetComponent<SpriteRenderer>() : null;
+            var slot = p.Root.transform.Find(SlotName); var art = slot ? slot.GetComponent<SpriteRenderer>() : null;
             if (!art) return false;
-            var sb = art.bounds; float rimX = sb.size.x * 11f / 316f, rimY = sb.size.y * 9f / 392f;
+            var sb = art.bounds; float rimX = sb.size.x * SlotRim.x, rimY = sb.size.y * SlotRim.y;
             left = sb.min.x + rimX; right = sb.max.x - rimX; top = sb.max.y - rimY;
             var band = p.Root.transform.Find("Reward caption");
             pictureBottom = band ? band.GetComponent<Renderer>().bounds.center.y : sb.min.y + rimY;
             return true;
         }
-        void FillRewardBox(Popup p, SpriteRenderer picture)
+        // Fills the picture slot with a picture (cover fit, centred) clipped to the slot's rounded inside.
+        internal void FillRewardBox(Popup p, SpriteRenderer picture)
         {
-            var slot = p.Root.transform.Find("bg-popUp-slot-levelCompleted-v2"); var slotArt = slot ? slot.GetComponent<SpriteRenderer>() : null;
-            if (!slotArt || !slotArt.sprite || !picture.sprite) return;
-            var sb = slotArt.bounds;
-            float rimX = sb.size.x * 11f / 316f, rimY = sb.size.y * 9f / 392f;
-            float left = sb.min.x + rimX, right = sb.max.x - rimX, top = sb.max.y - rimY, bottom = sb.min.y + rimY;
-            var band = p.Root.transform.Find("Reward caption");
-            float pictureBottom = band ? band.GetComponent<Renderer>().bounds.center.y : bottom;
+            float left, right, top, pictureBottom;
+            if (!picture.sprite || !RewardRegion(p, out left, out right, out top, out pictureBottom)) return;
             picture.transform.localScale = Vector3.one;
             var size = picture.bounds.size;
             float k = Mathf.Max((right - left) / size.x, (top - pictureBottom) / size.y);
             picture.transform.localScale = new Vector3(k, k, 1);
-            var pos = picture.transform.position;
-            picture.transform.position = new Vector3((left + right) * .5f, (top + pictureBottom) * .5f, pos.z);
-            if (!stashMask)
+            // Taller than the box: the bottom stays on the caption band and the top is cropped (never below the band).
+            float height = size.y * k, y = Mathf.Max((top + pictureBottom) * .5f, pictureBottom + height * .5f);
+            picture.transform.position = new Vector3((left + right) * .5f, y, picture.transform.position.z);
+            var maskObject = p.Root.transform.Find("Picture mask"); // the card has other masks (glass, caption band)
+            if (!maskObject)
             {
-                stashMask = Child<SpriteMask>(p, "Stash picture mask", Vector3.zero);
-                stashMask.sprite = slotArt.sprite;
-                stashMask.transform.position = slot.position;
-                var ls = slot.localScale; stashMask.transform.localScale = new Vector3(ls.x * (1 - 2 * 11f / 316f), ls.y * (1 - 2 * 9f / 392f), ls.z);
-                stashMask.isCustomRangeActive = true; stashMask.frontSortingOrder = 3; stashMask.backSortingOrder = 1;
+                var slot = p.Root.transform.Find(SlotName);
+                var mask = Child<SpriteMask>(p, "Picture mask", Vector3.zero);
+                mask.sprite = slot.GetComponent<SpriteRenderer>().sprite;
+                mask.transform.position = slot.position;
+                var ls = slot.localScale; mask.transform.localScale = new Vector3(ls.x * (1 - 2 * SlotRim.x), ls.y * (1 - 2 * SlotRim.y), ls.z);
+                mask.isCustomRangeActive = true; mask.frontSortingOrder = 3; mask.backSortingOrder = 1;
             }
             picture.sortingOrder = 2; picture.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
             picture.sharedMaterial = SpriteFactory.PlainSprite;
@@ -466,7 +467,7 @@ namespace SandJamTest.Scene3D
 
         // Two-button no-lives layout of the failed popup (Speed Up | Refill), built from the template's x2/Next.
         readonly System.Collections.Generic.Dictionary<Transform, float> failedRightX = new System.Collections.Generic.Dictionary<Transform, float>();
-        GameObject failedHome, failedSpeedBadge, failedRefillPrice;
+        GameObject failedHome, failedRefillPrice;
         SpriteRenderer failedRightBody; Sprite failedGreen, failedPurple; Vector3 failedGreenScale;
         void BuildNoLivesButtons()
         {
@@ -489,7 +490,6 @@ namespace SandJamTest.Scene3D
                 badge.transform.localRotation = Quaternion.Euler(0, 0, 12);
                 float k = b.size.y * .62f / tv.bounds.size.y / Mathf.Max(.0001f, root.lossyScale.y); badge.transform.localScale = new Vector3(k, k, 1);
                 badge.transform.SetParent(left, true);
-                failedSpeedBadge = badge.gameObject;
             }
             // Price on the Refill button: coin + 600, children of the right group so they follow its layout.
             var right = failed.RightButton.transform.parent;
@@ -795,7 +795,8 @@ namespace SandJamTest.Scene3D
         {
             if (button) button.Action = action;
             // Long labels must fit their panel width; outline/shadow copies follow the label.
-            float factor = Mathf.Clamp(fitChars / Mathf.Max(fitChars, text.Length), .5f, 1f);
+            int longest = 0; foreach (var line in text.Split('\n')) longest = Mathf.Max(longest, line.Length);
+            float factor = Mathf.Clamp(fitChars / Mathf.Max(fitChars, longest), .5f, 1f);
             foreach (var t in label.GetComponentsInChildren<TextMesh>(true))
             {
                 float size;

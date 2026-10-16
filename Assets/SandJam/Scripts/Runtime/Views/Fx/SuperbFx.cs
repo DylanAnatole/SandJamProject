@@ -9,7 +9,6 @@ namespace SandJamTest.Scene3D
     public sealed class SuperbFx : MonoBehaviour
     {
         public Font Font;
-        TextMesh original;
         readonly List<Transform> letters = new List<Transform>();
         readonly List<float> letterBase = new List<float>(), letterX = new List<float>();
         float wordCentreX;
@@ -26,7 +25,6 @@ namespace SandJamTest.Scene3D
 
         public void Build(TextMesh title)
         {
-            original = title;
             var centre = title.transform.position;
             // Rays and glow behind the text.
             var light = Resources.Load<Sprite>("Congrats/light-congrats");

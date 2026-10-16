@@ -23,7 +23,6 @@ namespace SandJamTest.Scene3D
         {
             intro = Build("Feature intro popup");
             intro.Big.text = "";
-            intro.Icon.transform.localPosition = new Vector3(0, .8f, intro.Icon.transform.localPosition.z);
             intro.LeftButton.transform.parent.gameObject.SetActive(false);
             foreach (Transform child in intro.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, child.localPosition.y, child.localPosition.z);
@@ -127,6 +126,16 @@ namespace SandJamTest.Scene3D
         }
 
         // Level-start sequence: NEW ART STYLE → HARD LEVEL → feature / booster intros.
+        // Long captions break at the space nearest the middle (one tiny line was unreadable).
+        static string TwoLines(string text)
+        {
+            if (text.Length <= 28) return text;
+            int best = -1;
+            for (int i = 0; i < text.Length; i++)
+                if (text[i] == ' ' && (best < 0 || Mathf.Abs(i - text.Length / 2) < Mathf.Abs(best - text.Length / 2))) best = i;
+            return best < 0 ? text : text.Substring(0, best) + "\n" + text.Substring(best + 1);
+        }
+
         public void ShowNextQueued()
         {
             if (pendingHardLevel > 0) { int level = pendingHardLevel; pendingHardLevel = 0; ShowHard(level); return; }
@@ -159,10 +168,25 @@ namespace SandJamTest.Scene3D
             if (boosterIntros.Contains(entry)) EconomyManager.AddBooster(entry.type == 1 ? "rocket" : entry.type == 2 ? "swap" : "select", 1, "unlock-gift");
             introGif = Resources.Load<SpriteSequence>("OriginalGifs/" + entry.gif);
             intro.Title.text = boosterIntros.Contains(entry) ? "New Booster!" : "New Feature!";
-            Configure(null, intro.Caption, null, entry.info, 22f);
+            Configure(null, intro.Caption, null, TwoLines(entry.info), 24f);
             intro.Icon.sprite = introGif ? introGif.FrameAt(0) : null;
-            FitIcon(intro.Icon, 1.9f);
-            Show(intro);
+            Show(intro); // measured once visible (inactive renderers have no bounds)
+            if (!captionBandGrown) { captionBandGrown = true; GrowCaptionBand(); }
+            Host.FillRewardBox(intro, intro.Icon); // fills the picture slot, clipped to it
+        }
+        // Two-line captions: the band's square top strip grows upward (the rounded bottom stays as it is) and the
+        // text is centred on the taller band.
+        bool captionBandGrown;
+        void GrowCaptionBand()
+        {
+            var band = intro.Root.transform.Find("Reward caption"); var strip = intro.Root.transform.Find(ResultFx.BandTopName);
+            var stripArt = strip ? strip.GetComponent<SpriteRenderer>() : null;
+            if (!band || !stripArt) return;
+            var bandBounds = band.GetComponent<Renderer>().bounds; var sb = stripArt.bounds;
+            stripArt.FitWorldSize(sb.size.x, sb.size.y + bandBounds.size.y * .8f);
+            strip.position += Vector3.up * (sb.min.y - stripArt.bounds.min.y);
+            var at = intro.Caption.transform.position;
+            intro.Caption.transform.position = new Vector3(at.x, (bandBounds.min.y + stripArt.bounds.max.y) * .5f, at.z);
         }
     }
 }
