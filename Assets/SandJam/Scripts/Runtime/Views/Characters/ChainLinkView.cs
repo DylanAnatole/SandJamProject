@@ -2,10 +2,11 @@ using UnityEngine;
 
 namespace SandJamTest.Scene3D
 {
-    // Chained pair, as drawn in the current build (gameplay recordings): each cube wears a glossy tube loop in its
-    // own colour, shaped like a little house — a rounded square hugging the top of the block plus a point aimed
-    // at its partner. The two points overlap in the gap and cross like interlocked chain links.
-    // Shown only while both cubes wait in their lanes.
+    // Chained pair, drawn with the original chain meshes while both cubes wait in their lanes:
+    // - one behind the other (same lane): "ChainBack" (NurbsPath), a loop around each block crossing in an X;
+    // - side by side (two lanes): "ChainRight" (pCube3) squashed flat into a ring around both blocks, each half in
+    //   its block's colour; a second copy ("ChainRight (1)") lower down, so the pair reads as one cage.
+    // Without the original meshes each cube gets a procedural tube loop pointing at its partner.
     public sealed class ChainLinkView : MonoBehaviour
     {
         public SceneActorView First, Second;
@@ -22,21 +23,22 @@ namespace SandJamTest.Scene3D
             public Material Material;
             public Vector3 BuiltFor = new Vector3(float.NaN, 0, 0);
             public float Lift; // keeps the two crossing points from z-fighting
-            public SkinnedMeshRenderer Original; // the original chain loop mesh, when available
         }
-        // Original chain (Character prefab "ChainRight"): the pCube3 loop mesh, a long flat rounded loop lying on the
-        // block's top and reaching toward the partner; its blend shape breathes 0 -> 15 -> 0 every 0.83 s.
-        static Mesh originalLoop; static bool originalLoaded;
-        static Mesh OriginalLoop() { if (!originalLoaded) { originalLoaded = true; originalLoop = Resources.Load<Mesh>("Mechanics/ChainLoop"); } return originalLoop; }
-        // Mesh extents along the loop (x: -0.55 .. 2.41) and across it (z: +-0.57).
-        const float LoopMinX = -.547f, LoopLength = 2.961f, LoopHalfWidth = .567f;
+        // Side-by-side cage (pCube3): x -0.55 .. 2.41, two halves (submesh 1 at -x, submesh 0 at +x) centred
+        // 0.74 either side of x 0.93, each 1.48 wide; y centred on -0.04. The original squashes it to 4% of its
+        // height (0.604 x 0.040 x 0.715) so it lies flat; rings around the blocks' top and lower body.
+        static Mesh cageMesh; static bool cageLoaded;
+        static Mesh CageMesh() { if (!cageLoaded) { cageLoaded = true; cageMesh = Resources.Load<Mesh>("Mechanics/ChainLoop"); } return cageMesh; }
+        static readonly Vector3 CageCentre = new Vector3(.93f, -.04f, 0);
+        const float CageHalfCentre = .74f, CageHalfWidth = 1.48f, CageMeshDepth = 1.134f, CageFlat = .040f / .604f;
+        const float CageTop = .95f, CageLow = .3f; // ring heights, fractions of the block height
 
         public void SetInQueue(bool inQueue)
         {
             IsInQueue = inQueue;
             // Hide at once on selection (LateUpdate would leave one frame with the loops still drawn).
             if (!inQueue && pair) pair.enabled = false;
-            if (!inQueue) foreach (var loop in new[] { firstLoop, secondLoop }) if (loop != null) { if (loop.Renderer) loop.Renderer.enabled = false; if (loop.Original) loop.Original.enabled = false; }
+            if (!inQueue) foreach (var loop in new[] { firstLoop, secondLoop }) if (loop != null && loop.Renderer) loop.Renderer.enabled = false;
         }
 
         // Original chain (Character prefab "ChainBack", mesh NurbsPath): ONE piece for the pair - a rounded square
@@ -45,10 +47,12 @@ namespace SandJamTest.Scene3D
         static Mesh pairMesh; static bool pairLoaded;
         static Mesh PairMesh() { if (!pairLoaded) { pairLoaded = true; pairMesh = Resources.Load<Mesh>("Mechanics/ChainBackLoop"); } return pairMesh; }
         const float PairLoopCentre = 1.36f, PairLoopWidth = 1.3f;
-        MeshRenderer pair; MeshFilter pairFilter; Material pairFirst, pairSecond; Mesh pairBent; float bentFor = -1;
+        MeshRenderer pair, lowerRing; MeshFilter pairFilter; Material pairFirst, pairSecond; Mesh pairBent, bentSource; float bentFor = -1;
         bool UpdatePair(bool visible)
         {
-            var mesh = PairMesh(); if (!mesh || !mesh.isReadable) return false;
+            int order = Second.SourceOrder - First.SourceOrder; // > 0: First is the back cube (higher on screen)
+            var cage = order == 0 ? CageMesh() : null; if (cage && !cage.isReadable) cage = null;
+            var mesh = cage ? cage : PairMesh(); if (!mesh || !mesh.isReadable) return false;
             if (!pair)
             {
                 var go = new GameObject("Chain (original)"); go.transform.SetParent(First.transform.parent, false);
@@ -59,8 +63,12 @@ namespace SandJamTest.Scene3D
                 pair.sharedMaterials = new[] { pairFirst, pairSecond };
             }
             pair.enabled = visible;
+            if (lowerRing) lowerRing.enabled = visible && cage;
             if (!visible) return true;
             Paint(pairFirst, ColorOf(First)); Paint(pairSecond, ColorOf(Second));
+            // Submesh 0 is the -x half of the back chain but the +x half of the cage; First always sits at -x.
+            var materials = cage ? new[] { pairSecond, pairFirst } : new[] { pairFirst, pairSecond };
+            if (pair.sharedMaterials[0] != materials[0]) pair.sharedMaterials = materials;
             pairFirst.SetColor("_EmissionColor", pairFirst.color * .6f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .6f);
             // Each loop wraps its block a little above mid height (original), as a round tube: the mesh keeps one
             // uniform scale, so the strands are never squashed into flat ribbons.
@@ -68,8 +76,7 @@ namespace SandJamTest.Scene3D
             // Original: the cube further back wears its loop high, around its top; the front cube wears it low around its
             // body, so the strands slope down across the gap (side by side pairs: both at the same height).
             float h = CharacterSandVessel.BlockSize.y;
-            int order = Second.SourceOrder - First.SourceOrder; // > 0: First is the back cube (higher on screen)
-            float ha = order > 0 ? h * .86f : order < 0 ? h * .5f : h * .86f, hb = order > 0 ? h * .5f : order < 0 ? h * .86f : h * .86f; // side by side: both around the top, clear of the counts
+            float ha = cage ? h * CageTop : order > 0 ? h * .86f : h * .5f, hb = cage ? h * CageTop : order > 0 ? h * .5f : h * .86f;
             var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, ha, 0))); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, hb, 0)));
             var blockUp = First.Visual.TransformDirection(frame.MultiplyVector(Vector3.up)).normalized;
             var along = b - a; float distance = along.magnitude; if (distance < .01f) return true;
@@ -77,31 +84,50 @@ namespace SandJamTest.Scene3D
             // The pair's plane tilts with the slope; its up stays as close to the blocks' up as possible.
             var up = (blockUp - along * Vector3.Dot(blockUp, along)).normalized;
             float worldScale = First.Visual.lossyScale.x;
-            float scale = (CharacterSandVessel.BlockSize.x + .16f) * worldScale / PairLoopWidth; // loop just wider than the block
+            float scale = (CharacterSandVessel.BlockSize.x + .16f) * worldScale / (cage ? CageHalfWidth : PairLoopWidth); // just wider than the block
             float half = distance * .5f / scale; // loop centre in mesh units
-            if (Mathf.Abs(half - bentFor) > .01f) Bend(mesh, half);
+            if (Mathf.Abs(half - bentFor) > .01f || mesh != bentSource)
+            {
+                if (cage) Bend(mesh, half, CageCentre, CageHalfCentre, .35f, 1f); // halves keep their shape, the middle stretches
+                else Bend(mesh, half, Vector3.zero, PairLoopCentre, .9f, 1.45f);
+            }
             var t = pair.transform;
             t.position = (a + b) * .5f;
             t.rotation = Quaternion.LookRotation(Vector3.Cross(along, up), up); // local +x = along (First at -x)
             var ps = t.parent ? t.parent.lossyScale : Vector3.one;
-            t.localScale = new Vector3(scale / ps.x, scale / ps.y, scale / ps.z);
+            // The ring clears the block on every side (front rails stay in front of the tilted block).
+            float depth = (CharacterSandVessel.BlockSize.z + .24f) * worldScale / CageMeshDepth;
+            t.localScale = cage ? new Vector3(scale / ps.x, scale * CageFlat / ps.y, depth / ps.z) : new Vector3(scale / ps.x, scale / ps.y, scale / ps.z);
+            if (cage)
+            {
+                if (!lowerRing)
+                {
+                    var go = new GameObject("Chain (original, lower ring)"); go.transform.SetParent(t.parent, false);
+                    go.AddComponent<MeshFilter>().sharedMesh = pairFilter.sharedMesh;
+                    lowerRing = go.AddComponent<MeshRenderer>(); lowerRing.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+                lowerRing.GetComponent<MeshFilter>().sharedMesh = pairFilter.sharedMesh;
+                lowerRing.sharedMaterials = materials;
+                var drop = blockUp * (h * (CageTop - CageLow) * worldScale);
+                lowerRing.transform.SetPositionAndRotation(t.position - drop, t.rotation);
+                lowerRing.transform.localScale = t.localScale;
+            }
             return true;
         }
-        // Copy of the chain mesh with its two loops moved to +-half (their shape untouched) and the crossing strands
-        // stretched or shortened to fill the gap.
-        void Bend(Mesh source, float half)
+        // Copy of a chain mesh, re-centred on centre, with its two block loops moved to +-half (shape kept, lengthened
+        // along the pair by stretch) and the part between them (|x| < inner) stretched or shortened to fill the gap.
+        // Back chain: the loops are lengthened so their front strand passes in front of the block like a basket.
+        void Bend(Mesh source, float half, Vector3 centre, float loopCentre, float inner, float stretch)
         {
             bentFor = half;
-            const float inner = .9f; // loops occupy |x| >= 0.9, centred on 1.36
+            if (source != bentSource) { if (pairBent) Destroy(pairBent); pairBent = null; bentSource = source; }
             var v = source.vertices;
-            // The loops are lengthened along the pair (the block is deeper than the loop is long), so the front strand
-            // of each loop passes in front of its block like a basket, as in the original.
-            const float stretch = 1.45f;
-            float span = Mathf.Max(.2f, half - (PairLoopCentre - inner) * stretch);
+            float span = Mathf.Max(.2f, half - (loopCentre - inner) * stretch);
             for (int i = 0; i < v.Length; i++)
             {
+                v[i] -= centre;
                 float x = v[i].x, ax = Mathf.Abs(x), sign = Mathf.Sign(x);
-                v[i].x = ax >= inner ? sign * (half + (ax - PairLoopCentre) * stretch) : x / inner * span;
+                v[i].x = ax >= inner ? sign * (half + (ax - loopCentre) * stretch) : x / inner * span;
             }
             if (!pairBent) { pairBent = Instantiate(source); pairBent.name = "Chain (fitted)"; pairBent.ClearBlendShapes(); }
             pairBent.vertices = v; pairBent.RecalculateBounds(); pairBent.RecalculateNormals();
@@ -130,15 +156,6 @@ namespace SandJamTest.Scene3D
             Paint(loop.Material, ColorOf(owner));
             loop.Renderer.sharedMaterial = loop.Material;
             loop.Renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            var mesh = OriginalLoop();
-            if (mesh)
-            {
-                var go = new GameObject("Chain loop (original)"); go.transform.SetParent(owner.Visual, false);
-                loop.Original = go.AddComponent<SkinnedMeshRenderer>(); loop.Original.sharedMesh = mesh;
-                loop.Original.sharedMaterials = new[] { loop.Material, loop.Material };
-                loop.Original.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; loop.Original.updateWhenOffscreen = true;
-                loop.Renderer.enabled = false; loop.Renderer.gameObject.SetActive(false);
-            }
             return loop;
         }
 
@@ -158,19 +175,8 @@ namespace SandJamTest.Scene3D
 
         void Refresh(Loop loop, bool visible)
         {
-            if (loop.Original)
-            {
-                loop.Original.enabled = visible;
-                if (!visible) return;
-                // Breathing, offset per loop so the pair does not pulse in sync.
-                float t = Mathf.Repeat(Time.time + loop.Lift * 3, .8333f) / .8333f;
-                loop.Original.SetBlendShapeWeight(0, 15f * Mathf.Sin(t * Mathf.PI));
-            }
-            else
-            {
-                loop.Renderer.enabled = visible;
-                if (!visible) return;
-            }
+            loop.Renderer.enabled = visible;
+            if (!visible) return;
             // Block frame: pivot at the bottom of the sand block, pitched like the block itself.
             var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
             // Partner's top-face centre expressed in this block's frame.
@@ -180,28 +186,7 @@ namespace SandJamTest.Scene3D
             if ((partnerLocal - loop.BuiltFor).sqrMagnitude < .0004f) return;
             loop.BuiltFor = partnerLocal;
             Paint(loop.Material, ColorOf(loop.Owner));
-            if (loop.Original) Place(loop, frame, partnerLocal); else Build(loop, frame, partnerLocal);
-        }
-
-        // The original loop lies flat on the block's top: its near end just behind the block's far edge, its far end
-        // past the middle of the gap so it hooks through the partner's loop; as wide as the block's top.
-        void Place(Loop loop, Matrix4x4 frame, Vector3 partnerTop)
-        {
-            var size = CharacterSandVessel.BlockSize;
-            var centre = new Vector3(0, size.y * RingHeight + loop.Lift * .5f, 0);
-            var toward = partnerTop - centre; toward.y = 0;
-            float distance = toward.magnitude; if (distance < .01f) return;
-            var dir = toward / distance;
-            float half = (Mathf.Abs(dir.x) > Mathf.Abs(dir.z) ? size.x : size.z) * .5f + RingMargin;
-            float near = -half, far = distance * TipReach;
-            float sx = (far - near) / LoopLength, sz = ((Mathf.Abs(dir.x) > Mathf.Abs(dir.z) ? size.z : size.x) * .5f + RingMargin) / LoopHalfWidth;
-            // Loop axis (mesh +x) along the partner direction, lying in the block's top plane.
-            var along = Quaternion.FromToRotation(Vector3.right, dir);
-            var start = centre + dir * near;
-            var t = loop.Original.transform;
-            t.localRotation = frame.rotation * along;
-            t.localPosition = frame.MultiplyPoint3x4(start - dir * (LoopMinX * sx));
-            t.localScale = new Vector3(sx, .045f / 1.0f, sz);
+            Build(loop, frame, partnerLocal);
         }
 
         void Build(Loop loop, Matrix4x4 frame, Vector3 partnerTop)
@@ -281,11 +266,11 @@ namespace SandJamTest.Scene3D
         void OnDestroy()
         {
             if (pair) Destroy(pair.gameObject); if (pairFirst) Destroy(pairFirst); if (pairSecond) Destroy(pairSecond); if (pairBent) Destroy(pairBent);
+            if (lowerRing) Destroy(lowerRing.gameObject);
             foreach (var loop in new[] { firstLoop, secondLoop })
             {
                 if (loop == null) continue;
                 if (loop.Renderer) Destroy(loop.Renderer.gameObject);
-                if (loop.Original) Destroy(loop.Original.gameObject);
                 if (loop.Mesh) Destroy(loop.Mesh);
                 if (loop.Material) Destroy(loop.Material);
             }
