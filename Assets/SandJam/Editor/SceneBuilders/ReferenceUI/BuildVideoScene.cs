@@ -79,7 +79,7 @@ namespace SandJamTest.Editor
             Directory.CreateDirectory(Folder);AssetDatabase.Refresh();font=Resources.Load<Font>("Inter");rounded=RoundSprite();pad=RoundSprite("SmallCorner",10);spriteMaterial=Save(new Material(Shader.Find("SandJamTest/PixelSandSprite")),"UiSprite.mat");
             PrepareCharacterAnimation();PrepareDepth();
             var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);var root=Group("Sand Jam - Video Reference");
-            var controller=root.gameObject.AddComponent<SandJamSceneController>();controller.HidePrototypeHud=true;controller.ViewAspect=483f/1075;controller.QueueSpacing=1.04f;root.gameObject.AddComponent<AudioSource>().playOnAwake=false;
+            var controller=root.gameObject.AddComponent<SandJamSceneController>();controller.ViewAspect=483f/1075;controller.QueueSpacing=1.04f;root.gameObject.AddComponent<AudioSource>().playOnAwake=false;
             var reference=root.gameObject.AddComponent<VideoScreen>();reference.Controller=controller;
             var environment=Group("Backdrop and frame",root);var hud=Group("HUD - visual controls only",root);
             Image("Frame shadow",rounded,environment,242,374,438,553,Hex("433565"),.8f,true);
@@ -159,7 +159,7 @@ namespace SandJamTest.Editor
                 }
             }
             controller.Characters=actorViews.ToArray();controller.ProjectileRoot=Group("Pooled sand projectiles",root);controller.ProjectilePrefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SandJam/Generated/Scene3D/SandProjectile.prefab");
-            controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.CompleteSound=Resources.Load<AudioClip>("Original/RegionComplete");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");controller.PlayButtonTexture=Resources.Load<Texture2D>("Original/PlayButton");
+            controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.CompleteSound=Resources.Load<AudioClip>("Original/RegionComplete");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");
             var camera=Group("Main Camera",root).gameObject.AddComponent<Camera>();camera.tag="MainCamera";camera.transform.position=new Vector3(0,0,-30);camera.orthographic=true;camera.orthographicSize=5.375f;camera.nearClipPlane=.1f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=Hex("DDD8F8");camera.gameObject.AddComponent<AudioListener>();controller.GameCamera=camera;
             ComposeScreens(root,reference,controller);ApplyDepth(root,reference,controller);
             if(video201) ConfigureVideo201(root,reference,controller);

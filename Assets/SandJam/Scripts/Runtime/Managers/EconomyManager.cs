@@ -62,7 +62,6 @@ namespace SandJamTest
             if (BoosterCount(action) > 0) AddBooster(action, -1, "booster:" + action);
             else { paid = BoosterPrice(action); if (!TrySpend(paid, "booster:" + action)) return false; }
             SaveManager.Data.stats.boostersUsed++;
-            SaveManager.MarkDirty();
             GameEvents.RaiseBoosterUsed(action, paid);
             return true;
         }

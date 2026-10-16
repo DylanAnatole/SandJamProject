@@ -33,7 +33,6 @@ namespace SandJamTest
             }
         }
 
-        public int CountActive { get { return active.Count; } }
         public int CountInactive { get { return pool.CountInactive; } }
         public List<T> Active() { return active; }
 

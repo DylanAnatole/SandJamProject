@@ -107,7 +107,6 @@ namespace SandJamTest.Scene3D
             Configure(intro.RightButton, intro.Right, "close", "Continue");
             BuildHardPopup();
             BuildArtStylePopup();
-            owner.Feedback.UseLegacyOverlay = false;
         }
 
         internal Popup Build(string name)

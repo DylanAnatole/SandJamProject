@@ -41,7 +41,6 @@ namespace SandJamTest.Editor
             }
             var manager=root.gameObject.AddComponent<LevelManager>();manager.Catalog=packCatalog;manager.Index=Array.IndexOf(packCatalog.Levels,packEntry);manager.Controller=controller;manager.Screen=screen;screen.Levels=manager;
             foreach(var button in screen.Result.GetComponentsInChildren<VideoUiButton>(true))if(button.Action=="home")button.Action="next-level";
-            for(int i=0;i<Mathf.Min(3,packCatalog.Levels.Length);i++)Button(screen.Home.transform,"LV "+packCatalog.Levels[i].Number,"level:"+i,85+i*156,909,118,44);
             SetOverlayLayer(screen.Home.transform);
         }
         [MenuItem("Sand Jam/Levels/Create scenes from catalog")]

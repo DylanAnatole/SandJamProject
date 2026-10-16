@@ -10,7 +10,7 @@ namespace SandJamTest
     public static class Campaign
     {
         [Serializable] sealed class CampaignFile { public string[] levels; }
-        public const int StartingCoins = 200, WinReward = EconomyManager.WinReward;
+        public const int WinReward = EconomyManager.WinReward;
         static string[] levels;
 
         public static string[] Levels

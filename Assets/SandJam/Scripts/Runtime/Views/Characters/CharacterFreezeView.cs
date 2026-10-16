@@ -10,7 +10,6 @@ namespace SandJamTest.Scene3D
         float opacity;
         Vector3 baseScale;
         MaterialPropertyBlock properties;
-        public bool IceVisible { get { return Shell.gameObject.activeSelf; } }
         void Awake(){baseScale=Shell.transform.localScale;properties=new MaterialPropertyBlock();}
         void LateUpdate()
         {

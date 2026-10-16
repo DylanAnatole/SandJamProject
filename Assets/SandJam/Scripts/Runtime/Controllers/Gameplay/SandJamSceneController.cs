@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -11,7 +8,6 @@ namespace SandJamTest.Scene3D
     {
         [Header("Level and scene references")]
         public TextAsset LevelJson;
-        public bool HidePrototypeHud;
         public bool EnableSlotUnlocks;
         public float ViewAspect = .6f;
         public Camera GameCamera;
@@ -32,7 +28,6 @@ namespace SandJamTest.Scene3D
         public AudioClip SelectSound;
         public AudioClip CompleteSound;
         public AudioClip VictorySound;
-        public Texture2D PlayButtonTexture;
         public SandGame Game { get; private set; }
         public bool BoosterInputBlocked { get; set; }
         void OnDestroy(){if(projectiles!=null)projectiles.Dispose();ReleaseRuntimeAssets();}
@@ -58,13 +53,10 @@ namespace SandJamTest.Scene3D
         public SandBoardTextureView Board { get { return boardTexture; } }
         LevelData level;
         AudioSource sound;
-        GUIStyle textStyle;
-        float accumulator, hintTime, messageTime;
-        int hintLane = -1;
-        bool paused, fast, muted, smokeMode;
+        float accumulator;
+        bool paused;
         int lastScreenWidth, lastScreenHeight;
-        string error, message = "Tap a cube at the front of a lane to start.", smokeOutput;
-        static readonly Color Ink = new Color(.13f,.23f,.30f), Accent = new Color(.07f,.47f,.44f);
+        string error;
 
         // "Play on": buys one more waiting slot after the player ran out of space. Clones the last slot's
         // anchor and pad visuals one step to the right, then re-centres the row so it stays symmetric.
@@ -109,14 +101,10 @@ namespace SandJamTest.Scene3D
 
         void Awake()
         {
-            useGUILayout = false; // the debug overlay uses plain GUI calls: skip IMGUI's layout pass (it allocated every frame)
             ConfigureFiveSlots();
             Application.targetFrameRate = 60;
             FitCamera();
             sound = GetComponent<AudioSource>();
-            var args = Environment.GetCommandLineArgs();
-            int flag = Array.IndexOf(args, "--scene-smoke-output");
-            if (flag >= 0 && flag + 1 < args.Length) { smokeMode = true; smokeOutput = args[flag + 1]; }
             try
             {
                 bool dynamicLevel = PendingLevel != null;
@@ -146,7 +134,6 @@ namespace SandJamTest.Scene3D
         void Start()
         {
             if (error == null) Synchronize(0);
-            if (smokeMode) StartCoroutine(GuardSmoke(SmokeTest()));
         }
 
         public void Restart()
@@ -160,17 +147,15 @@ namespace SandJamTest.Scene3D
             characterQueue = new CharacterQueueController(Characters, LaneStarts, StashSlots, QueueSpacing);
             characterQueue.Bind(Game, level);
             projectiles.Reset();
-            accumulator = 0; paused = false; hintLane = -1;
+            accumulator = 0; paused = false;
             selectionFeedback = ""; selectionFeedbackUntil = 0;
             sound.Stop();
-            message = "Tap a cube at the front of a lane to start.";
-            messageTime = Time.unscaledTime + 6;
         }
 
         void Update()
         {
             FitCamera();
-            if (error != null || Game == null || smokeMode || BoosterInputBlocked || suppressedInputFrame == Time.frameCount) return;
+            if (error != null || Game == null || BoosterInputBlocked || suppressedInputFrame == Time.frameCount) return;
             if (Input.GetKeyDown(KeyCode.R)) Restart();
             if (Input.GetKeyDown(KeyCode.Space)) paused = !paused;
             if (Input.GetKeyDown(KeyCode.Alpha1)) SelectLane(0);
@@ -182,7 +167,7 @@ namespace SandJamTest.Scene3D
                 if (Physics.Raycast(GameCamera.ScreenPointToRay(Input.mousePosition), out hit, 100, 1 << 8))
                     SelectActor(hit.collider.GetComponentInParent<SceneActorView>());
             }
-            if (!paused) Advance(Mathf.Min(Time.unscaledDeltaTime, .1f) * (fast ? 2 : 1) * (EndgameRush ? 2 : 1));
+            if (!paused) Advance(Mathf.Min(Time.unscaledDeltaTime, .1f) * (EndgameRush ? 2 : 1));
         }
 
         // Endgame rush: once every remaining cube is already in the stash there is nothing left to decide,
@@ -223,7 +208,7 @@ namespace SandJamTest.Scene3D
                 return SelectLane(actor.SourceLane);
             if (lane.Count == 0 || lane.Peek() != actor.Shooter)
             {
-                actor.Shake(); Notify("Only the cube at the front of a lane can be picked."); return false;
+                actor.Shake(); return false;
             }
             return SelectLane(actor.SourceLane);
         }
@@ -242,20 +227,17 @@ namespace SandJamTest.Scene3D
                 if (first != null) characterQueue.ViewFor(first).Shake();
                 // Original: a full stash only shakes the cube, no message.
                 if (frozen == null && !linked) { selectionFeedback = ""; return false; }
-                Notify(selectionFeedback); return false;
+                return false;
             }
             selectionFeedback = "";
             Play(SelectSound, .25f);
             GameEvents.RaiseCharacterSelected(pickedColor);
-            hintLane = -1;
             Synchronize(0);
-            Notify("Cubes pour automatically once their color is open.");
             return true;
         }
 
-        void Notify(string text) { message = text; messageTime = Time.unscaledTime + 3.5f; }
         // In the campaign the AudioManager plays sounds from game events; standalone test scenes play locally.
-        void Play(AudioClip clip, float volume) { if (!muted && !smokeMode && clip != null && !GameServices.Ready) sound.PlayOneShot(clip, volume); }
+        void Play(AudioClip clip, float volume) { if (clip != null && !GameServices.Ready) sound.PlayOneShot(clip, volume); }
         bool CanShoot(int slot) { return characterQueue.CanShoot(Game, slot); }
         Func<int, bool> canShootCheck;
 

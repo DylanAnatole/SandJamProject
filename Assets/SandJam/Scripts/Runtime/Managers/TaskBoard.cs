@@ -120,7 +120,6 @@ namespace SandJamTest
         static void Count(Metric metric, int amount)
         {
             if (amount <= 0) return;
-            bool changed = false;
             // Sand events fire ~50 times a second: the day / week roll-over check (Board) runs at most every few
             // seconds, otherwise the saved boards are used as they are (allocation-free).
             float now = Time.realtimeSinceStartup;
@@ -132,11 +131,10 @@ namespace SandJamTest
                 {
                     var task = Find(s.ids[i]);
                     if (task.Metric != metric || s.progress[i] >= task.Target) continue;
-                    s.progress[i] = Mathf.Min(task.Target, s.progress[i] + amount); changed = true;
+                    s.progress[i] = Mathf.Min(task.Target, s.progress[i] + amount);
                     if (s.progress[i] >= task.Target) s.stars += task.Stars;
                 }
             }
-            if (changed) SaveManager.MarkDirty();
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

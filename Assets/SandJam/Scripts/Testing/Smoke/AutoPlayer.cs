@@ -13,7 +13,6 @@ namespace SandJamTest.Scene3D
         public bool WaitForReplay;
         int step;
         float timer;
-        public bool Finished { get { return Replay != null && step >= Replay.Length; } }
 
         void Update()
         {

@@ -38,7 +38,6 @@ namespace SandJamTest.Scene3D
         public NativeArray<Color32> Pixels { get { return pixels; } }
         public void MarkDirty() { dirty = true; }
         int Index(int x,int y) { return y*Width+x; }
-        public Color32 ReadPixel(int x,int y) { return pixels[Index(x,y)]; }
         public void SetBase(int x,int y,Color32 color)
         {
             int i=Index(x,y); background[i]=color; Set(i,color);

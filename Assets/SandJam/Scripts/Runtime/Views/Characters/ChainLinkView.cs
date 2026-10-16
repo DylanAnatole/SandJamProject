@@ -38,9 +38,6 @@ namespace SandJamTest.Scene3D
             if (!inQueue && pair) pair.enabled = false;
             if (!inQueue) foreach (var loop in new[] { firstLoop, secondLoop }) if (loop != null) { if (loop.Renderer) loop.Renderer.enabled = false; if (loop.Original) loop.Original.enabled = false; }
         }
-        // True when both loops are drawn (used by the chain smoke test).
-        public bool LoopsVisible { get { return pair ? pair.enabled : firstLoop != null && Shown(firstLoop) && Shown(secondLoop); } }
-        static bool Shown(Loop l) { return l.Original ? l.Original.enabled : l.Renderer.enabled; }
 
         // Original chain (Character prefab "ChainBack", mesh NurbsPath): ONE piece for the pair - a rounded square
         // loop around each block's top (submesh 0 at -x, submesh 1 at +x, each in its block's colour) and two strands

@@ -12,7 +12,7 @@ Assets/SandJam/
     Controllers/     gameplay controller, UI screens and popups, boosters
     Managers/        campaign, economy, lives, audio, haptics, save, events
     Views/           board/regions, cubes (characters), effects, UI helpers
-  Scripts/Testing/   LevelReplaySolver (finds a winning move order) and command-line smoke tests
+  Scripts/Testing/   LevelReplaySolver (finds a winning move order), LevelStructureViewer, AutoPlayer
   Editor/Tests/      editor checks – menu Sand Jam > Tests > Run all checks
   Editor/Tools/      Game Manager window, campaign builder, level authoring, screenshot helper
   Editor/SceneBuilders/  rebuilds SandJamGame from the level catalog (Sand Jam > Levels)
@@ -63,9 +63,6 @@ New views should use these instead of building their own white / rounded sprites
 sand simulation, sand flow, boosters, chained cubes, frozen cubes, level 201 replay, level pack, shaders.
 Run it before and after any upgrade. Batch mode: `-executeMethod SandJamTest.Editor.RunAllChecks.Run`
 (exits with code 1 on a failure).
-
-Smoke tests (`Scripts/Testing/Smoke`) play the game automatically in a built player:
-`--booster-smoke`, `--feeling-smoke`, `--video-smoke <folder>`.
 
 ## Building a new level
 

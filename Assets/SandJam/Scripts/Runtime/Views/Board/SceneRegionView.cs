@@ -36,7 +36,6 @@ namespace SandJamTest.Scene3D
         public bool LockMode;
         bool lockDone; int lockCells; SpriteRenderer lockIcon;
         public int SettledCount { get { return LockMode?(lockDone?lockCells:0):sand==null?0:sand.Settled; } }
-        public int FlyingCount { get { return sand==null?0:sand.MovingCount; } }
         public bool IsSettled { get { return LockMode?lockDone:sand!=null && sand.Complete; } }
         public SandBoardTextureView Board { get; private set; }
         public Texture2D FlowMask { get; private set; }
@@ -60,7 +59,6 @@ namespace SandJamTest.Scene3D
             // Labels revealed after startup must sort above the shared transparent board sprite.
             foreach (var renderer in Counter.GetComponentsInChildren<MeshRenderer>(true)) renderer.sortingOrder=10;
         }
-        public void ValidateFlow() { if(sand!=null) sand.Validate(); }
         public Color32 SolidColor { get { return solid; } }
         // World point where the falling stream currently hits the sand surface.
         public bool TryGetPourImpact(out Vector3 world)

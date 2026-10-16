@@ -8,7 +8,6 @@ namespace SandJamTest
     // Generic ids ("112x84_Level31_Tutorial", "112x84_Level3_B") belong to no collection.
     public static class Collections
     {
-        static Dictionary<string, string[]> members;
 
         public static string CategoryOf(string levelId)
         {
@@ -26,28 +25,6 @@ namespace SandJamTest
             if (category == "MakeUp") return "Makeup"; // original card title
             var spaced = Regex.Replace(category.Replace("_", " "), @"(?<=[a-z])(?=[A-Z])", " ");
             return spaced.Length > 0 ? char.ToUpper(spaced[0]) + spaced.Substring(1) : spaced;
-        }
-
-        static Dictionary<string, string[]> Members
-        {
-            get
-            {
-                if (members != null) return members;
-                members = Campaign.Levels.Distinct()
-                    .Select(id => new { id, category = CategoryOf(id) })
-                    .Where(x => x.category != null)
-                    .GroupBy(x => x.category, System.StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(g => g.Key, g => g.Select(x => x.id).ToArray(), System.StringComparer.OrdinalIgnoreCase);
-                return members;
-            }
-        }
-
-        public static int PercentComplete(string category)
-        {
-            string[] ids;
-            if (category == null || !Members.TryGetValue(category, out ids) || ids.Length == 0) return 0;
-            var done = SaveManager.Data.completedLevels;
-            return (int)System.Math.Round(100.0 * ids.Count(done.Contains) / ids.Length);
         }
 
         public static void MarkCompleted(string levelId)

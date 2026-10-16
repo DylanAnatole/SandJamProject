@@ -11,7 +11,6 @@ namespace SandJamTest
     public abstract class GameEventBase<TListener> where TListener : Delegate
     {
         protected readonly List<TListener> listeners = new List<TListener>();
-        public int ListenerCount { get { return listeners.Count; } }
         protected void Add(TListener listener) { if (listener != null && !listeners.Contains(listener)) listeners.Add(listener); }
         protected void Remove(TListener listener) { listeners.Remove(listener); }
         public void Clear() { listeners.Clear(); }

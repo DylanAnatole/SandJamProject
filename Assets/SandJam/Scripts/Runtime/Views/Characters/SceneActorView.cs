@@ -116,7 +116,6 @@ namespace SandJamTest.Scene3D
             float seconds = Mathf.Clamp(Vector3.Distance(transform.position, position) / RunSpeed, MinRun, MaxRun);
             Begin(position, Gait.Run, seconds);
         }
-        public void MoveTo(Vector3 position, float seconds = .32f) { Begin(position, Gait.Run, seconds); }
 
         void Begin(Vector3 position, Gait kind, float seconds)
         {

@@ -72,7 +72,6 @@ namespace SandJamTest
         public const int CurrentVersion = 2;
         const string FileName = "sandjam_save.json";
         static SaveData data;
-        static bool dirty;
 
         public static string FilePath { get { return Path.Combine(Application.persistentDataPath, FileName); } }
         public static SaveData Data { get { if (data == null) Load(); return data; } }
@@ -107,13 +106,10 @@ namespace SandJamTest
             return d;
         }
 
-        public static void MarkDirty() { dirty = true; }
-
         // Writes atomically: temp file, then swap, keeping the previous file as .bak.
         public static void Save()
         {
             if (data == null) return;
-            dirty = false;
             data.lastPlayedUtc = DateTime.UtcNow.ToString("o");
             try
             {
@@ -124,8 +120,6 @@ namespace SandJamTest
             }
             catch (Exception e) { Debug.LogError("Could not write save: " + e.Message); }
         }
-
-        public static void SaveIfDirty() { if (dirty) Save(); }
 
         public static void ResetAll()
         {

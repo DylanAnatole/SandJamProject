@@ -74,7 +74,6 @@ namespace SandJamTest.Scene3D
             galleryDynamic.Add(r.gameObject);
             return r;
         }
-        Material galleryMaskedMaterial;
         TextMesh[] GalleryText(string text, float x, float y, float size, float z)
         {
             var labels = OutlinedLabel(gallery, "Gallery text", new Vector3(x, y, z), size);

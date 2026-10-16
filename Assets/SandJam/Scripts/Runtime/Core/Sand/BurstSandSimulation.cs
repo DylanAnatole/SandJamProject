@@ -12,7 +12,6 @@ namespace SandJamTest.Scene3D
     public sealed class BurstSandSimulation : IDisposable
     {
         public const int MaxFallSpeed = 2;   // cells per step (gentle fall)
-        public const int SeepPerStep = 2;    // pocket cells settled per step once the mouth is buried
         public readonly int[] Rows,Cols;
         public readonly int Width,InletX,InletY;
         public NativeArray<byte> Filled;
@@ -111,10 +110,6 @@ namespace SandJamTest.Scene3D
             [BurstDiscard] static void MarkManaged(ref int enabled){enabled=0;}
             int Cell(int x,int y){return x<0 || x>=Width || y<0 || y>=Height?-1:CellAt[y*Width+x];}
             bool Free(int x,int y){int c=Cell(x,y);return c>=0 && Occupied[c]==0;}
-            int NextRandom()
-            {
-                uint s=(uint)State[5];s^=s<<13;s^=s>>17;s^=s<<5;State[5]=(int)s;return (int)(s>>1);
-            }
             void Move(ref SandPourSimulation.Grain g,int x,int y)
             {
                 Occupied[CellAt[g.Y*Width+g.X]]=0;g.X=x;g.Y=y;Occupied[CellAt[y*Width+x]]=1;

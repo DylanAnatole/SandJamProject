@@ -67,14 +67,12 @@ namespace SandJamTest
             var d = SaveManager.Data;
             if (d.lives >= Max) { d.lives = Max; return; }
             if (d.nextLifeUtcTicks <= 0) d.nextLifeUtcTicks = (DateTime.UtcNow + RefillTime).Ticks;
-            bool changed = false;
             while (d.lives < Max && DateTime.UtcNow.Ticks >= d.nextLifeUtcTicks)
             {
-                d.lives++; changed = true;
+                d.lives++;
                 d.nextLifeUtcTicks += RefillTime.Ticks;
             }
             if (d.lives >= Max) d.nextLifeUtcTicks = 0;
-            if (changed) SaveManager.MarkDirty();
         }
     }
 }

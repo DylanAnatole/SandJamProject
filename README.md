@@ -26,8 +26,7 @@ Assets/
 │  │  │  │                        GameServices, LevelBootstrap, LevelManager, LevelDataManager…
 │  │  │  ├─ Controllers/          Gameplay (SandJamSceneController), Characters (hàng chờ), UI (màn hình, popup, booster)
 │  │  │  └─ Views/                Board (vùng màu), Characters (khối, chân, hộp kính), Fx (hiệu ứng), UI
-│  │  ├─ Development/             Smoke test chạy bằng tham số dòng lệnh, AutoPlayer
-│  │  └─ Legacy/                  Prototype 2D cũ (SandJamDemo) — không dùng trong game
+│  │  └─ Testing/                 LevelReplaySolver, LevelStructureViewer, AutoPlayer (chỉ phục vụ kiểm tra)
 │  ├─ Editor/
 │  │  ├─ Tools/                   Game Manager, CampaignBuilder, OriginalDataImporter, ViewCapture
 │  │  ├─ SceneBuilders/           Dựng prefab/scene mẫu từ code (Level001 là template)
@@ -109,12 +108,10 @@ badge HUD đỏ có đầu lâu, nền tối (`OriginalLookStyler.Hard*`).
 | Đóng băng (IsFreeze) | Số trên băng giảm 1 mỗi khối khác được đưa lên ô chờ (cặp nối: 2); về 0 thì vỡ | 17/19 |
 | Ổ khóa (IsUnlocker / IsUnlockerPart → IsUnlockedPart) | Vùng sọc + ổ khóa; chỉ khối có chìa khóa cùng màu bắn vào ổ khóa; về 0 thì vùng bị khóa mở cho khối thường | 20/20 |
 
-Scene test: `Assets/SandJam/Scenes/Tests/MechanicTest_ChainHalf.unity` và `MechanicTest_FreezeLock.unity`
-(menu **Sand Jam → Test scenes → Create mechanic test scenes** để tạo lại). Bảng điều khiển: đổi màn, chơi lại,
-**Tự giải** (chạy theo lời giải của solver), trạng thái cơ chế. Không ảnh hưởng save/campaign.
+Xem cấu trúc một level: scene `Assets/SandJam/Scenes/LevelStructure.unity`. Kiểm tra cơ chế: menu
+**Sand Jam → Tests → Run all checks**.
 
 ## Lưu ý
 
 - Muốn reset tiến độ: Game Manager → *Reset save* (không còn dùng PlayerPrefs).
 - Đường dẫn trong code Editor dùng `Assets/SandJam/...`; đường dẫn `Resources.Load` không có tiền tố thư mục.
-- `LevelPackSmoke` là smoke test của luồng 3 level cũ, đã lỗi thời.

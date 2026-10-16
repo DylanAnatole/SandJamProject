@@ -269,24 +269,6 @@ namespace SandJamTest.Scene3D
             Face(Vector3.right, new Vector3(b.x, a.y, a.z), new Vector3(b.x, b.y, a.z), new Vector3(b.x, b.y, b.z), new Vector3(b.x, a.y, b.z));
         }
 
-        SpriteRenderer StandPiece(string name, Transform parent, Color color, int order, float pixelsPerUnit = 250f)
-        {
-            var r = new GameObject(name) { layer = parent.gameObject.layer }.AddComponent<SpriteRenderer>();
-            r.transform.SetParent(parent, false);
-            r.sprite = RoundedSprite(pixelsPerUnit); r.color = color; r.sortingOrder = order;
-            return r;
-        }
-        // Sliced rounded rectangle: the corner radius stays the same however the piece is stretched.
-        static void Place(SpriteRenderer r, float x, float y, float width, float height, float z)
-        {
-            r.transform.position = new Vector3(x, y, z);
-            r.drawMode = SpriteDrawMode.Sliced;
-            var parent = r.transform.parent ? r.transform.parent.lossyScale : Vector3.one;
-            r.transform.localScale = Vector3.one;
-            r.size = new Vector2(width / parent.x, height / parent.y);
-        }
-        static Sprite RoundedSprite(float pixelsPerUnit) { return SpriteFactory.Rounded(64, 20, pixelsPerUnit); }
-
         // Dark plate right behind the picture, slightly larger than it: the frame opening is a little wider than the
         // picture on some sides, and the light backdrop used to show through as a pale seam along the edge.
         void BuildBoardBacking(SandJamSceneController controller)
