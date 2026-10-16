@@ -14,7 +14,6 @@ namespace SandJamTest.Scene3D
         readonly Color[] colors;
         readonly int[] colorIds;
         readonly Material trailMaterial;
-        static Sprite square;
         // Object pooling (Core/Patterns/ObjectPooling.cs): pellets in flight are the pool's active items.
         readonly Pool<Pellet> pool;
         readonly Dictionary<int, float> lastFire = new Dictionary<int, float>();
@@ -43,19 +42,11 @@ namespace SandJamTest.Scene3D
             lastFire.Clear();
         }
 
-        static Sprite Square()
-        {
-            if (square) return square;
-            var t = Texture2D.whiteTexture;
-            square = Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(.5f, .5f), t.width);
-            return square;
-        }
-
         Pellet Create()
         {
             var go = new GameObject("Sand pellet"); go.transform.SetParent(root, false);
             var body = new GameObject("Body").AddComponent<SpriteRenderer>();
-            body.transform.SetParent(go.transform, false); body.sprite = Square(); body.sortingOrder = 31;
+            body.transform.SetParent(go.transform, false); body.sprite = SpriteFactory.White; body.sortingOrder = 31;
             body.transform.localScale = Vector3.one * PelletSize;
             var trail = go.AddComponent<LineRenderer>();
             trail.useWorldSpace = true; trail.positionCount = 2; trail.sharedMaterial = trailMaterial;

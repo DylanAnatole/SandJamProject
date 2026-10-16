@@ -44,6 +44,19 @@ patterns (State, Command, Factory…) can be added next to them as separate file
   destroyed; particles use `ParticleSystem.Emit`. Gameplay ticks allocate nothing (reused lists/arrays) to avoid GC
   spikes on mobile.
 
+## Shared rendering helpers
+
+`Scripts/Runtime/Core/Rendering/` holds what views used to re-implement one by one:
+
+- `SpriteFactory` – cached procedural sprites and materials: `White` / `WhiteBottom` (1-unit square),
+  `Rounded(size, radius, pixelsPerUnit)` (9-sliceable Full Rect rounded panel), `Disc`, `SoftDot`,
+  `Radial(name, size, alpha, rgb)`, the shared `PlainSprite` material ("Sprites/Default") and
+  `CameraForLayer(layer)`. Shared objects are never destroyed or modified by their users (copy the material
+  to customise it).
+- `RendererExtensions.FitWorldSize(width, height)` – scales a renderer so its drawn bounds have that world size.
+
+New views should use these instead of building their own white / rounded sprites or plain materials.
+
 ## Tests
 
 `Sand Jam > Tests > Run all checks` runs every editor check and logs `[Checks] PASS/FAIL` per check:

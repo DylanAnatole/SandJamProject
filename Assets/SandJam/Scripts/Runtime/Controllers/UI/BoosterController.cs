@@ -76,8 +76,7 @@ namespace SandJamTest.Scene3D
             {
                 var image = pair.Value; var root = placeholders.ContainsKey(pair.Key) ? placeholders[pair.Key].transform : image.parent;
                 var r = image.GetComponent<SpriteRenderer>(); if (!r) continue;
-                Camera cam = null;
-                foreach (var c in Camera.allCameras) if ((c.cullingMask & (1 << image.gameObject.layer)) != 0) { cam = c; break; }
+                var cam = SpriteFactory.CameraForLayer(image.gameObject.layer);
                 if (!cam) continue;
                 var pivot = r.bounds.center;
                 root.localScale *= 1.15f;

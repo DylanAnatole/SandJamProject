@@ -261,15 +261,7 @@ namespace SandJamTest.Scene3D
             return node;
         }
 
-        Sprite white;
-        Sprite WhiteSprite()
-        {
-            if (white) return white;
-            var t = Texture2D.whiteTexture;
-            white = Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(.5f, .5f), t.width);
-            white.hideFlags = HideFlags.DontSave; generated.Add(white);
-            return white;
-        }
+        static Sprite WhiteSprite() { return SpriteFactory.White; } // shared: never added to `generated`
 
         void Text(Transform parent, string text, Vector3 local, float height, Color color, TextAnchor anchor = TextAnchor.MiddleCenter)
         {

@@ -95,7 +95,7 @@ namespace SandJamTest.Scene3D
             var cs = mask.bounds.size; var gs = transform.lossyScale;
             clip.transform.localScale = new Vector3(gb.size.x * .94f / cs.x / gs.x, gb.size.y * .95f / cs.y / gs.y, 1);
             // The project's pixel sprite shader ignores sprite masks; the default sprite shader honours them.
-            g.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+            g.sharedMaterial = SpriteFactory.PlainSprite;
             g.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
 
@@ -118,14 +118,10 @@ namespace SandJamTest.Scene3D
             // Square off the top edge: a plain strip over the upper half of the band.
             var top = new GameObject(BandTopName) { layer = gameObject.layer }.AddComponent<SpriteRenderer>();
             top.transform.SetParent(transform, false);
-            var white = Texture2D.whiteTexture;
-            top.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
+            top.sprite = SpriteFactory.White;
             top.color = colour; top.sortingOrder = br.sortingOrder; top.sharedMaterial = br.sharedMaterial;
             top.transform.position = new Vector3(sb.center.x, bottom + height * .75f, band.position.z - .001f);
-            // Size from the measured bounds (the parent chain is not uniformly scaled).
-            top.transform.localScale = Vector3.one;
-            var tb = top.bounds.size;
-            top.transform.localScale = new Vector3(width / Mathf.Max(.0001f, tb.x), height * .5f / Mathf.Max(.0001f, tb.y), 1);
+            top.FitWorldSize(width, height * .5f); // from the measured bounds (the parent chain is not uniformly scaled)
             ClipBandToBox(slot, br, top);
             // The reward amount sits clear of the band, as in the original.
             var amount = transform.Find("+ 10");
@@ -152,7 +148,7 @@ namespace SandJamTest.Scene3D
             // Rim: ~11 px of 316 at the sides, ~9 px of 392 at the bottom.
             var ls = slot.localScale; mask.transform.localScale = new Vector3(ls.x * (1 - 2 * 11f / 316f), ls.y * (1 - 2 * 9f / 392f), ls.z);
             mask.isCustomRangeActive = true; mask.frontSortingOrder = BandOrder + 1; mask.backSortingOrder = BandOrder - 1; // front bound is exclusive
-            var plain = new Material(Shader.Find("Sprites/Default")) { name = "Reward band" };
+            var plain = SpriteFactory.PlainSprite;
             foreach (var r in new[] { band, top })
             {
                 r.sortingOrder = BandOrder; r.sharedMaterial = plain; r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;

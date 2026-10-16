@@ -105,8 +105,8 @@ namespace SandJamTest.Scene3D
             var rim = new GameObject("Coin bar gold rim") { layer = bar.gameObject.layer }.AddComponent<SpriteRenderer>();
             rim.transform.SetParent(bar.transform.parent, false);
             // White rounded panel tinted gold (tinting the bar's own light-blue art came out olive).
-            rim.sprite = RoundedWhite(); rim.drawMode = SpriteDrawMode.Sliced;
-            rim.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+            rim.sprite = SpriteFactory.Rounded(48, 16, 100); rim.drawMode = SpriteDrawMode.Sliced;
+            rim.sharedMaterial = SpriteFactory.PlainSprite;
             rim.sortingLayerID = bar.sortingLayerID; rim.sortingOrder = bar.sortingOrder - 1;
             rim.color = new Color(1f, .76f, .12f);
             var b = bar.bounds; const float grow = .03f;
@@ -114,24 +114,6 @@ namespace SandJamTest.Scene3D
             var lossy = rim.transform.lossyScale;
             rim.size = new Vector2((b.size.x + 2 * grow) / lossy.x, (b.size.y + 2 * grow) / lossy.y);
         }
-        static Sprite roundedWhite;
-        internal static Sprite RoundedWhite()
-        {
-            if (roundedWhite) return roundedWhite;
-            const int n = 48; const float r = 16;
-            var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
-            {
-                float px = Mathf.Abs(x + .5f - n / 2f) - (n / 2f - r), py = Mathf.Abs(y + .5f - n / 2f) - (n / 2f - r);
-                float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - r;
-                t.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(.5f - d)));
-            }
-            t.Apply();
-            // 100 px per unit: a 0.16 corner radius, close to the bar's own rounding.
-            roundedWhite = Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), 100, 0, SpriteMeshType.FullRect, new Vector4(17, 17, 17, 17));
-            return roundedWhite;
-        }
-
         GameObject galleryBadge;
         // Original alert badge: red disc with a white ring and a white "!", at the icon's top-right corner.
         static GameObject AlertBadge(Transform icon)
@@ -141,7 +123,7 @@ namespace SandJamTest.Scene3D
             var root = new GameObject("Alert badge") { layer = icon.gameObject.layer }.transform;
             root.SetParent(icon.parent, true);
             root.position = new Vector3(b.max.x + b.size.x * .1f, b.max.y - b.size.y * .18f, icon.position.z - .3f);
-            var disc = Disc();
+            var disc = SpriteFactory.Disc;
             var ring = new GameObject("Ring") { layer = root.gameObject.layer }.AddComponent<SpriteRenderer>();
             ring.transform.SetParent(root, false); ring.sprite = disc; ring.color = Color.white; ring.sortingOrder = 40;
             var fill = new GameObject("Fill") { layer = root.gameObject.layer }.AddComponent<SpriteRenderer>();
@@ -156,21 +138,6 @@ namespace SandJamTest.Scene3D
             root.gameObject.SetActive(false);
             return root.gameObject;
         }
-        static Sprite disc;
-        static Sprite Disc()
-        {
-            if (disc) return disc;
-            const int n = 64; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
-            {
-                float d = Vector2.Distance(new Vector2(x + .5f, y + .5f), new Vector2(n / 2f, n / 2f));
-                t.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(n / 2f - d)));
-            }
-            t.Apply();
-            disc = Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), n);
-            return disc;
-        }
-
         // Adds a UI-layer click area that covers every sprite under the target.
         static void AddHit(Transform target, string action)
         {

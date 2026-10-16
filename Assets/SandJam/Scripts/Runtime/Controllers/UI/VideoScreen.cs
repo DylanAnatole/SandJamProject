@@ -109,11 +109,11 @@ namespace SandJamTest.Scene3D
             // The sign panels go through a shader that darkens them ~30%; plain sprite shading gives the true colours.
             // The panel sprite is shaded (not white), which dulled the measured colours; the sign uses a plain white
             // rounded panel instead so the tints land on the original's colours.
-            var plain=new Material(Shader.Find("Sprites/Default"));
+            var plain=SpriteFactory.PlainSprite;
             foreach(var name in new[]{"Level sign blue","Sign inset","Level sign rim","Level sign shadow","Join label"})
             {
                 var t=Home.transform.Find(name);var r=t?t.GetComponent<SpriteRenderer>():null;if(!r)continue;
-                var rb=r.bounds;r.sharedMaterial=plain;r.sprite=WhiteRounded();r.drawMode=SpriteDrawMode.Sliced;
+                var rb=r.bounds;r.sharedMaterial=plain;r.sprite=SpriteFactory.Rounded(64,22,130);r.drawMode=SpriteDrawMode.Sliced;
                 var ps=t.parent.lossyScale;t.localScale=Vector3.one;r.size=new Vector2(rb.size.x/ps.x,rb.size.y/ps.y);
             }
             Tint(Home.transform.Find("Level sign blue"),new Color32(71,141,214,255));
@@ -132,7 +132,7 @@ namespace SandJamTest.Scene3D
             }
             // Full-width bands are square-cornered and reach past both screen edges (the rounded panels left dark
             // corners and side strips on phones); the top bar is as thin as the original's.
-            var square=SquareSprite();
+            var square=SpriteFactory.White;
             foreach(var name in new[]{"Top bar","Walkway","Lower stage","Walkway edge"})
             {
                 var r=Home.transform.Find(name)?Home.transform.Find(name).GetComponent<SpriteRenderer>():null;if(!r)continue;
@@ -203,11 +203,10 @@ namespace SandJamTest.Scene3D
             var go=new GameObject("Level sign art"){layer=Home.layer};go.transform.SetParent(Home.transform,false);
             var art=go.AddComponent<SpriteRenderer>();
             art.sprite=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,.5f),100);
-            art.sharedMaterial=new Material(Shader.Find("Sprites/Default"));art.sortingOrder=rr.sortingOrder;
+            art.sharedMaterial=SpriteFactory.PlainSprite;art.sortingOrder=rr.sortingOrder;
             // Original: ~34% of the screen width (150 px of 444), its own 0.8 aspect, top where the drawn sign's top was.
             float width=5.0f*.34f,height=width*753f/606f; // art is 606x753 (the imported texture may be resized square)
-            go.transform.localScale=Vector3.one;var size=art.bounds.size;
-            go.transform.localScale=new Vector3(width/size.x,height/size.y,1);
+            art.FitWorldSize(width,height);
             go.transform.position=new Vector3(rb.center.x,rb.max.y-height*.5f,rim.position.z);
             foreach(var name in new[]{"Level sign blue","Sign inset","Level sign rim","Level sign shadow"}){var t=Home.transform.Find(name);if(t){var r=t.GetComponent<Renderer>();if(r)r.enabled=false;}}
             // Number and LEVEL centred on the new panel (upper two thirds / lower band).
@@ -220,7 +219,7 @@ namespace SandJamTest.Scene3D
                 {
                     var hr=child.GetComponent<SpriteRenderer>();if(!hr)continue;
                     // Straight square-ended rods (~0.09 wide), not stretched pills.
-                    hr.sprite=SquareSprite();hr.drawMode=SpriteDrawMode.Simple;hr.color=new Color32(84,124,172,255);
+                    hr.sprite=SpriteFactory.White;hr.drawMode=SpriteDrawMode.Simple;hr.color=new Color32(84,124,172,255);
                     float hTop=bar.bounds.min.y+.02f,hBottom=ab.max.y-.03f;
                     child.localScale=Vector3.one;var hb=hr.bounds;
                     child.localScale=new Vector3(.09f/Mathf.Max(.0001f,hb.size.x),(hTop-hBottom)/Mathf.Max(.0001f,hb.size.y),1);
@@ -236,10 +235,9 @@ namespace SandJamTest.Scene3D
             var r=label?label.GetComponent<SpriteRenderer>():null;if(!tex || !r)return;
             var b=r.bounds;
             r.sprite=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,.5f),100);
-            r.drawMode=SpriteDrawMode.Simple;r.color=Color.white;r.sharedMaterial=new Material(Shader.Find("Sprites/Default"));
+            r.drawMode=SpriteDrawMode.Simple;r.color=Color.white;r.sharedMaterial=SpriteFactory.PlainSprite;
             float width=b.size.x*1.05f,height=width*111f/262f; // true art aspect (the import may resize it)
-            label.localScale=Vector3.one;var size=r.bounds.size;
-            label.localScale=new Vector3(width/size.x,height/size.y,1);
+            r.FitWorldSize(width,height);
             label.position=new Vector3(b.center.x,b.center.y,label.position.z);
         }
         IEnumerator SoftSignInk()
@@ -257,23 +255,6 @@ namespace SandJamTest.Scene3D
                 yield return new WaitForSecondsRealtime(.2f);
             }
         }
-        static Sprite whiteRounded;
-        static Sprite WhiteRounded()
-        {
-            if(whiteRounded)return whiteRounded;
-            const int n=64;const float radius=22f;var t=new Texture2D(n,n,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp};
-            for(int y=0;y<n;y++)for(int x=0;x<n;x++)
-            {
-                float px=Mathf.Abs(x+.5f-n/2f)-(n/2f-radius),py=Mathf.Abs(y+.5f-n/2f)-(n/2f-radius);
-                float d=new Vector2(Mathf.Max(px,0),Mathf.Max(py,0)).magnitude+Mathf.Min(Mathf.Max(px,py),0)-radius;
-                t.SetPixel(x,y,new Color(1,1,1,Mathf.Clamp01(.5f-d)));
-            }
-            t.Apply();
-            whiteRounded=Sprite.Create(t,new Rect(0,0,n,n),new Vector2(.5f,.5f),130f,0,SpriteMeshType.FullRect,new Vector4(23,23,23,23));
-            return whiteRounded;
-        }
-        static Sprite squareSprite;
-        static Sprite SquareSprite(){if(squareSprite)return squareSprite;var w=Texture2D.whiteTexture;squareSprite=Sprite.Create(w,new Rect(0,0,w.width,w.height),new Vector2(.5f,.5f),w.width);return squareSprite;}
         static void Tint(Transform t,Color color)
         {
             if(!t)return;var r=t.GetComponent<Renderer>();if(!r)return;
@@ -405,8 +386,7 @@ namespace SandJamTest.Scene3D
                 var origin=Result.transform.parent?Result.transform.parent.position:Vector3.zero;
                 go.transform.position=new Vector3(origin.x,origin.y,-10.6f); // above pages (z -5..-8), below popups (z -11..-14)
                 fade=go.AddComponent<SpriteRenderer>();
-                var t=Texture2D.whiteTexture;
-                fade.sprite=Sprite.Create(t,new Rect(0,0,t.width,t.height),new Vector2(.5f,.5f),t.width);
+                fade.sprite=SpriteFactory.White;
                 fade.sortingOrder=0; // same order as page and popup art, so depth decides
                 var ps=go.transform.parent?go.transform.parent.lossyScale:Vector3.one;
                 go.transform.localScale=new Vector3(30/Mathf.Max(.0001f,ps.x),40/Mathf.Max(.0001f,ps.y),1); // covers the whole screen

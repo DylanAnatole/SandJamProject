@@ -35,8 +35,7 @@ namespace SandJamTest.Scene3D
                 rays = Sprite("Rays", light, centre + new Vector3(0, 0, .6f), 6.5f, new Color(1, .86f, .35f, .55f)).transform; raysScale = rays.localScale;
                 glow = Sprite("Glow", light, centre + new Vector3(0, 0, .5f), 3.2f, new Color(1, 1, 1, .45f)).transform;
             }
-            var white = Texture2D.whiteTexture;
-            flash = Sprite("Flash", UnityEngine.Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width), centre + new Vector3(0, 0, -.8f), 1, Color.white);
+            flash = Sprite("Flash", SpriteFactory.White, centre + new Vector3(0, 0, -.8f), 1, Color.white);
             flash.transform.localScale = new Vector3(12, 20, 1);
             // One TextMesh per letter so each can pop on its own; the original label is hidden.
             string text = title.text;
@@ -70,7 +69,7 @@ namespace SandJamTest.Scene3D
             foreach (var t in title.GetComponentsInChildren<MeshRenderer>(true)) t.enabled = false;
             stars = Stars(centre);
             // Warm light in both bottom corners (original win screen), placed on screen once a camera is known.
-            var soft = SoftDot();
+            var soft = SpriteFactory.SoftDot;
             for (int i = 0; i < 2; i++) cornerGlows.Add(Sprite("Corner glow " + i, soft, centre + new Vector3(0, 0, .4f), 3.4f, new Color(1, .78f, .25f, 0)));
             // Original (recording, level 267 win): no light rays, only a soft warm glow behind the word.
             if (rays) { rays.gameObject.SetActive(false); rays = null; }
@@ -80,7 +79,7 @@ namespace SandJamTest.Scene3D
             if (confetti)
             {
                 // Plain sprite shading keeps the pieces as vivid as the original's (the scene material dulled them).
-                var vivid = new Material(Shader.Find("Sprites/Default")) { name = "Confetti vivid" };
+                var vivid = SpriteFactory.PlainSprite;
                 foreach (Transform piece in confetti)
                 {
                     piece.localScale *= 1.7f;
@@ -88,24 +87,9 @@ namespace SandJamTest.Scene3D
                 }
             }
         }
-        static Sprite softDot;
-        static Sprite SoftDot()
-        {
-            if (softDot) return softDot;
-            const int n = 64; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
-            {
-                float d = Mathf.Clamp01(Vector2.Distance(new Vector2(x + .5f, y + .5f), new Vector2(n / 2f, n / 2f)) / (n / 2f));
-                t.SetPixel(x, y, new Color(1, 1, 1, (1 - d) * (1 - d)));
-            }
-            t.Apply();
-            softDot = UnityEngine.Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), n);
-            return softDot;
-        }
         void PlaceCorners()
         {
-            Camera cam = null;
-            foreach (var c in Camera.allCameras) if ((c.cullingMask & (1 << gameObject.layer)) != 0) { cam = c; break; }
+            var cam = SpriteFactory.CameraForLayer(gameObject.layer);
             if (!cam || cornerGlows.Count < 2) return;
             float depth = Vector3.Dot(cornerGlows[0].transform.position - cam.transform.position, cam.transform.forward);
             for (int i = 0; i < 2; i++)

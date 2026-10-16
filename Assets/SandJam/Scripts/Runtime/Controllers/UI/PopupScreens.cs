@@ -221,7 +221,6 @@ namespace SandJamTest.Scene3D
             failed.Big.transform.position += new Vector3(left + ww + gap + tw * .5f - text.bounds.center.x, 0, 0);
         }
         // Coloured panel in world size: rounded (the popup's sliced panel art) or a plain rectangle.
-        Material plainSprite;
         void Block(Popup p, string name, Vector3 world, Vector2 size, Color color, float z, bool rounded)
         {
             var r = Child<SpriteRenderer>(p, name, Vector3.zero);
@@ -230,15 +229,13 @@ namespace SandJamTest.Scene3D
             if (rounded && p.Ribbon.sprite)
             {
                 // A Full Rect white rounded panel: slicing the ribbon art (tight mesh) logged a tiling warning each time.
-                r.sprite = CampaignUi.RoundedWhite(); r.drawMode = SpriteDrawMode.Sliced; r.sharedMaterial = plainSprite ? plainSprite : (plainSprite = new Material(Shader.Find("Sprites/Default")));
+                r.sprite = SpriteFactory.Rounded(48, 16, 100); r.drawMode = SpriteDrawMode.Sliced; r.sharedMaterial = SpriteFactory.PlainSprite;
                 var lossy = r.transform.lossyScale; r.size = new Vector2(size.x / lossy.x, size.y / lossy.y);
             }
             else
             {
-                var white = Texture2D.whiteTexture;
-                r.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width); runtimeArt.Add(r.sprite);
-                r.transform.localScale = Vector3.one; var b = r.bounds.size;
-                r.transform.localScale = new Vector3(size.x / b.x, size.y / b.y, 1);
+                r.sprite = SpriteFactory.White;
+                r.FitWorldSize(size.x, size.y);
             }
             r.color = color;
         }
@@ -396,7 +393,7 @@ namespace SandJamTest.Scene3D
                 stashMask.isCustomRangeActive = true; stashMask.frontSortingOrder = 3; stashMask.backSortingOrder = 1;
             }
             picture.sortingOrder = 2; picture.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
-            if (!picture.sharedMaterial || picture.sharedMaterial.shader.name != "Sprites/Default") picture.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+            picture.sharedMaterial = SpriteFactory.PlainSprite;
         }
 
         // Original "Play on (coin) 400": one big green button centred on the card's bottom edge (half over it), the
@@ -661,9 +658,7 @@ namespace SandJamTest.Scene3D
             banner.transform.SetParent(screen.Result.transform.parent, false);
             banner.transform.localPosition = screen.Result.transform.localPosition;
             var p = new Popup { Root = banner };
-            var white = Texture2D.whiteTexture;
-            var sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
-            runtimeArt.Add(sprite);
+            var sprite = SpriteFactory.White;
             // Measured on the original (level 261): a see-through pink-red band (~76% opaque) a little below the
             // board's middle, two solid red lines just inside its edges and a thin dark rim; white caption.
             const float y = 1.08f;
@@ -783,9 +778,7 @@ namespace SandJamTest.Scene3D
             if (!coverMask)
             {
                 coverMask = Child<SpriteMask>(congrats, "Cover fill mask", new Vector3(0, 0, -6.45f));
-                var white = Texture2D.whiteTexture;
-                coverMask.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, 0), white.width);
-                runtimeArt.Add(coverMask.sprite);
+                coverMask.sprite = SpriteFactory.WhiteBottom;
             }
             coverBottom = CoverY - CoverHeight / 2; coverWidth = CoverWidth; coverHeight = CoverHeight;
             int completed = info.Completed(level);

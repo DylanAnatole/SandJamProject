@@ -285,25 +285,7 @@ namespace SandJamTest.Scene3D
             r.transform.localScale = Vector3.one;
             r.size = new Vector2(width / parent.x, height / parent.y);
         }
-        static readonly System.Collections.Generic.Dictionary<float, Sprite> roundedSprites = new System.Collections.Generic.Dictionary<float, Sprite>();
-        static Sprite RoundedSprite(float pixelsPerUnit)
-        {
-            Sprite rounded;
-            if (roundedSprites.TryGetValue(pixelsPerUnit, out rounded) && rounded) return rounded;
-            const int n = 64; const float radius = 20f;
-            var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
-            {
-                float px = Mathf.Abs(x + .5f - n / 2f) - (n / 2f - radius), py = Mathf.Abs(y + .5f - n / 2f) - (n / 2f - radius);
-                float d = new Vector2(Mathf.Max(px, 0), Mathf.Max(py, 0)).magnitude + Mathf.Min(Mathf.Max(px, py), 0) - radius;
-                t.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(.5f - d)));
-            }
-            t.Apply();
-            // 20-px corners at 250 px per unit: about 0.08 units of rounding.
-            rounded = Sprite.Create(t, new Rect(0, 0, n, n), new Vector2(.5f, .5f), pixelsPerUnit, 0, SpriteMeshType.FullRect, new Vector4(21, 21, 21, 21));
-            roundedSprites[pixelsPerUnit] = rounded;
-            return rounded;
-        }
+        static Sprite RoundedSprite(float pixelsPerUnit) { return SpriteFactory.Rounded(64, 20, pixelsPerUnit); }
 
         // Dark plate right behind the picture, slightly larger than it: the frame opening is a little wider than the
         // picture on some sides, and the light backdrop used to show through as a pale seam along the edge.
@@ -331,8 +313,7 @@ namespace SandJamTest.Scene3D
             float behind = frame ? frame.bounds.max.z + .02f : b.max.z + .04f;
             go.transform.position = new Vector3(b.center.x, b.center.y, behind);
             var r = go.AddComponent<SpriteRenderer>();
-            var white = Texture2D.whiteTexture;
-            r.sprite = Sprite.Create(white, new Rect(0, 0, white.width, white.height), new Vector2(.5f, .5f), white.width);
+            r.sprite = SpriteFactory.White;
             r.color = Color.Lerp(tone, Color.black, .12f); // close to the frame colour: the picture sits flush in the frame
             r.sortingOrder = board.sortingOrder - 1;
             go.transform.localScale = Vector3.one;

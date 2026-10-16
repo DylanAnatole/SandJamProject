@@ -57,7 +57,7 @@ namespace SandJamTest.Scene3D
             if (sprite) { float k = Mathf.Max(w / sprite.bounds.size.x, h / sprite.bounds.size.y); r.transform.localScale = new Vector3(k, k, 1); }
             if (maskSprite)
             {
-                r.sharedMaterial = galleryMaskedMaterial ? galleryMaskedMaterial : (galleryMaskedMaterial = new Material(Shader.Find("Sprites/Default")));
+                r.sharedMaterial = SpriteFactory.PlainSprite;
                 r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
                 var m = Child<SpriteMask>(gallery, "Picture mask", new Vector3(x, y, z)); m.sprite = maskSprite;
                 // The mask art's opaque card covers x 12-311, y 66-437 of its 324x450 texture (a transparent strip
