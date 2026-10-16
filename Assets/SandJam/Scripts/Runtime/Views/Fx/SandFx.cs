@@ -4,8 +4,9 @@ using UnityEngine;
 namespace SandJamTest.Scene3D
 {
     // Presentation-only effects modelled on the original: pour dust, region-complete bubble burst,
-    // shooter recoil, arrival puff, departure poof, the flash where a chain snaps when its pair is picked and the
-    // smoke a mystery cube shows its colour in. Polls game state; never changes rules.
+    // shooter recoil, arrival puff, departure poof, the flash where a chain snaps when its pair is picked, the
+    // smoke a mystery cube shows its colour in and the ring of smoke a locked waiting slot opens with. Polls game
+    // state; never changes rules.
     public sealed class SandFx : MonoBehaviour
     {
         const float Front = -.45f; // towards the camera so effects draw over the board
@@ -14,6 +15,7 @@ namespace SandJamTest.Scene3D
         readonly List<Color> palette = new List<Color>();
         readonly Dictionary<SceneActorView, ActorState> actors = new Dictionary<SceneActorView, ActorState>();
         bool[] regionDone;
+        int[] slotLocked = new int[0];
         SandGame lastGame;
         Material bubbleMaterial;
         static Texture2D softDot, ring, voxel;
@@ -107,6 +109,27 @@ namespace SandJamTest.Scene3D
             foreach (var other in controller.Characters) if (other && other.Shooter == actor.Shooter.Partner) return other;
             return null;
         }
+        // A locked waiting slot opening (its counter reached 0): a ring of white smoke bursts out around it.
+        void SlotUnlocks(SandGame game)
+        {
+            var slots = controller.StashSlots;
+            if (slotLocked.Length != game.Slots.Length) System.Array.Resize(ref slotLocked, game.Slots.Length); // a bought extra slot
+            for (int i = 0; i < slotLocked.Length; i++)
+            {
+                int remaining = game.SlotRemaining(i);
+                if (slotLocked[i] > 0 && remaining == 0 && i < slots.Length && slots[i])
+                {
+                    var p = slots[i].position + new Vector3(0, .28f, Front); // the slot's pivot sits at the tile's lower edge
+                    for (int k = 0; k < 22; k++)
+                    {
+                        float a = k * Mathf.PI * 2 / 22;
+                        var dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a) * .75f, 0);
+                        Emit(puff, p + dir * .3f, dir * Random.Range(.6f, .9f), new Color(1, 1, 1, .9f), Random.Range(.5f, .7f), Random.Range(.45f, .6f));
+                    }
+                }
+                slotLocked[i] = remaining;
+            }
+        }
         void RevealSmoke(Vector3 p)
         {
             for (int i = 0; i < 12; i++)
@@ -139,6 +162,7 @@ namespace SandJamTest.Scene3D
             PourDust(dt);
             RegionBursts(game);
             Characters(game, dt);
+            SlotUnlocks(game);
             AnimateBubbles(dt);
             AnimateFlashes(dt);
         }
@@ -147,6 +171,8 @@ namespace SandJamTest.Scene3D
         {
             lastGame = game;
             regionDone = new bool[game.Regions.Length];
+            slotLocked = new int[game.Slots.Length];
+            for (int i = 0; i < slotLocked.Length; i++) slotLocked[i] = game.SlotRemaining(i);
             foreach (var pair in actors) if (pair.Key) pair.Key.transform.localScale = pair.Value.BaseScale;
             actors.Clear();
             bubblePool.ReleaseAll();
