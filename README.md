@@ -66,7 +66,7 @@ Màn hình: Loading → Home → Gameplay → Superb! → Level Complete → Nex
 
 ## Popup (PopupScreens, dựng từ art popup gốc)
 
-Mỗi popup / trang là một lớp `PopupModule` riêng (`SettingsPopup`, `ShopPopup`, `GalleryPopup`, `SandQuestPopup`, `TasksPopup`, `LivesPopup`).
+Mỗi popup / trang là một lớp `PopupModule` riêng (`SettingsPopup`, `ShopPopup`, `GalleryPopup`, `SandQuestPopup`, `TasksPopup`, `LivesPopup`, `LevelIntroPopups`).
 `PopupScreens` chỉ giữ các popup kết quả (thắng / thua / hết chỗ...) và bộ dựng chung (`PopupScreens.Kit.cs`). Nó dựng từng module một lần,
 chuyển action theo tiền tố (`shop-`, `gallery-`...) đến module có `Handles()` khớp, và gọi `Tick()` mỗi khung khi có popup mở.
 Thêm popup mới: kế thừa `PopupModule`, viết `Build()` / `Handles()` / `Handle()` / `Tick()`, rồi đăng ký bằng `Add(new ...)` trong `PopupScreens.Initialize`.

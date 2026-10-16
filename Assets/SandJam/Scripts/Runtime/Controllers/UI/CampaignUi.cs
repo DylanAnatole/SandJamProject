@@ -143,8 +143,7 @@ namespace SandJamTest.Scene3D
         {
             var renderers = target.GetComponentsInChildren<Renderer>(true).Where(r => r is SpriteRenderer).ToArray();
             if (renderers.Length == 0) return;
-            var bounds = renderers[0].bounds;
-            foreach (var r in renderers) bounds.Encapsulate(r.bounds);
+            var bounds = renderers.CombinedBounds();
             var hit = new GameObject("Hit area - " + action);
             hit.layer = 9;
             hit.transform.SetParent(target, true);

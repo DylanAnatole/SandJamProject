@@ -86,13 +86,26 @@ namespace SandJamTest.Scene3D
                 root.position += new Vector3(target.x - b.min.x, 0, 0);
                 // The price (shown while none are owned) stays on screen: icon and price centred in the visible part.
                 float visibleRight = cam.ViewportToWorldPoint(new Vector3(.975f, 0, z)).x, visibleCentre = (r.bounds.min.x + visibleRight) * .5f;
+                FitWidth(root.Find("Price"), (visibleRight - r.bounds.min.x) * .86f);
                 foreach (var name in new[] { "Price", "Price coin", "Booster icon" })
                 {
-                    var t = root.Find(name); if (!t) foreach (var c in root.GetComponentsInChildren<Transform>(true)) if (c.name == name) { t = c; break; }
+                    var t = root.FindDeep(name);
                     if (!t || t == image) continue;
                     t.position += new Vector3(visibleCentre - r.bounds.center.x, 0, 0);
                 }
             }
+        }
+
+        // Shrinks a label (with its outline copies) about its centre so it is at most maxWidth wide
+        // (the locked "Level 22" text is wider than the visible part of the button).
+        static void FitWidth(Transform label, float maxWidth)
+        {
+            if (!label) return;
+            var renderers = label.GetComponentsInChildren<Renderer>(true); if (renderers.Length == 0) return;
+            var b = renderers.CombinedBounds();
+            if (b.size.x <= maxWidth) return;
+            var centre = b.center; label.localScale *= maxWidth / b.size.x;
+            label.position += centre - renderers.CombinedBounds().center;
         }
 
         // Original HUD: a yellow quantity badge on the booster's left edge when the player owns some;

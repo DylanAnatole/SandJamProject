@@ -137,7 +137,8 @@ namespace SandJamTest.Scene3D
                 r.transform.position=new Vector3(0,rb.center.y,r.transform.position.z);
             }
             var bar=Home.transform.Find("Top bar")?Home.transform.Find("Top bar").GetComponent<SpriteRenderer>():null;
-            if(bar){var bb=bar.bounds;float barBottom=4.2f;var bps=bar.transform.parent.lossyScale;bar.transform.localScale=new Vector3(bar.transform.localScale.x,(bb.max.y-barBottom)/bps.y,1);bar.transform.position=new Vector3(0,(bb.max.y+barBottom)*.5f,bar.transform.position.z);}
+            // Reaches well past the top edge: tall phones (19.5:9) see above the design box.
+            if(bar){float barBottom=4.2f,barTop=8f;var bps=bar.transform.parent.lossyScale;bar.transform.localScale=new Vector3(bar.transform.localScale.x,(barTop-barBottom)/bps.y,1);bar.transform.position=new Vector3(0,(barTop+barBottom)*.5f,bar.transform.position.z);}
             foreach(var name in new[]{"generalBackground-main","bg-navbar"}){var t=Home.transform.Find(name);if(t){var ls=t.localScale;t.localScale=new Vector3(ls.x*1.12f,ls.y,ls.z);}}
             // Hangers run from the top bar down to the sign.
             var rimNow=Home.transform.Find("Level sign rim");
@@ -325,7 +326,7 @@ namespace SandJamTest.Scene3D
         Renderer[] coinWallet;
         void LiftCoinWallet(bool lift)
         {
-            if(coinWallet==null){var w=Gameplay.transform.Find("HUD - visual controls only/Coin wallet - UI only");if(!w)foreach(var t in Gameplay.GetComponentsInChildren<Transform>(true))if(t.name=="Coin wallet - UI only"){w=t;break;}
+            if(coinWallet==null){var w=Gameplay.transform.FindDeep("Coin wallet - UI only");
                 coinWallet=w?w.GetComponentsInChildren<Renderer>(true):new Renderer[0];}
             foreach(var r in coinWallet)if(r)r.sortingOrder=lift?16:0;
         }
