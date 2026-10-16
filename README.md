@@ -67,25 +67,30 @@ Màn hình: Loading → Home → Gameplay → Superb! → Level Complete → Nex
 
 ## Popup (PopupScreens, dựng từ art popup gốc)
 
+Mỗi popup / trang là một lớp `PopupModule` riêng (`SettingsPopup`, `ShopPopup`, `GalleryPopup`, `SandQuestPopup`, `TasksPopup`, `LivesPopup`).
+`PopupScreens` chỉ giữ các popup kết quả (thắng / thua / hết chỗ...) và bộ dựng chung (`PopupScreens.Kit.cs`). Nó dựng từng module một lần,
+chuyển action theo tiền tố (`shop-`, `gallery-`...) đến module có `Handles()` khớp, và gọi `Tick()` mỗi khung khi có popup mở.
+Thêm popup mới: kế thừa `PopupModule`, viết `Build()` / `Handles()` / `Handle()` / `Tick()`, rồi đăng ký bằng `Add(new ...)` trong `PopupScreens.Initialize`.
+
 Hết chỗ (Chơi tiếp 400 xu → thêm ô chờ thứ 6 / ✕ bỏ cuộc) → Thua rồi (tim, đồng hồ hồi tim, Chơi lại) ·
 Hết tim · Chúc mừng (ảnh bức tranh vừa tô + % bộ sưu tập) · Tính năng / Booster mới (tặng 1 booster) · Cài đặt.
 **Thứ tự màn** = đúng 915 màn của `Default_LevelOrderConfig` gốc (màn N ở đây = màn N trong game thật).
 **Theme sân chơi**: nhóm = màn / 15, xoay vòng lavender → tối → xanh (`OriginalThemes`).
 **Màn Bonus** (danh sách "easy" của EasyHardLevelConfig: 25, 35, 55…): popup BONUS LEVEL xanh lá, HUD xanh + xu, thưởng +30.
-**Cài đặt**: dựng lại theo UiSettingsPanel gốc (Rung, Âm thanh, Chơi lại, Trang chủ) — `PopupScreens.Settings.cs`.
-**SAND SHOP** (nút SHOP ở Home, `PopupScreens.Shop.cs`): nội dung theo RC_Shop/reward_bundle gốc; mua booster bằng xu
+**Cài đặt**: dựng lại theo UiSettingsPanel gốc (Rung, Âm thanh, Chơi lại, Trang chủ) — `SettingsPopup.cs`.
+**SAND SHOP** (nút SHOP ở Home, `ShopPopup.cs`): nội dung theo RC_Shop/reward_bundle gốc; mua booster bằng xu
 chạy thật, gói tiền thật chỉ hiển thị (không có thanh toán).
 **NEW ART STYLE** khi gặp bộ tranh mới (ảnh render gốc trong `Resources/LevelRenders`).
 **CONGRATS** = thẻ Gallery (`GalleryCollections`, theo FeatureConfig gốc): ảnh bìa đen trắng được tô màu dần, mỗi màn thắng thêm 1 phần.
 **HẾT CHỖ!** dải đỏ ~1 giây trước popup Hết chỗ. **Hết tim**: nút Hồi tim 600 xu. Màn khó thưởng +20.
-**Sand Quest** (`SandQuest` + `PopupScreens.SandQuest.cs`): từ màn 30, bấm rương JOIN ở Home; thắng 10 màn liên tiếp trong 24 giờ,
+**Sand Quest** (`SandQuest` + `SandQuestPopup.cs`): từ màn 30, bấm rương JOIN ở Home; thắng 10 màn liên tiếp trong 24 giờ,
 số người chơi giảm theo `botProgressionList` gốc, về đích chia giải 1000 xu; thua 1 màn hoặc hết giờ là trượt.
 **Shop / Gallery** là trang có thanh trên và thanh SHOP/HOME/GALLERY như bản thật (`PopupScreens.Pages.cs`).
 Gallery: mỗi bộ hiện tên, ảnh bìa và tranh của chính nó; băng chuyền ảnh bìa, 3 mốc thưởng, "Nhận tất cả".
 **Home** (tắt mặc định vì bản hiện tại không hiện, bật bằng `PopupScreens.ShowTaskWidgets`): nút QUÀ (quà 7 ngày, `DailyRewards`), NGÀY / TUẦN (nhiệm vụ, `TaskBoard`, dữ liệu theo
 Default_RemoteDailyQuestConfig gốc: mỗi kỳ chọn 1 nhiệm vụ mỗi bậc, hoàn thành nhận sao, đủ mốc sao mở rương),
 GALLERY (bộ sưu tập: ảnh bìa tô dần, 3 mốc thưởng, lưới thẻ tranh), NO MORE LIVES khi bấm PLAY lúc hết tim.
-Giao diện: `PopupScreens.Tasks.cs`, `PopupScreens.Gallery.cs`, `PopupScreens.Lives.cs`.
+Giao diện: `TasksPopup.cs`, `GalleryPopup.cs`, `LivesPopup.cs`.
 **Màn khó** (`OriginalConfig.IsHard`: 20, 30, 40…): popup HARD LEVEL (art gốc trong `Resources/HardLevel`) trước khi chơi,
 badge HUD đỏ có đầu lâu, nền tối (`OriginalLookStyler.Hard*`).
 

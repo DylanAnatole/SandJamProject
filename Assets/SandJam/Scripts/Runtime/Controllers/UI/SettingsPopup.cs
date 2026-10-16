@@ -7,9 +7,9 @@ namespace SandJamTest.Scene3D
     // scenes and the gameplay recording: Home (MainMenu) = Vibration, Sounds, Privacy Policy, Restore Purchases;
     // in a level (Game) = the same plus a big green HOME button. Grey SETTINGS title, red exit button, swipe toggles
     // with ON / OFF. Positions are the original RectTransform values.
-    public sealed partial class PopupScreens
+    public sealed class SettingsPopup : PopupModule
     {
-        const float CanvasUnit = 5.2f / 1080f;   // original canvas pixels → popup units
+        internal const float CanvasUnit = 5.2f / 1080f;   // original canvas pixels → popup units
         Vector2 settingsCentre; float settingsHeight;
         readonly List<GameObject> settingsDynamic = new List<GameObject>();
         SpriteRenderer soundKnob, hapticKnob;
@@ -19,11 +19,24 @@ namespace SandJamTest.Scene3D
         float Top(float y) { return settingsHeight / 2 + y; }      // anchor (.5, 1)
         float Bottom(float y) { return -settingsHeight / 2 + y; }  // anchor (.5, 0)
 
-        void BuildSettings()
+        Popup settings;
+        public bool Visible { get { return IsOpen(settings); } }
+
+        public override void Build()
         {
             settings = Blank("Settings popup");
             settings.RightButton.transform.parent.gameObject.SetActive(false);
         }
+
+        public override bool Handles(string action) { return action == "toggle-sound" || action == "toggle-haptics" || action == "privacy" || action == "restore"; }
+        public override bool Handle(string action)
+        {
+            if (action == "toggle-sound") Campaign.SoundOn = !Campaign.SoundOn;
+            else if (action == "toggle-haptics") { SaveManager.Data.hapticsOn = !SaveManager.Data.hapticsOn; SaveManager.Save(); }
+            // "privacy" / "restore": no store or web page in the clone.
+            RefreshSettings(); return true;
+        }
+        public override void Tick() { if (Visible && Input.GetKeyDown(KeyCode.Escape)) Close(); }
 
         public void ShowSettings()
         {
@@ -82,14 +95,6 @@ namespace SandJamTest.Scene3D
             settingsDynamic.Add(r.gameObject);
             return r;
         }
-        GameObject Hit(Popup p, Vector3 local, Vector2 size, string action)
-        {
-            var hit = Child<BoxCollider>(p, "Hit area - " + action, local);
-            hit.gameObject.layer = 9; hit.size = new Vector3(size.x, size.y, .2f);
-            hit.gameObject.AddComponent<VideoUiButton>().Action = action;
-            return hit.gameObject;
-        }
-
         // Knob on the right, green, "ON" when on; on the left, grey, "OFF" when off (original SwipeOnPos / SwipeOffPos).
         void SetToggle(SpriteRenderer knob, TextMesh text, bool on)
         {

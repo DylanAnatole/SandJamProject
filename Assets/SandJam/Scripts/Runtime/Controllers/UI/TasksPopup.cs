@@ -7,7 +7,7 @@ namespace SandJamTest.Scene3D
     // Canvas_DailyTask (MainMenu scene) and their design mockups (Texture2D/Frame 1-11, Frame 2), plus the
     // three Home widgets (RewardWidget, DailyTaskWidget, WeeklyTaskWidget) at their original positions.
     // Rules live in DailyRewards and TaskBoard (Managers).
-    public sealed partial class PopupScreens
+    public sealed class TasksPopup : PopupModule
     {
         // Original panel pixels → popup units. At 100% the 1147-px panel plus its corner icon is wider than a
         // phone screen, so the whole panel (art and text) is drawn at 90%.
@@ -49,6 +49,7 @@ namespace SandJamTest.Scene3D
         }
 
         // ---------- Daily rewards ----------
+        public override void Build() { BuildRewardsPanel(); BuildTasksPanel(); BuildHomeWidgets(); }
         void BuildRewardsPanel()
         {
             rewardsPanel = Blank("Daily rewards panel");
@@ -178,15 +179,12 @@ namespace SandJamTest.Scene3D
             PanelHit(p, -170, tabY, 330, 120, "tasks-daily", d);
             PanelHit(p, 170, tabY, 330, 120, "tasks-weekly", d);
         }
-        void RefreshPopupCoins()
-        {
-            if (!Open) return;
-            foreach (var label in Open.GetComponentsInChildren<TextMesh>(true)) if (label.name == "2040") label.text = Campaign.Coins.ToString();
-        }
         static string Short(int n) { return n >= 10000 ? (n / 1000) + "K" : n.ToString(); }
 
         public void OpenTasks(TaskBoard.Kind kind) { if (Open) return; shownKind = kind; Show(tasksPanel); RefreshTasksPanel(); }
 
+        public override bool Handles(string action) { return action.StartsWith("daily-") || action.StartsWith("tasks-"); }
+        public override bool Handle(string action) { return HandlePanels(action); }
         bool HandlePanels(string action)
         {
             switch (action)
@@ -199,7 +197,7 @@ namespace SandJamTest.Scene3D
             return true;
         }
 
-        void UpdatePanels()
+        public override void Tick()
         {
             if (Time.frameCount % 30 == 0)
             {

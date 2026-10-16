@@ -6,12 +6,12 @@ namespace SandJamTest.Scene3D
     // big frame with the title art, a glowing heart showing the hearts left, "Time to next life" with the
     // watch pill, and the purple Refill button (EconomyConfig.priceRefillHealth, 600 in the current build).
     // The original IAP bundle under the popup is left out (no payments in the clone).
-    public sealed partial class PopupScreens
+    public sealed class LivesPopup : PopupModule
     {
         Popup noLives;
         TextMesh[] noLivesCount, noLivesTimer, noLivesInfo;
         Transform noLivesShine;
-        const float LivesUnit = CanvasUnit * .9f;               // the 1142 px frame is wider than the canvas
+        const float LivesUnit = SettingsPopup.CanvasUnit * .9f;               // the 1142 px frame is wider than the canvas
         static readonly Vector2 LivesCentre = new Vector2(0, 366);
 
         // Image stretched to its RectTransform size, positioned relative to the popup frame centre.
@@ -23,7 +23,10 @@ namespace SandJamTest.Scene3D
         }
         Vector3 LivesPos(float x, float y, float z) { return new Vector3((LivesCentre.x + x) * LivesUnit, (LivesCentre.y + y) * LivesUnit, z); }
 
-        void BuildNoLives()
+        public bool Visible { get { return IsOpen(noLives); } }
+        public void ShowInfo(string text) { SetText(noLivesInfo, text); }
+
+        public override void Build()
         {
             noLives = Blank("No more lives popup");
             noLives.RightButton.transform.parent.gameObject.SetActive(false);
@@ -48,9 +51,9 @@ namespace SandJamTest.Scene3D
             Hit(noLives, LivesPos(480, 600, -8.5f), new Vector2(.6f, .6f), "close-failed");
         }
 
-        void ShowNoLivesPopup()
+        public void ShowPopup()
         {
-            failedIsNoLives = true;
+            Host.failedIsNoLives = true;
             SetText(noLivesInfo, "");
             RefreshNoLives();
             Show(noLives);
@@ -60,7 +63,7 @@ namespace SandJamTest.Scene3D
             SetText(noLivesCount, LivesManager.Lives.ToString());
             SetText(noLivesTimer, LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext));
         }
-        void UpdateNoLives()
+        public override void Tick()
         {
             if (Open != noLives.Root) return;
             if (noLivesShine) noLivesShine.localRotation = Quaternion.Euler(0, 0, Time.unscaledTime * 20f);

@@ -6,7 +6,7 @@ namespace SandJamTest.Scene3D
     // the contents of the original remote-config defaults (RC_Shop, reward_bundle, reward_coin_preset):
     // bundles (coins + boosters), coin packs, boosters for coins (x3 Funflare 1000 / Swap 1300 / Select 2000)
     // and the booster bundle (x5 each, 6000). Real-money items are shown but the clone has no payments.
-    public sealed partial class PopupScreens
+    public sealed class ShopPopup : PopupModule
     {
         Popup shop;
         Transform shopContent;
@@ -22,7 +22,8 @@ namespace SandJamTest.Scene3D
         static float ShopY(float mockupY) { return ShopTop - (mockupY - 185) * ShopUnit; }
         static float ShopX(float mockupX) { return (mockupX - 168) * ShopUnit; }
 
-        void BuildShop()
+        public override bool IsPage(GameObject root) { return shop != null && root == shop.Root; }
+        public override void Build()
         {
             shop = Blank("Shop page");
             shop.RightButton.transform.parent.gameObject.SetActive(false);
@@ -199,6 +200,8 @@ namespace SandJamTest.Scene3D
         void ShopToast(string text) { SetText(shopToast, text); shopToastUntil = Time.unscaledTime + 2.2f; }
 
         // Shop buttons fire on release without a drag, so scrolling never buys anything by accident.
+        public override bool Handles(string action) { return action.StartsWith("shop-"); }
+        public override bool Handle(string action) { return HandleShop(action); }
         bool HandleShop(string action)
         {
 
@@ -216,7 +219,7 @@ namespace SandJamTest.Scene3D
             RefreshShopCoins();
         }
 
-        void UpdateShop()
+        public override void Tick()
         {
             if (Open != shop.Root) return;
             if (shopToastUntil > 0 && Time.unscaledTime > shopToastUntil) { SetText(shopToast, ""); shopToastUntil = 0; }

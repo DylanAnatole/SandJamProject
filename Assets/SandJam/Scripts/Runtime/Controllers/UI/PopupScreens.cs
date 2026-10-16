@@ -8,14 +8,15 @@ namespace SandJamTest.Scene3D
     public sealed partial class PopupScreens : MonoBehaviour
     {
         VideoScreen screen;
-        Popup lose, settings, intro, failed, congrats, hard, bonus, artStyle;
+        Popup lose, intro, failed, congrats, hard, bonus, artStyle;
         TextMesh hardLevelLabel, bonusLevelLabel, artStyleLabel;
         SpriteRenderer artStylePicture;
         int pendingHardLevel, pendingBonusLevel;
         public const int PlayOnPrice = 400; // original "Play on 400" for one extra waiting slot
         SpriteRenderer[] hearts;
         TextMesh lostHeartLabel;
-        bool gaveUp, failedIsNoLives;
+        bool gaveUp;
+        internal bool failedIsNoLives;
         SpriteRenderer cardBw, cardColor; Transform congratsRays; TextMesh[] cardName, cardPercent;
         readonly System.Collections.Generic.List<Object> runtimeArt = new System.Collections.Generic.List<Object>();
         SpriteSequence introGif;
@@ -34,15 +35,24 @@ namespace SandJamTest.Scene3D
         };
         float shownAt;
         public GameObject Open { get; private set; }
-        public bool SettingsOpen { get { return Open && settings != null && Open == settings.Root; } }
+        public bool SettingsOpen { get { return settingsPopup != null && settingsPopup.Visible; } }
+        internal VideoScreen Screen { get { return screen; } }
+        internal System.Collections.Generic.List<Object> RuntimeArt { get { return runtimeArt; } }
+        internal float ShownAt { get { return shownAt; } }
 
-        sealed class Popup
-        {
-            public GameObject Root;
-            public TextMesh Header, Title, Big, Caption, Left, Right;
-            public SpriteRenderer Icon, Border, Ribbon;
-            public VideoUiButton LeftButton, RightButton;
-        }
+        // Popups / pages that live in their own classes (see PopupModule).
+        readonly System.Collections.Generic.List<PopupModule> modules = new System.Collections.Generic.List<PopupModule>();
+        SettingsPopup settingsPopup; SandQuestPopup sandQuest; ShopPopup shop; LivesPopup lives; TasksPopup tasks; GalleryPopup gallery;
+        public void OpenShop() { shop.OpenShop(); }
+        public void OpenGallery() { gallery.OpenGallery(); }
+        public void OpenSandQuest() { sandQuest.OpenSandQuest(); }
+        public void ShowSandQuestOnHome() { sandQuest.ShowSandQuestOnHome(); }
+        public void OpenDailyRewards() { tasks.OpenDailyRewards(); }
+        public void OpenTasks(TaskBoard.Kind kind) { tasks.OpenTasks(kind); }
+        bool IsPage(GameObject root) { foreach (var m in modules) if (m.IsPage(root)) return true; return false; }
+        T Add<T>(T module) where T : PopupModule { module.Attach(this); module.Build(); modules.Add(module); return module; }
+        public void ShowSettings() { settingsPopup.ShowSettings(); }
+
 
         public void Initialize(VideoScreen owner)
         {
@@ -82,14 +92,12 @@ namespace SandJamTest.Scene3D
             // Collection card shown after a win (original "CONGRATS · Accessories · 90% Completed").
             BuildCongratsCard();
             BuildOutOfSpaceBanner();
-            BuildSandQuest();
-            BuildShop();
-            BuildNoLives();
-            BuildRewardsPanel();
-            BuildTasksPanel();
-            BuildHomeWidgets();
-            BuildGallery();
-            BuildSettings();
+            sandQuest = Add(new SandQuestPopup());
+            shop = Add(new ShopPopup());
+            lives = Add(new LivesPopup());
+            tasks = Add(new TasksPopup());
+            gallery = Add(new GalleryPopup());
+            settingsPopup = Add(new SettingsPopup());
             intro = Build("Feature intro popup");
             intro.Big.text = "";
             intro.Icon.transform.localPosition = new Vector3(0, .8f, intro.Icon.transform.localPosition.z);
@@ -102,7 +110,7 @@ namespace SandJamTest.Scene3D
             owner.Feedback.UseLegacyOverlay = false;
         }
 
-        Popup Build(string name)
+        internal Popup Build(string name)
         {
             var root = Instantiate(screen.Result, screen.Result.transform.parent);
             root.name = name; root.SetActive(false);
@@ -141,26 +149,26 @@ namespace SandJamTest.Scene3D
 
         static TextMesh Text(GameObject root, string name) { return root.transform.Find(name).GetComponent<TextMesh>(); }
 
-        static void TintRibbon(Popup p, Color color)
+        internal static void TintRibbon(Popup p, Color color)
         {
             var ribbon = p.Root.transform.Find("bg-level-yellow"); if (ribbon) ribbon.GetComponent<SpriteRenderer>().color = color;
             p.Header.color = Color.white;
         }
         // Hide the yellow button and centre the green one.
-        static void SingleButton(Popup p)
+        internal static void SingleButton(Popup p)
         {
             p.LeftButton.transform.parent.gameObject.SetActive(false);
             var group = p.RightButton.transform.parent; var gp = group.localPosition; group.localPosition = new Vector3(0, gp.y, gp.z); // the card layout shifts the pair
             foreach (Transform child in p.RightButton.transform.parent)
                 child.localPosition = new Vector3(0, child.localPosition.y, child.localPosition.z);
         }
-        static T Child<T>(Popup p, string name, Vector3 local) where T : Component
+        internal static T Child<T>(Popup p, string name, Vector3 local) where T : Component
         {
             var obj = new GameObject(name) { layer = p.Root.layer };
             obj.transform.SetParent(p.Root.transform, false); obj.transform.localPosition = local;
             return obj.AddComponent<T>();
         }
-        TextMesh Label(Popup p, string name, Vector3 local, string text, float size, Color color)
+        internal TextMesh Label(Popup p, string name, Vector3 local, string text, float size, Color color)
         {
             var label = Child<TextMesh>(p, name, local);
             label.text = text; label.characterSize = size; label.fontSize = 64; label.anchor = TextAnchor.MiddleCenter;
@@ -537,7 +545,7 @@ namespace SandJamTest.Scene3D
             Show(artStyle);
             return true;
         }
-        SpriteRenderer Art(Popup p, string sprite, Vector3 local, float width)
+        internal SpriteRenderer Art(Popup p, string sprite, Vector3 local, float width)
         {
             var r = Child<SpriteRenderer>(p, System.IO.Path.GetFileName(sprite), local);
             r.sprite = Resources.Load<Sprite>(sprite.Contains("/") ? sprite : "HardLevel/" + sprite);
@@ -647,7 +655,7 @@ namespace SandJamTest.Scene3D
         }
 
         // Home PLAY with no hearts left: the big NO MORE LIVES popup (original canvas_nolives).
-        public void ShowNoLives() { ShowNoLivesPopup(); }
+        public void ShowNoLives() { lives.ShowPopup(); }
 
         // Original "OUT OF SPACE!" banner: a red band across the board for about a second before the popup.
         GameObject banner; float bannerShownAt = -1;
@@ -721,13 +729,13 @@ namespace SandJamTest.Scene3D
         }
         // White caption with a dark purple outline (OutlinedText). Returned as an array so callers can treat any label
         // and its parts alike; the outline copies follow the label by themselves.
-        TextMesh[] OutlinedLabel(Popup p, string name, Vector3 local, float size)
+        internal TextMesh[] OutlinedLabel(Popup p, string name, Vector3 local, float size)
         {
             var main = Label(p, name, local, "", size, Color.white);
             OutlinedText.Add(main, new Color(.23f, .16f, .42f));
             return new[] { main };
         }
-        static void SetText(TextMesh[] labels, string text) { foreach (var t in labels) if (t) t.text = text; }
+        internal static void SetText(TextMesh[] labels, string text) { foreach (var t in labels) if (t) t.text = text; }
 
         // After a win: the gallery card of the collection this level belongs to (none for the tutorial levels).
         public bool ShowCongrats()
@@ -787,7 +795,7 @@ namespace SandJamTest.Scene3D
         // Gallery covers (316x376) carry a transparent margin (~12 px each side) and wide rounded corners, which left
         // gaps inside the slot; the card uses the picture inset past them, centred, so it fills the slot edge to edge.
         readonly System.Collections.Generic.Dictionary<Sprite, Sprite> coverCrops = new System.Collections.Generic.Dictionary<Sprite, Sprite>();
-        Sprite CoverCrop(Sprite source)
+        internal Sprite CoverCrop(Sprite source)
         {
             if (coverCrops.TryGetValue(source, out var cropped)) return cropped;
             var r = source.rect;
@@ -874,7 +882,7 @@ namespace SandJamTest.Scene3D
         }
 
         // Grey copy of a level render (collections without a configured black-and-white cover).
-        Sprite Greyscale(Sprite source)
+        internal Sprite Greyscale(Sprite source)
         {
             if (!source || !source.texture.isReadable) return null;
             var r = source.textureRect;
@@ -887,19 +895,19 @@ namespace SandJamTest.Scene3D
             return sprite;
         }
         void OnDestroy() { foreach (var o in runtimeArt) if (o) Destroy(o); if (stashShot) Destroy(stashShot); }
-        static void FitIcon(SpriteRenderer icon, float height)
+        internal static void FitIcon(SpriteRenderer icon, float height)
         {
             if (!icon.sprite) return;
             float s = height / icon.sprite.bounds.size.y;
             icon.transform.localScale = new Vector3(s, s, 1);
         }
         // Scales a label together with its outline copies.
-        static void ScaleText(TextMesh label, float factor)
+        internal static void ScaleText(TextMesh label, float factor)
         {
             foreach (var t in label.GetComponentsInChildren<TextMesh>(true)) t.characterSize *= factor;
         }
         readonly System.Collections.Generic.Dictionary<TextMesh, float> baseSizes = new System.Collections.Generic.Dictionary<TextMesh, float>();
-        void Configure(VideoUiButton button, TextMesh label, string action, string text, float fitChars = 5.5f)
+        internal void Configure(VideoUiButton button, TextMesh label, string action, string text, float fitChars = 5.5f)
         {
             if (button) button.Action = action;
             // Long labels must fit their panel width; outline/shadow copies follow the label.
@@ -924,7 +932,7 @@ namespace SandJamTest.Scene3D
         readonly System.Collections.Generic.Dictionary<Transform, Vector3> backdropScales = new System.Collections.Generic.Dictionary<Transform, Vector3>();
         int LevelShown { get { return screen.Levels ? screen.Levels.PlayedNumber : Campaign.LevelNumber; } }
 
-        void Show(Popup p)
+        internal void Show(Popup p)
         {
             if (Open) Open.SetActive(false);
             Open = p.Root; shownAt = Time.unscaledTime;
@@ -935,7 +943,7 @@ namespace SandJamTest.Scene3D
             var edge = p.Root.transform.Find(ResultFx.EdgeName);
             if (edge && p.Border) edge.GetComponent<SpriteRenderer>().color = Color.Lerp(p.Border.color, new Color(.45f, .08f, .04f), .35f);
             p.Root.SetActive(true);
-            bool fullPage = p == shop || p == gallery || p == questMap;
+            bool fullPage = IsPage(p.Root);
             p.Root.transform.localScale = Vector3.one * (fullPage ? 1 : PopStart);
             FitBackdrop(p.Root, fullPage ? 1 : PopStart);
             if (screen.Controller) screen.Controller.BoosterInputBlocked = true;
@@ -994,20 +1002,11 @@ namespace SandJamTest.Scene3D
         public bool Handle(string action)
         {
             if (!Open || Time.unscaledTime - shownAt < .15f) return Open;
-            if (action.StartsWith("quest-")) return HandleSandQuest(action);
-            if (action.StartsWith("shop-")) return HandleShop(action);
-            if (action.StartsWith("daily-") || action.StartsWith("tasks-")) return HandlePanels(action);
-            if (action.StartsWith("gallery-")) return HandleGallery(action);
             if (action.StartsWith("nav-")) return HandleNav(action);
+            foreach (var module in modules) if (module.Handles(action)) return module.Handle(action);
             switch (action)
             {
                 case "close": Close(); return true;
-                case "toggle-sound":
-                    Campaign.SoundOn = !Campaign.SoundOn;
-                    RefreshSettings(); return true;
-                case "toggle-haptics":
-                    SaveManager.Data.hapticsOn = !SaveManager.Data.hapticsOn; SaveManager.Save();
-                    RefreshSettings(); return true;
                 case "retry":
                     // In a level the current build keeps the Level Failed card ("You Have No Lives!" + Refill).
                     if (!LivesManager.CanPlay) { ShowFailed(false, true); return true; }
@@ -1037,14 +1036,13 @@ namespace SandJamTest.Scene3D
                     if (!EconomyManager.TrySpend(EconomyManager.RefillLivesPrice, "refill-lives"))
                     {
                         string need = "Not enough coins · need " + EconomyManager.RefillLivesPrice;
-                        if (Open == noLives.Root) SetText(noLivesInfo, need); else Configure(null, failed.Caption, null, need, 18f);
+                        if (lives.Visible) lives.ShowInfo(need); else Configure(null, failed.Caption, null, need, 18f);
                         return true;
                     }
                     LivesManager.Refill();
                     Close();
                     if (screen.Current == VideoScreen.Page.Gameplay) { gaveUp = false; screen.Feedback.Retry(); }
                     return true;
-                case "privacy": case "restore": return true; // no store / web page in the clone
                 case "hard-play": Close(); return true;
                 case "art-style-next": Close(); return true;
                 case "congrats-continue": Close(); if (screen.Levels) screen.Levels.LoadNext(); return true;
@@ -1060,7 +1058,7 @@ namespace SandJamTest.Scene3D
             // Pop-in: the original popups zoom in from about half size with a small overshoot; the HARD / BONUS
             // level cards grow more slowly (recording of level 260).
             bool slow = Open == hard.Root || Open == bonus.Root;
-            bool page = Open == shop.Root || Open == gallery.Root || Open == questMap.Root;
+            bool page = IsPage(Open);
             float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / (slow ? .5f : .3f));
             float s = page ? 1 : PopStart + (1 - PopStart) * (1 + 2.70158f * Mathf.Pow(t - 1, 3) + 1.70158f * Mathf.Pow(t - 1, 2));
             Open.transform.localScale = Vector3.one * s;
@@ -1068,13 +1066,8 @@ namespace SandJamTest.Scene3D
             if (Open == intro.Root && introGif) intro.Icon.sprite = introGif.FrameAt(Time.unscaledTime - shownAt);
             UpdateCoverFill();
             if (Open == congrats.Root && congratsRays) congratsRays.localRotation = Quaternion.Euler(0, 0, Time.unscaledTime * 12f);
-            UpdateSandQuest();
-            UpdateShop();
-            UpdateNoLives();
-            UpdatePanels();
-            UpdateGallery();
             if ((Open == lose.Root || (Open == failed.Root && !failedIsNoLives)) && !screen.Feedback.FailureVisible) Close();
-            if (Input.GetKeyDown(KeyCode.Escape) && Open == settings.Root) Close();
+            foreach (var module in modules) module.Tick();
         }
     }
 }

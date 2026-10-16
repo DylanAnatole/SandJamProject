@@ -7,7 +7,7 @@ namespace SandJamTest.Scene3D
     // category tab, a carousel of collection covers (selected one in the middle, neighbours peeking at the
     // sides, arrows), the collection bar with three milestone rewards (ticked once claimed), "Claim All Cards",
     // and a scrolling 3-column grid of the collection's pictures. Home top bar and navbar stay visible.
-    public sealed partial class PopupScreens
+    public sealed class GalleryPopup : PopupModule
     {
         Popup gallery;
         readonly List<GameObject> galleryDynamic = new List<GameObject>();
@@ -88,7 +88,8 @@ namespace SandJamTest.Scene3D
             galleryDynamic.Add(hit);
         }
 
-        void BuildGallery()
+        public override bool IsPage(GameObject root) { return gallery != null && root == gallery.Root; }
+        public override void Build()
         {
             gallery = Blank("Gallery page");
             gallery.RightButton.transform.parent.gameObject.SetActive(false);
@@ -232,6 +233,8 @@ namespace SandJamTest.Scene3D
             }
         }
 
+        public override bool Handles(string action) { return action.StartsWith("gallery-"); }
+        public override bool Handle(string action) { return HandleGallery(action); }
         bool HandleGallery(string action)
         {
             galleryPending = action;
@@ -249,7 +252,7 @@ namespace SandJamTest.Scene3D
         }
 
         // Drag / wheel scrolling of the grid; buttons fire on release without a drag (like the shop).
-        void UpdateGallery()
+        public override void Tick()
         {
             if (Open != gallery.Root) return;
             var cam = screen.UiCamera; if (!cam) return;

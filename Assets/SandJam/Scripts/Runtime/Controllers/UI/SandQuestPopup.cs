@@ -5,7 +5,7 @@ namespace SandJamTest.Scene3D
     // Sand Quest screens rebuilt from the original art (Resources/SandQuest) and design mockups:
     // the "Sand Quest has started!" offer, the desert journey (10 stepping stones to the chest, Level x/10,
     // Players left, 24h timer) and the victory / failure results. Rules live in SandQuest (Managers).
-    public sealed partial class PopupScreens
+    public sealed class SandQuestPopup : PopupModule
     {
         Popup questOffer, questMap, questResult;
         TextMesh[] questOfferTimer, questLevel, questPlayers, questTimer, questResultTitle, questResultBody, questResultPrize;
@@ -20,7 +20,8 @@ namespace SandJamTest.Scene3D
             new Vector2(230, 1390), new Vector2(510, 1350), new Vector2(670, 1265), new Vector2(465, 1235), new Vector2(255, 1210), new Vector2(440, 1120),
         };
 
-        void BuildSandQuest()
+        public override bool IsPage(GameObject root) { return questMap != null && root == questMap.Root; }
+        public override void Build()
         {
             // Offer popup.
             questOffer = Blank("Sand Quest offer popup");
@@ -73,43 +74,6 @@ namespace SandJamTest.Scene3D
         }
 
         // A popup clone with only the dark backdrop, the coin counter and the green button group kept.
-        Popup Blank(string name)
-        {
-            var p = Build(name);
-            var keep = new[] { "Dark backdrop", "bg-currency", "button-plus_0", "icon-coin", "2040", "Next" };
-            foreach (Transform child in p.Root.transform)
-                if (System.Array.IndexOf(keep, child.name) < 0) child.gameObject.SetActive(false);
-            return p;
-        }
-        void GreenButton(Popup p, float y, string action, string text, float scale = 1.05f)
-        {
-            var group = p.RightButton.transform.parent; group.localPosition = new Vector3(0, 0, group.localPosition.z);
-            foreach (Transform child in p.RightButton.transform.parent)
-                child.localPosition = new Vector3(0, y, child.localPosition.z);
-            p.RightButton.transform.parent.localScale = new Vector3(scale, scale, 1);
-            Configure(p.RightButton, p.Right, action, text);
-        }
-        void CloseX(Popup p, Vector3 local, string action)
-        {
-            var panel = Child<SpriteRenderer>(p, "Close button", local);
-            // Original glossy red button with a white rim and cross (button-exit); drawn fallback otherwise.
-            var art = Resources.Load<Sprite>("VideoUI/button-exit-v2");
-            if (art) { panel.sprite = art; float k = .62f / art.bounds.size.y; panel.transform.localScale = new Vector3(k, k, 1); }
-            else
-            {
-                panel.sprite = p.Ribbon.sprite; panel.color = new Color(.92f, .16f, .2f);
-                float s = .5f / Mathf.Max(.01f, panel.sprite.bounds.size.y);
-                panel.transform.localScale = new Vector3(s * panel.sprite.bounds.size.y / Mathf.Max(.01f, panel.sprite.bounds.size.x), s, 1);
-                Label(p, "Close X", local + new Vector3(0, 0, -.2f), "X", .06f, Color.white);
-            }
-            var hit = Child<BoxCollider>(p, "Hit area - " + action, local + new Vector3(0, 0, -.5f));
-            hit.gameObject.layer = 9; hit.size = new Vector3(.6f, .6f, .2f);
-            hit.gameObject.AddComponent<VideoUiButton>().Action = action;
-            // Under the button art so a press bounces the button, not the whole popup.
-            var scale = panel.transform.localScale;
-            hit.transform.SetParent(panel.transform, true);
-            hit.size = new Vector3(.6f / scale.x, .6f / scale.y, .2f);
-        }
         TextMesh[] TimerPill(Popup p, Vector3 local)
         {
             Art(p, "SandQuest/bg-questTime", local, 1.75f);
@@ -164,6 +128,8 @@ namespace SandJamTest.Scene3D
             Show(questResult);
         }
 
+        public override bool Handles(string action) { return action.StartsWith("quest-"); }
+        public override bool Handle(string action) { return HandleSandQuest(action); }
         bool HandleSandQuest(string action)
         {
             switch (action)
@@ -175,7 +141,7 @@ namespace SandJamTest.Scene3D
             return true;
         }
 
-        void UpdateSandQuest()
+        public override void Tick()
         {
             if (Time.frameCount % 10 == 0) RefreshQuestTexts();
         }

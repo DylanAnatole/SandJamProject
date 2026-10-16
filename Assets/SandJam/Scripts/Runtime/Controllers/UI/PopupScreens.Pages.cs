@@ -11,7 +11,7 @@ namespace SandJamTest.Scene3D
         static readonly string[] TopBarParts = { "Top bar", "icon-settings-v2", "bg-currency", "button-plus_0", "icon-coin", "2040", "Full", "icon-heart-big", "5" };
         static readonly string[] NavbarParts = { "bg-navbar", "bg-navBar-seleckted", "icon-shop", "icon-home", "icon-cards", "SHOP", "HOME", "GALLERY" };
 
-        void AddPageChrome(Popup page, string activeIcon)
+        internal void AddPageChrome(Popup page, string activeIcon)
         {
             var home = screen.Home.transform;
             foreach (Transform child in home)
@@ -39,7 +39,7 @@ namespace SandJamTest.Scene3D
         }
 
         // Lives count / timer on a page's copied top bar.
-        void RefreshPageLives(Popup page)
+        internal void RefreshPageLives(Popup page)
         {
             foreach (var label in page.Root.GetComponentsInChildren<TextMesh>(true))
             {
