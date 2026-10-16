@@ -37,8 +37,26 @@ namespace SandJamTest
         int PrioritySlot(Shooter shooter)
         {
             if (shooter == null || shooter.IsFrozen || (shooter.Partner != null && shooter.Partner.IsFrozen) || !Lanes.Any(l => l.Contains(shooter))) return -1;
-            if (shooter.Partner != null && !Lanes.Any(l => l.Contains(shooter.Partner))) return -1;
+            if (shooter.Partner != null && !PairUnblocked(shooter)) return -1;
             return FreeSlotFor(shooter);
+        }
+        // A chained pair only moves together when nothing stands in front of it: one behind the other at the
+        // front of the same lane, or both at the front of their lanes.
+        bool PairUnblocked(Shooter shooter)
+        {
+            int laneA, rowA, laneB, rowB;
+            if (!Find(shooter, out laneA, out rowA) || !Find(shooter.Partner, out laneB, out rowB)) return false;
+            if (laneA == laneB) return Math.Min(rowA, rowB) == 0 && Math.Abs(rowA - rowB) == 1;
+            return rowA == 0 && rowB == 0;
+        }
+        bool Find(Shooter shooter, out int lane, out int row)
+        {
+            for (lane = 0; lane < Lanes.Length; lane++)
+            {
+                row = 0;
+                foreach (var queued in Lanes[lane]) { if (queued == shooter) return true; row++; }
+            }
+            lane = row = -1; return false;
         }
 
         public bool SelectPriority(Shooter shooter)

@@ -43,13 +43,21 @@ namespace SandJamTest.Editor
             var delayed=new SandGame(delayedData);
             Check(delayed.SelectLane(0),"Ordinary leader cannot move");
             Check(!delayed.SelectLane(0) && delayed.Lanes[0].Count==1 && delayed.Lanes[1].Count==2,"Pair moved through a blocking leader");
+            // The Select booster may pull a blocked single cube, but never a pair that something stands in front of.
+            var picked=new SandGame(delayedData);
+            var pairMember=picked.Lanes[0].Last();
+            Check(!picked.CanSelectPriority(pairMember) && !picked.SelectPriority(pairMember) && picked.Lanes.All(l=>l.Count==2),"Select booster pulled a blocked pair");
+            var singleData=Data();
+            singleData.laneData=new[]{new LaneData{ColorAmmoDatas=new[]{new CharacterData{ColorType=4,AmmoCount=1},new CharacterData{ColorType=8,AmmoCount=1}}}};
+            var single=new SandGame(singleData);
+            Check(single.SelectPriority(single.Lanes[0].Last()) && single.Lanes[0].Count==1,"Select booster could not pull a single cube from behind");
             var hiddenData=Data();
             hiddenData.laneData[1].ColorAmmoDatas=new[]{new CharacterData{ColorType=4,AmmoCount=1},hiddenData.laneData[1].ColorAmmoDatas[0]};
             // Pair flags must line up in the exported row; malformed exports fail loudly.
             bool rejected=false;try{new SandGame(hiddenData);}catch(ArgumentException){rejected=true;}
             Check(rejected,"Malformed pair accepted");
             Directory.CreateDirectory("TestResults/Chain");
-            File.WriteAllText("TestResults/Chain/model-checks.txt","PASS: Cross-lane and same-lane pairs\nPASS: Atomic select and stable left/right order\nPASS: Emptied partner frees its slot at once\nPASS: Insufficient, locked and fragmented slots rejected\nPASS: Partner behind leader blocks entire pair\nPASS: Malformed pair rejected\n");
+            File.WriteAllText("TestResults/Chain/model-checks.txt","PASS: Cross-lane and same-lane pairs\nPASS: Atomic select and stable left/right order\nPASS: Emptied partner frees its slot at once\nPASS: Insufficient, locked and fragmented slots rejected\nPASS: Partner behind leader blocks entire pair\nPASS: Select booster never pulls a blocked pair\nPASS: Malformed pair rejected\n");
         }
     }
 }

@@ -43,7 +43,13 @@ namespace SandJamTest.Editor
             chainedData.laneData[0].ColorAmmoDatas[1].IsChain=true;
             chainedData.laneData[1].ColorAmmoDatas[1]=Character(3);chainedData.laneData[1].ColorAmmoDatas[1].IsChain=true;
             var chained=new SandGame(chainedData);var a=chained.Lanes[0].ElementAt(1);var b=chained.Lanes[1].ElementAt(1);
-            Check(chained.SelectPriority(b) && chained.Slots[0]==a && chained.Slots[1]==b,"Priority broke linked pair");
+            // A pair behind other cubes is blocked (it only moves when nothing stands in front of it).
+            Check(!chained.SelectPriority(b) && chained.Lanes[0].Contains(a) && chained.Lanes[1].Contains(b),"Priority pulled a blocked linked pair");
+            var frontData=Data();
+            frontData.laneData[0].ColorAmmoDatas[0].IsChain=true;
+            frontData.laneData[1].ColorAmmoDatas[0]=Character(3);frontData.laneData[1].ColorAmmoDatas[0].IsChain=true;
+            var front=new SandGame(frontData);var fa=front.Lanes[0].Peek();var fb=front.Lanes[1].Peek();
+            Check(front.SelectPriority(fb) && front.Slots[0]==fa && front.Slots[1]==fb,"Priority broke linked pair");
             var shortData=Data();shortData.laneData[2].ColorAmmoDatas=new[]{Character(1)};
             var shortGame=new SandGame(shortData);var single=shortGame.Lanes[2].Peek();
             Check(shortGame.SwapFrontRows() && shortGame.Lanes[2].Peek()==single,"Short lane lost its shooter");

@@ -433,7 +433,7 @@ namespace SandJamTest.Scene3D
             if(Current==Page.Celebration && elapsed>SuperbFx.Duration)Show(Page.Result);
             if(Current==Page.Gameplay && Controller.Game!=null)
             {
-                Status.text=Controller.Game.State==GameState.Lost?"":!string.IsNullOrEmpty(Boosters.Message)?Boosters.Message:Controller.SelectionFeedback;
+                Status.text=Controller.Game.State==GameState.Lost?"":Controller.SelectionFeedback;
                 if(Controller.Game.State==GameState.Won)
                 {
                     Levels.RecordCompletion();
