@@ -62,7 +62,7 @@ namespace SandJamTest.Scene3D
                 var go = new GameObject("Chain (original)"); go.transform.SetParent(First.transform.parent, false);
                 pairFilter = go.AddComponent<MeshFilter>();
                 pair = go.AddComponent<MeshRenderer>(); pair.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                pairFirst = new Material(Shader.Find("Standard")) { name = "Chain first" }; pairFirst.SetFloat("_Glossiness", .8f);
+                pairFirst = new Material(Shader.Find("Standard")) { name = "Chain first" }; pairFirst.SetFloat("_Glossiness", .7f);
                 pairSecond = new Material(pairFirst) { name = "Chain second" };
                 pair.sharedMaterials = new[] { pairFirst, pairSecond };
             }
@@ -73,7 +73,7 @@ namespace SandJamTest.Scene3D
             // Submesh 0 is the -x half of the back chain but the +x half of the cage; First always sits at -x.
             var materials = cage ? new[] { pairSecond, pairFirst } : new[] { pairFirst, pairSecond };
             if (pair.sharedMaterials[0] != materials[0]) pair.sharedMaterials = materials;
-            pairFirst.SetColor("_EmissionColor", pairFirst.color * .6f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .6f);
+            pairFirst.SetColor("_EmissionColor", pairFirst.color * .55f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .55f);
             // Both blocks wear their loops at the same height (the original chains lie level, tilted with the blocks).
             var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
             float top = CharacterSandVessel.BlockSize.y * ChainTop;
@@ -90,8 +90,8 @@ namespace SandJamTest.Scene3D
             if (Mathf.Abs(half - bentFor) > .01f || mesh != bentSource)
             {
                 // The loops keep their shape; only the part between them stretches across the gap.
-                if (cage) Bend(mesh, half, CageCentre, CageHalfCentre, .35f, 1f);
-                else Bend(mesh, half, Vector3.zero, PairLoopCentre, .9f, 1f);
+                if (cage) Bend(mesh, half, CageCentre, CageHalfCentre, .35f, 0);
+                else Bend(mesh, half, Vector3.zero, PairLoopCentre, .9f, TubeInflate);
             }
             var t = pair.transform;
             t.position = (a + b) * .5f;
@@ -112,20 +112,24 @@ namespace SandJamTest.Scene3D
             lowerRing.transform.localScale = t.localScale;
             return true;
         }
-        // Copy of a chain mesh, re-centred on centre, with its two block loops moved to +-half (shape kept, lengthened
-        // along the pair by stretch) and the part between them (|x| < inner) stretched or shortened to fill the gap.
-        // Back chain: the loops are lengthened so their front strand passes in front of the block like a basket.
-        void Bend(Mesh source, float half, Vector3 centre, float loopCentre, float inner, float stretch)
+        // The original back-chain tubes read about twice as thick as the mesh gives at our block size: every vertex is
+        // pushed out along its normal by this much (mesh units), which keeps the tubes round. (The cage mesh has hard,
+        // split edges that this would tear apart; its rails are already thick enough.)
+        const float TubeInflate = .03f;
+        // Copy of a chain mesh, re-centred on centre, with its two block loops moved to +-half (shape kept) and the
+        // part between them (|x| < inner) stretched or shortened to fill the gap; tubes thickened by inflate.
+        void Bend(Mesh source, float half, Vector3 centre, float loopCentre, float inner, float inflate)
         {
             bentFor = half;
             if (source != bentSource) { if (pairBent) Destroy(pairBent); pairBent = null; bentSource = source; }
-            var v = source.vertices;
-            float span = Mathf.Max(.2f, half - (loopCentre - inner) * stretch);
+            var v = source.vertices; var n = source.normals;
+            float span = Mathf.Max(.2f, half - (loopCentre - inner));
             for (int i = 0; i < v.Length; i++)
             {
                 v[i] -= centre;
                 float x = v[i].x, ax = Mathf.Abs(x), sign = Mathf.Sign(x);
-                v[i].x = ax >= inner ? sign * (half + (ax - loopCentre) * stretch) : x / inner * span;
+                v[i].x = ax >= inner ? sign * (half + ax - loopCentre) : x / inner * span;
+                if (inflate > 0 && n.Length == v.Length) v[i] += n[i] * inflate;
             }
             if (!pairBent) { pairBent = Instantiate(source); pairBent.name = "Chain (fitted)"; pairBent.ClearBlendShapes(); }
             pairBent.vertices = v; pairBent.RecalculateBounds(); pairBent.RecalculateNormals();
@@ -161,7 +165,7 @@ namespace SandJamTest.Scene3D
         static Color ColorOf(SceneActorView actor)
         {
             var color = actor.Shooter != null ? ColorPalette.Of(actor.Shooter.Color) : Color.white;
-            color = Color.Lerp(color * 1.2f, Color.white, .1f); color.a = 1;
+            color *= 1.15f; color.a = 1;
             return color;
         }
         static void Paint(Material material, Color color)
