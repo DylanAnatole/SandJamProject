@@ -152,6 +152,14 @@ namespace SandJamTest
 
         public bool CanSelectLane(int lane) { int partnerLane; return SelectionSlot(lane, out partnerLane) >= 0; }
 
+        // Mystery cube rule: its colour stays hidden while it waits behind another cube in its lane.
+        public bool IsHidden(Shooter shooter, int lane)
+        {
+            if (shooter == null || !shooter.Secret || lane < 0 || lane >= Lanes.Length) return false;
+            var queue = Lanes[lane];
+            return queue.Count > 0 && queue.Peek() != shooter && queue.Contains(shooter);
+        }
+
         int SelectionSlot(int lane, out int partnerLane)
         {
             partnerLane = -1;

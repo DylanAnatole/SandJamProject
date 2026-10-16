@@ -4,7 +4,8 @@ using UnityEngine;
 namespace SandJamTest.Scene3D
 {
     // Presentation-only effects modelled on the original: pour dust, region-complete bubble burst,
-    // shooter recoil, arrival puff and departure poof. Polls game state; never changes rules.
+    // shooter recoil, arrival puff, departure poof, the flash where a chain snaps when its pair is picked and the
+    // smoke a mystery cube shows its colour in. Polls game state; never changes rules.
     public sealed class SandFx : MonoBehaviour
     {
         const float Front = -.45f; // towards the camera so effects draw over the board
@@ -17,7 +18,7 @@ namespace SandJamTest.Scene3D
         Material bubbleMaterial;
         static Texture2D softDot, ring, voxel;
 
-        sealed class ActorState { public int Ammo; public bool Departing, AtRest; public float Pulse; public Vector3 BaseScale; }
+        sealed class ActorState { public int Ammo; public bool Departing, AtRest, Hidden; public float Pulse; public Vector3 BaseScale; public SceneActorView Partner; }
         sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Rim; public float Age, Life, Size; }
 
         public void Bind(SandJamSceneController owner)
@@ -101,6 +102,28 @@ namespace SandJamTest.Scene3D
             return ps;
         }
 
+        SceneActorView PartnerOf(SceneActorView actor)
+        {
+            foreach (var other in controller.Characters) if (other && other.Shooter == actor.Shooter.Partner) return other;
+            return null;
+        }
+        void RevealSmoke(Vector3 p)
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                var v = Random.insideUnitCircle * .45f;
+                Emit(puff, p + (Vector3)(Random.insideUnitCircle * .3f), new Vector3(v.x, .3f + Random.Range(0, .3f), 0), new Color(1, 1, 1, .85f), Random.Range(.8f, 1.2f), Random.Range(.55f, .8f));
+            }
+        }
+        void ChainSnap(Vector3 p)
+        {
+            Emit(sparkle, p, Vector3.zero, new Color(1, 1, .85f, 1), 1.4f, .22f); // the glow
+            for (int i = 0; i < 16; i++)
+            {
+                var v = Random.insideUnitCircle.normalized * Random.Range(3f, 4.5f);
+                Emit(sparkle, p, v, Color.white, Random.Range(.09f, .14f), Random.Range(.16f, .26f));
+            }
+        }
         static void Emit(ParticleSystem ps, Vector3 position, Vector3 velocity, Color color, float size, float life)
         {
             var p = new ParticleSystem.EmitParams { position = position, velocity = velocity, startColor = color, startSize = size, startLifetime = life, applyShapeToPosition = false };
@@ -270,7 +293,22 @@ namespace SandJamTest.Scene3D
                 if (!actors.TryGetValue(actor, out state))
                 {
                     state = new ActorState { Ammo = actor.Shooter.Ammo, Departing = actor.Departing, AtRest = actor.AtRest, BaseScale = actor.transform.localScale };
+                    state.Hidden = game.IsHidden(actor.Shooter, actor.SourceLane);
                     actors.Add(actor, state);
+                }
+                // Mystery cube reaching the front of its lane: it shows its colour inside a soft white cloud.
+                bool hidden = game.IsHidden(actor.Shooter, actor.SourceLane);
+                if (state.Hidden && !hidden && actor.gameObject.activeInHierarchy) RevealSmoke(actor.transform.position + new Vector3(0, .35f, Front));
+                state.Hidden = hidden;
+                // Chained pair picked: the chain snaps with a white flash between the two cubes (shown once per pair).
+                if (actor.Shooter.Partner != null)
+                {
+                    if (!state.Partner || state.Partner.Shooter != actor.Shooter.Partner) state.Partner = PartnerOf(actor);
+                }
+                else if (state.Partner)
+                {
+                    if (actor.GetInstanceID() < state.Partner.GetInstanceID()) ChainSnap((actor.transform.position + state.Partner.transform.position) * .5f + new Vector3(0, .45f, Front));
+                    state.Partner = null;
                 }
                 if (!actor.gameObject.activeInHierarchy) continue;
                 Color color = ColorPalette.Of(actor.Shooter.Color);
