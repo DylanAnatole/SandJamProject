@@ -72,10 +72,10 @@ namespace SandJamTest.Scene3D
             }
             return Track(r, parent);
         }
-        TextMesh[] GalleryText(string text, float x, float y, float size, float z)
+        TextMesh[] GalleryText(string text, float x, float y, float size, float z, Transform parent = null)
         {
             var labels = OutlinedLabel(gallery, "Gallery text", new Vector3(x, y, z), size);
-            SetText(labels, text); galleryDynamic.Add(labels[0].gameObject);
+            SetText(labels, text); Track(labels[0], parent);
             return labels;
         }
         void GalleryHit(float x, float y, float w, float h, string action, Transform parent = null)
@@ -182,17 +182,31 @@ namespace SandJamTest.Scene3D
             {
                 int level = info.Start + i; bool done = level <= won;
                 float x = (i % 3 - 1) * gx, y = -.85f - (i / 3) * gy;
-                GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
-                if (!done) continue;
-                string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
+                bool waiting = done && GalleryCollections.CardWaiting(level);
                 // Inside the slot frame's blue rim: rows 12-383 and columns 12-311 of the 324x450 art (measured top down;
                 // the art has a transparent strip at the bottom, so that area sits above the sprite's centre).
                 float vw = cw * 300f / 324f, vh = ch * 372f / 450f, vy = y + ch * (.5f - (12f + 384f) / 2f / 450f), rim = cw * .025f;
+                if (waiting) { ClaimCard(level, x, y, vy, vw, vh, cw, ch); continue; }
+                GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
+                if (!done) continue;
+                string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
                 MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
             }
             int rows = (info.Count + 2) / 3;
             scroll.Max = Mathf.Max(0, .85f + rows * gy - (GridTop - GridBottom));
             ClipGrid();
+        }
+
+        // A won level's card still face down (original): the "?" card in a gold frame with a "Claim" strip.
+        void ClaimCard(int level, float x, float y, float cardY, float cardW, float cardH, float cw, float ch)
+        {
+            var gold = Track(Child<SpriteRenderer>(gallery, "Claim frame", new Vector3(x, cardY, -6.29f)), galleryGrid);
+            gold.sprite = SpriteFactory.Rounded(64, 22, 260); gold.drawMode = SpriteDrawMode.Sliced;
+            gold.size = new Vector2(cardW + .14f, cardH + .14f); gold.color = new Color(1f, .78f, .22f);
+            GalleryArt("bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
+            GalleryArt("GalleryPage/Group 10298", x, cardY - cardH * .36f, cardW * .9f, .3f, -6.36f, galleryGrid);
+            GalleryText("Claim", x, cardY - cardH * .36f, .032f, -6.4f, galleryGrid);
+            GalleryHit(x, y, cw, ch, "gallery-card:" + level, galleryGrid);
         }
 
         void GalleryArrow(int direction)
@@ -236,7 +250,8 @@ namespace SandJamTest.Scene3D
             var info = galleryList[galleryIndex];
             if (action == "gallery-prev") galleryIndex = Mathf.Max(0, galleryIndex - 1);
             else if (action == "gallery-next") galleryIndex = Mathf.Min(galleryList.Count - 1, galleryIndex + 1);
-            else if (action == "gallery-claim-all") for (int m = 0; m < 3; m++) GalleryCollections.ClaimMilestone(info, m);
+            else if (action == "gallery-claim-all") GalleryCollections.ClaimAllCards(info);
+            else if (action.StartsWith("gallery-card:")) GalleryCollections.ClaimCard(int.Parse(action.Substring(13)));
             else if (action.StartsWith("gallery-claim:")) GalleryCollections.ClaimMilestone(info, int.Parse(action.Substring(14)));
             RefreshPopupCoins();
             RefreshGallery();

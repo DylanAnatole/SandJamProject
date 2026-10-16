@@ -85,7 +85,7 @@ chạy thật, gói tiền thật chỉ hiển thị (không có thanh toán).
 **Sand Quest** (`SandQuest` + `SandQuestPopup.cs`): từ màn 30, bấm rương JOIN ở Home; thắng 10 màn liên tiếp trong 24 giờ,
 số người chơi giảm theo `botProgressionList` gốc, về đích chia giải 1000 xu; thua 1 màn hoặc hết giờ là trượt.
 **Shop / Gallery** là trang có thanh trên và thanh SHOP/HOME/GALLERY như bản thật (`PopupScreens.Pages.cs`).
-Gallery: mỗi bộ hiện tên, ảnh bìa và tranh của chính nó; băng chuyền ảnh bìa, 3 mốc thưởng, "Nhận tất cả".
+Gallery: mỗi bộ hiện tên, ảnh bìa và tranh của chính nó; băng chuyền ảnh bìa, 3 mốc thưởng; tranh của màn đã thắng úp "? Claim" (viền vàng) tới khi nhận từng thẻ hoặc "Claim All Cards".
 **Home** (tắt mặc định vì bản hiện tại không hiện, bật bằng `PopupScreens.ShowTaskWidgets`): nút QUÀ (quà 7 ngày, `DailyRewards`), NGÀY / TUẦN (nhiệm vụ, `TaskBoard`, dữ liệu theo
 Default_RemoteDailyQuestConfig gốc: mỗi kỳ chọn 1 nhiệm vụ mỗi bậc, hoàn thành nhận sao, đủ mốc sao mở rương),
 GALLERY (bộ sưu tập: ảnh bìa tô dần, 3 mốc thưởng, lưới thẻ tranh), NO MORE LIVES khi bấm PLAY lúc hết tim.

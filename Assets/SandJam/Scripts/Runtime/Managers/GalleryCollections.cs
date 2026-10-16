@@ -78,12 +78,37 @@ namespace SandJamTest
             return true;
         }
 
-        // Original navbar badge: a collection milestone has been reached but its reward not collected yet.
+        // Original cards: the picture of a won level waits face down ("? Claim") until the player claims it, one by
+        // one or with "Claim All Cards". Stored with the milestone claims as "card:<level>".
+        public static bool CardWaiting(int level) { return level <= Campaign.LevelNumber - 1 && !SaveManager.Data.galleryClaims.Contains("card:" + level); }
+        public static bool ClaimCard(int level)
+        {
+            if (!CardWaiting(level)) return false;
+            SaveManager.Data.galleryClaims.Add("card:" + level);
+            SaveManager.Save();
+            GameEvents.RaiseGalleryChanged();
+            return true;
+        }
+        public static void ClaimAllCards(Info info)
+        {
+            bool any = false;
+            for (int level = info.Start; level < info.Start + info.Count; level++)
+                if (CardWaiting(level)) { SaveManager.Data.galleryClaims.Add("card:" + level); any = true; }
+            if (!any) return;
+            SaveManager.Save();
+            GameEvents.RaiseGalleryChanged();
+        }
+
+        // Original navbar badge: a card waits to be claimed or a milestone reward to be collected.
         public static bool HasUnclaimedReward()
         {
             foreach (var info in Unlocked())
+            {
                 for (int m = 0; m < 3; m++)
                     if (MilestoneReached(info, m) && !MilestoneClaimed(info, m)) return true;
+                for (int level = info.Start; level < info.Start + info.Count; level++)
+                    if (CardWaiting(level)) return true;
+            }
             return false;
         }
 
