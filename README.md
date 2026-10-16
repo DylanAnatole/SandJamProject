@@ -103,7 +103,7 @@ badge HUD đỏ có đầu lâu, nền tối (`OriginalLookStyler.Hard*`).
 
 | Cơ chế | Luật | Level thật giải được |
 |---|---|---|
-| Khối nối (IsChain) | Cặp nối lên ô chờ cùng lúc, cần 2 ô liền kề; dọc = cùng hàng, ngang = hai hàng cạnh nhau | có sẵn |
+| Khối nối (IsChain) | Cặp nối lên ô chờ cùng lúc khi không bị chặn, vào 2 ô trống bất kỳ (không cần liền kề); dọc = cùng làn, ngang = hai làn cạnh nhau | có sẵn |
 | Nửa khối (IsHalf) | Hình nêm; lên ô chờ thì ngủ (zZ), không bắn; 2 nửa cùng màu trong ô chờ ghép thành 1 khối đầy | 19/21 |
 | Đóng băng (IsFreeze) | Số trên băng giảm 1 mỗi khối khác được đưa lên ô chờ (cặp nối: 2); về 0 thì vỡ | 17/19 |
 | Ổ khóa (IsUnlocker / IsUnlockerPart → IsUnlockedPart) | Vùng sọc + ổ khóa; chỉ khối có chìa khóa cùng màu bắn vào ổ khóa; về 0 thì vùng bị khóa mở cho khối thường | 20/20 |

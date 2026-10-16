@@ -34,9 +34,13 @@ namespace SandJamTest.Editor
             }
             var blocked=new SandGame(Data(),1);
             Check(!blocked.SelectLane(0) && blocked.Moves==0 && blocked.Lanes.All(l=>l.Count==1),"Insufficient capacity changed queues");
-            var lockedData=Data();lockedData.gridSlotNeedAmmoCount=new[]{0,10,0,10,10};
+            // Original: a pair splits across any two free slots, even apart; one free slot is not enough.
+            var splitData=Data();splitData.gridSlotNeedAmmoCount=new[]{0,10,0,10,10};
+            var split=new SandGame(splitData,5,null,true);
+            Check(split.SelectLane(1) && split.Slots[0]!=null && split.Slots[1]==null && split.Slots[2]!=null,"Pair did not take two separate free slots");
+            var lockedData=Data();lockedData.gridSlotNeedAmmoCount=new[]{0,10,10,10,10};
             var locked=new SandGame(lockedData,5,null,true);
-            Check(!locked.SelectLane(1) && locked.SpentAmmo==0,"Locked or separated slots accepted a pair");
+            Check(!locked.SelectLane(1) && locked.SpentAmmo==0,"A pair was accepted with only one free slot");
             var delayedData=Data();
             foreach(var lane in delayedData.laneData)
                 lane.ColorAmmoDatas=new[]{new CharacterData{ColorType=8,AmmoCount=1},lane.ColorAmmoDatas[0]};
@@ -57,7 +61,7 @@ namespace SandJamTest.Editor
             bool rejected=false;try{new SandGame(hiddenData);}catch(ArgumentException){rejected=true;}
             Check(rejected,"Malformed pair accepted");
             Directory.CreateDirectory("TestResults/Chain");
-            File.WriteAllText("TestResults/Chain/model-checks.txt","PASS: Cross-lane and same-lane pairs\nPASS: Atomic select and stable left/right order\nPASS: Emptied partner frees its slot at once\nPASS: Insufficient, locked and fragmented slots rejected\nPASS: Partner behind leader blocks entire pair\nPASS: Select booster never pulls a blocked pair\nPASS: Malformed pair rejected\n");
+            File.WriteAllText("TestResults/Chain/model-checks.txt","PASS: Cross-lane and same-lane pairs\nPASS: Atomic select and stable left/right order\nPASS: Emptied partner frees its slot at once\nPASS: Pair splits across two separate free slots; one free slot rejected\nPASS: Partner behind leader blocks entire pair\nPASS: Select booster never pulls a blocked pair\nPASS: Malformed pair rejected\n");
         }
     }
 }

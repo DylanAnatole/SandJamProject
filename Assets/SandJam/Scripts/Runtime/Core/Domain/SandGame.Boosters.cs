@@ -80,7 +80,7 @@ namespace SandJamTest
                 var remaining = lane.Where(s => s != shooter && s != pair).ToArray();
                 lane.Clear(); foreach (var s in remaining) lane.Enqueue(s);
             }
-            for (int i = 0; i < ordered.Length; i++) Slots[slot + i] = ordered[i];
+            for (int i = 0; i < ordered.Length; i++) { Slots[slot] = ordered[i]; slot = FreeSlot(slot + 1); }
             AdvanceFreeze(ordered.Length);
             Moves++; Revision++;
             Evaluate();

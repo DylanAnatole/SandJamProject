@@ -121,9 +121,10 @@ namespace SandJamTest
             else
             {
                 var second = Lanes[partnerLane].Dequeue();
-                // Keep left/right order stable even when the right member was clicked.
+                // Keep left/right order stable even when the right member was clicked; the second member takes the
+                // next free slot, wherever it is (original: the pair splits across two separate free slots).
                 Slots[slot] = partnerLane < lane ? second : first;
-                Slots[slot + 1] = partnerLane < lane ? first : second;
+                Slots[FreeSlot(slot + 1)] = partnerLane < lane ? first : second;
             }
             bool pair = first.Partner != null;
             AdvanceFreeze(pair ? 2 : 1);
@@ -167,12 +168,16 @@ namespace SandJamTest
             }
             return FreeSlotFor(first);
         }
-        // First open, empty stash slot for the shooter (a chained pair needs two side by side); -1 when none.
+        // First open, empty stash slot for the shooter; a chained pair also needs a second one, anywhere after it
+        // (original: the two cubes run to two separate free slots). -1 when there is no room.
         int FreeSlotFor(Shooter shooter)
         {
-            for (int i = 0; i < Slots.Length; i++)
-                if (Slots[i] == null && SlotRemaining(i) == 0 &&
-                    (shooter.Partner == null || i + 1 < Slots.Length && Slots[i + 1] == null && SlotRemaining(i + 1) == 0)) return i;
+            int first = FreeSlot(0);
+            return first < 0 || shooter.Partner == null || FreeSlot(first + 1) >= 0 ? first : -1;
+        }
+        int FreeSlot(int from)
+        {
+            for (int i = from; i < Slots.Length; i++) if (Slots[i] == null && SlotRemaining(i) == 0) return i;
             return -1;
         }
 
