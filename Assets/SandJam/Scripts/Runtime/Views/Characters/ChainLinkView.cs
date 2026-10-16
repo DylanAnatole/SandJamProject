@@ -2,10 +2,12 @@ using UnityEngine;
 
 namespace SandJamTest.Scene3D
 {
-    // Chained pair, drawn with the original chain meshes while both cubes wait in their lanes:
+    // Chained pair, drawn with the original chain meshes while both cubes wait in their lanes. As in the original
+    // Character prefab each chain is two copies, one around the blocks' top and one lower down, so the pair reads
+    // as a cage:
     // - one behind the other (same lane): "ChainBack" (NurbsPath), a loop around each block crossing in an X;
-    // - side by side (two lanes): "ChainRight" (pCube3) squashed flat into a ring around both blocks, each half in
-    //   its block's colour; a second copy ("ChainRight (1)") lower down, so the pair reads as one cage.
+    // - side by side (two lanes): "ChainRight" (pCube3) squashed flat into a ring around both blocks.
+    // Each half is in its block's colour.
     // Without the original meshes each cube gets a procedural tube loop pointing at its partner.
     public sealed class ChainLinkView : MonoBehaviour
     {
@@ -31,7 +33,9 @@ namespace SandJamTest.Scene3D
         static Mesh CageMesh() { if (!cageLoaded) { cageLoaded = true; cageMesh = Resources.Load<Mesh>("Mechanics/ChainLoop"); } return cageMesh; }
         static readonly Vector3 CageCentre = new Vector3(.93f, -.04f, 0);
         const float CageHalfCentre = .74f, CageHalfWidth = 1.48f, CageMeshDepth = 1.134f, CageFlat = .040f / .604f;
-        const float CageTop = .95f, CageLow = .3f; // ring heights, fractions of the block height
+        // Top copy height (fraction of the block height) and how far below it the second copy sits, in mesh units
+        // of each chain (original: ChainRight (1) 13.78 x 0.040 / 0.604, ChainBack (1) 0.859).
+        const float ChainTop = .95f, CageLowerDrop = 13.78f * .0404f / .604f, BackLowerDrop = .8588f;
 
         public void SetInQueue(bool inQueue)
         {
@@ -63,55 +67,49 @@ namespace SandJamTest.Scene3D
                 pair.sharedMaterials = new[] { pairFirst, pairSecond };
             }
             pair.enabled = visible;
-            if (lowerRing) lowerRing.enabled = visible && cage;
+            if (lowerRing) lowerRing.enabled = visible;
             if (!visible) return true;
             Paint(pairFirst, ColorOf(First)); Paint(pairSecond, ColorOf(Second));
             // Submesh 0 is the -x half of the back chain but the +x half of the cage; First always sits at -x.
             var materials = cage ? new[] { pairSecond, pairFirst } : new[] { pairFirst, pairSecond };
             if (pair.sharedMaterials[0] != materials[0]) pair.sharedMaterials = materials;
             pairFirst.SetColor("_EmissionColor", pairFirst.color * .6f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .6f);
-            // Each loop wraps its block a little above mid height (original), as a round tube: the mesh keeps one
-            // uniform scale, so the strands are never squashed into flat ribbons.
+            // Both blocks wear their loops at the same height (the original chains lie level, tilted with the blocks).
             var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
-            // Original: the cube further back wears its loop high, around its top; the front cube wears it low around its
-            // body, so the strands slope down across the gap (side by side pairs: both at the same height).
-            float h = CharacterSandVessel.BlockSize.y;
-            float ha = cage ? h * CageTop : order > 0 ? h * .86f : h * .5f, hb = cage ? h * CageTop : order > 0 ? h * .5f : h * .86f;
-            var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, ha, 0))); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, hb, 0)));
+            float top = CharacterSandVessel.BlockSize.y * ChainTop;
+            var a = First.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, top, 0))); var b = Second.Visual.TransformPoint(frame.MultiplyPoint3x4(new Vector3(0, top, 0)));
             var blockUp = First.Visual.TransformDirection(frame.MultiplyVector(Vector3.up)).normalized;
             var along = b - a; float distance = along.magnitude; if (distance < .01f) return true;
             along /= distance;
-            // The pair's plane tilts with the slope; its up stays as close to the blocks' up as possible.
             var up = (blockUp - along * Vector3.Dot(blockUp, along)).normalized;
             float worldScale = First.Visual.lossyScale.x;
-            float scale = (CharacterSandVessel.BlockSize.x + .16f) * worldScale / (cage ? CageHalfWidth : PairLoopWidth); // just wider than the block
+            // Round tubes: one uniform scale (the cage only squashed flat, as the original). The back chain's loops hug
+            // the block; the cage ring stands a little off it.
+            float scale = (CharacterSandVessel.BlockSize.x + (cage ? .10f : .12f)) * worldScale / (cage ? CageHalfWidth : PairLoopWidth);
             float half = distance * .5f / scale; // loop centre in mesh units
             if (Mathf.Abs(half - bentFor) > .01f || mesh != bentSource)
             {
-                if (cage) Bend(mesh, half, CageCentre, CageHalfCentre, .35f, 1f); // halves keep their shape, the middle stretches
-                else Bend(mesh, half, Vector3.zero, PairLoopCentre, .9f, 1.45f);
+                // The loops keep their shape; only the part between them stretches across the gap.
+                if (cage) Bend(mesh, half, CageCentre, CageHalfCentre, .35f, 1f);
+                else Bend(mesh, half, Vector3.zero, PairLoopCentre, .9f, 1f);
             }
             var t = pair.transform;
             t.position = (a + b) * .5f;
             t.rotation = Quaternion.LookRotation(Vector3.Cross(along, up), up); // local +x = along (First at -x)
             var ps = t.parent ? t.parent.lossyScale : Vector3.one;
-            // The ring clears the block on every side (front rails stay in front of the tilted block).
-            float depth = (CharacterSandVessel.BlockSize.z + .24f) * worldScale / CageMeshDepth;
+            // The cage ring clears the block on every side (front rails stay in front of the tilted block).
+            float depth = (CharacterSandVessel.BlockSize.z + .16f) * worldScale / CageMeshDepth;
             t.localScale = cage ? new Vector3(scale / ps.x, scale * CageFlat / ps.y, depth / ps.z) : new Vector3(scale / ps.x, scale / ps.y, scale / ps.z);
-            if (cage)
+            if (!lowerRing)
             {
-                if (!lowerRing)
-                {
-                    var go = new GameObject("Chain (original, lower ring)"); go.transform.SetParent(t.parent, false);
-                    go.AddComponent<MeshFilter>().sharedMesh = pairFilter.sharedMesh;
-                    lowerRing = go.AddComponent<MeshRenderer>(); lowerRing.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                }
-                lowerRing.GetComponent<MeshFilter>().sharedMesh = pairFilter.sharedMesh;
-                lowerRing.sharedMaterials = materials;
-                var drop = blockUp * (h * (CageTop - CageLow) * worldScale);
-                lowerRing.transform.SetPositionAndRotation(t.position - drop, t.rotation);
-                lowerRing.transform.localScale = t.localScale;
+                var go = new GameObject("Chain (original, lower copy)"); go.transform.SetParent(t.parent, false);
+                go.AddComponent<MeshFilter>();
+                lowerRing = go.AddComponent<MeshRenderer>(); lowerRing.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
+            lowerRing.GetComponent<MeshFilter>().sharedMesh = pairFilter.sharedMesh;
+            if (lowerRing.sharedMaterials.Length == 0 || lowerRing.sharedMaterials[0] != materials[0]) lowerRing.sharedMaterials = materials;
+            lowerRing.transform.SetPositionAndRotation(t.position - up * ((cage ? CageLowerDrop : BackLowerDrop) * scale), t.rotation);
+            lowerRing.transform.localScale = t.localScale;
             return true;
         }
         // Copy of a chain mesh, re-centred on centre, with its two block loops moved to +-half (shape kept, lengthened
