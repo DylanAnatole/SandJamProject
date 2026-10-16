@@ -173,7 +173,7 @@ namespace SandJamTest.Scene3D
             }
             if (action == "rocket")
             {
-                var choices = Enumerable.Range(0,controller.Game.Regions.Length).Where(i=>!controller.Game.Regions[i].InformationVisible).ToArray();
+                var choices = Enumerable.Range(0,controller.Game.Regions.Length).Where(controller.Game.CanRevealRegion).ToArray();
                 if (choices.Length == 0) return false;
                 Pay(action);
                 StartCoroutine(Reveal(choices[Random.Range(0, choices.Length)])); return true;

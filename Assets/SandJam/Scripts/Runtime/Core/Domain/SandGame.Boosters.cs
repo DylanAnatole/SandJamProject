@@ -5,12 +5,21 @@ namespace SandJamTest
 {
     public sealed partial class SandGame
     {
-        public bool RevealRegion(int index)
+        // Flare: a random locked region shows its colour and amount and opens, so it can be filled right away.
+        // Parts behind a padlock (unlocker mechanic) are left alone: only their key cubes open them.
+        public bool CanRevealRegion(int index)
         {
             if (State != GameState.Playing || index < 0 || index >= Regions.Length) return false;
             var region = Regions[index];
-            if (region.Open || region.Revealed || region.Remaining <= 0) return false;
-            region.Revealed = true; Revision++;
+            return !region.Open && region.Remaining > 0 && !region.Data.IsUnlockedPart;
+        }
+        public bool RevealRegion(int index)
+        {
+            if (!CanRevealRegion(index)) return false;
+            var region = Regions[index];
+            Region.OpenStamp = ++openStep; // painted in the order regions opened
+            region.Revealed = true; region.Open = true; Revision++;
+            Evaluate();
             return true;
         }
 

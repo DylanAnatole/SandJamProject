@@ -21,12 +21,12 @@ namespace SandJamTest.Editor
         public static void Run()
         {
             var game=new SandGame(Data());
-            Check(game.RevealRegion(1) && !game.Regions[1].Open && game.Regions[1].InformationVisible,"Reveal must not unlock");
+            var waiting=game.Lanes[0].Peek();
+            Check(game.Target(waiting)<0,"Locked colour must not be a target before the flare");
+            Check(game.RevealRegion(1) && game.Regions[1].Open && game.Regions[1].InformationVisible,"Flare must reveal and open the region");
             Check(!game.RevealRegion(1) && !game.RevealRegion(0) && !game.RevealRegion(-1),"Invalid or duplicate reveal accepted");
-            var locked=game.Lanes[0].Peek();
-            Check(game.Target(locked)<0 && !game.SelectPriority(locked),"Revealed locked color became eligible");
-            Check(game.SelectLane(0),"Cannot park locked color for reveal test");
-            int amount=game.Regions[1].Remaining;game.Tick();Check(game.Regions[1].Remaining==amount,"Revealed locked region received sand");
+            Check(game.Target(waiting)>=0 && game.SelectLane(0),"Revealed region's colour cannot be picked");
+            int amount=game.Regions[1].Remaining;game.Tick();Check(game.Regions[1].Remaining<amount,"Revealed region did not receive sand");
             game=new SandGame(Data());
             var before=game.Lanes.Select(l=>l.ToArray()).ToArray();int supply=game.Supply;
             Check(game.SwapFrontRows(),"Swap failed");
@@ -55,7 +55,7 @@ namespace SandJamTest.Editor
             Check(shortGame.SwapFrontRows() && shortGame.Lanes[2].Peek()==single,"Short lane lost its shooter");
             Check(!new SandGame(Data()).Regions[1].Revealed,"New game retained reveal");
             Directory.CreateDirectory("TestResults/Boosters");
-            File.WriteAllText("TestResults/Boosters/model-checks.txt","PASS: Reveal shows information without unlocking or accepting sand\nPASS: Swap first two rows in all lanes, preserving deeper rows and ammo\nPASS: Short lanes preserved\nPASS: Deep matching shooter extracted without reordering others\nPASS: Locked colors and full stash rejected without mutation\nPASS: Priority selection preserves linked pairs\nPASS: New game resets reveal\n");
+            File.WriteAllText("TestResults/Boosters/model-checks.txt","PASS: Flare reveals a locked region and opens it for sand\nPASS: Swap first two rows in all lanes, preserving deeper rows and ammo\nPASS: Short lanes preserved\nPASS: Deep matching shooter extracted without reordering others\nPASS: Locked colors and full stash rejected without mutation\nPASS: Priority selection preserves linked pairs\nPASS: New game resets reveal\n");
         }
     }
 }
