@@ -1,11 +1,9 @@
 using UnityEngine;
 namespace SandJamTest.Scene3D
 {
-    // Metadata for reference UI. BoosterController enables the three gameplay actions at runtime.
+    // Marks a HUD control by its action id (rocket / swap / select boosters are wired by BoosterController).
     public sealed class ReferenceUiPlaceholder : MonoBehaviour
     {
         public string ActionId;
-        public int DisplayPrice;
-        public bool FunctionImplemented = false;
     }
 }

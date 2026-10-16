@@ -100,7 +100,7 @@ namespace SandJamTest.Scene3D
         // Shown the first time a level of a new art style (collection) is played.
         bool TryShowArtStyle(int level)
         {
-            if (!screen.Levels || level <= 1) return false;
+            if (level <= 1) return false;
             string id = Campaign.Levels[(level - 1) % Campaign.Levels.Length], previous = Campaign.Levels[(level - 2) % Campaign.Levels.Length];
             string category = Collections.CategoryOf(id);
             if (category == null || string.Equals(category, Collections.CategoryOf(previous), System.StringComparison.OrdinalIgnoreCase)) return false;

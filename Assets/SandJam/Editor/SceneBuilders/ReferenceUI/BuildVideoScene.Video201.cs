@@ -7,7 +7,6 @@ namespace SandJamTest.Editor
     {
         static void ConfigureVideo201(Transform root,VideoScreen screen,SandJamSceneController controller)
         {
-            screen.ReferenceBoosterLabels=true;
             controller.GameCamera.backgroundColor=Hex("32333E");
             // The original's gray-purple stage is much less saturated than the earlier prototype.
             var plum=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/StagePlum.mat");plum.color=Hex("6B627E");EditorUtility.SetDirty(plum);

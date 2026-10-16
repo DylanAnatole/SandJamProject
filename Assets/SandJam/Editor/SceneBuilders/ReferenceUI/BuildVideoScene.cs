@@ -72,7 +72,7 @@ namespace SandJamTest.Editor
             mesh.vertices=v;mesh.triangles=tris;mesh.RecalculateBounds();mesh=Save(mesh,p.name+".asset");var t=Group("Editor grid reference",parent);var filter=t.gameObject.AddComponent<MeshFilter>();filter.sharedMesh=mesh;t.gameObject.AddComponent<MeshRenderer>().enabled=false;return filter;
         }
         static ReferenceUiPlaceholder Placeholder(Transform root,string name,string action,int price)
-        {var p=Group(name,root).gameObject.AddComponent<ReferenceUiPlaceholder>();p.ActionId=action;p.DisplayPrice=price;return p;}
+        {var p=Group(name,root).gameObject.AddComponent<ReferenceUiPlaceholder>();p.ActionId=action;return p;}
         public static void Create()
         {
             if(!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;

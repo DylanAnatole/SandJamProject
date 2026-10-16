@@ -85,7 +85,7 @@ namespace SandJamTest.Scene3D
             FailureVisible=lost && failedTime>=.7f;        }
         void LateUpdate(){Refresh(Time.unscaledDeltaTime);}
         // Campaign retries reload the scene so a bought extra slot never carries over into the new attempt.
-        public void Retry(){FailureVisible=false;failedTime=0;if(screen.Levels)screen.Levels.Reload(true);else screen.Play();}
+        public void Retry(){FailureVisible=false;failedTime=0;screen.Levels.Reload(true);}
         public void GoHome(){FailureVisible=false;failedTime=0;screen.Show(VideoScreen.Page.Home);}
     }
 }

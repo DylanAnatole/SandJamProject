@@ -11,16 +11,13 @@ namespace SandJamTest.Scene3D
         VideoScreen screen;
         SandJamSceneController controller;
         readonly Dictionary<string, Transform> buttons = new Dictionary<string, Transform>();
-        readonly Dictionary<string, int> prices = new Dictionary<string, int>();
-        // Prices apply only in the campaign scene (a LevelManager is present); test scenes stay free.
-        int Price(string action) { return screen.Levels ? EconomyManager.BoosterPrice(action) : 0; }
         bool CanAfford(string action)
         {
-            if (!screen.Levels || EconomyManager.CanUseBooster(action)) return true;
-            Tell("Not enough coins · need " + Price(action)); return false;
+            if (EconomyManager.CanUseBooster(action)) return true;
+            Tell("Not enough coins · need " + EconomyManager.BoosterPrice(action)); return false;
         }
-        // Campaign: inventory first, then coins (EconomyManager). Test scenes stay free.
-        void Pay(string action) { if (screen.Levels) EconomyManager.UseBooster(action); else GameEvents.RaiseBoosterUsed(action, 0); }
+        // Inventory first, then coins (EconomyManager).
+        void Pay(string action) { EconomyManager.UseBooster(action); }
         public bool PickerOpen { get; private set; }
         public bool Busy { get; private set; }
         public string Message { get { return Time.unscaledTime < messageUntil ? message : ""; } }
@@ -48,10 +45,7 @@ namespace SandJamTest.Scene3D
                 collider.size = new Vector3(image.sprite.bounds.size.x, image.sprite.bounds.size.y, .1f);
                 var button = hit.AddComponent<VideoUiButton>();
                 button.Action = "booster:" + action;
-                placeholder.FunctionImplemented = true;
-                // Original prices (150 / 500 / 700 coins) are paid from the campaign wallet.
-                prices[action] = placeholder.DisplayPrice;
-                if (owner.Levels && Campaign.LevelNumber < OriginalConfig.BoosterUnlockLevel(action))
+                if (Campaign.LevelNumber < OriginalConfig.BoosterUnlockLevel(action))
                 {
                     // Locked until its NewBoosterConfig level: show "Level N" instead of the price and dim the button.
                     var priceLabel = placeholder.transform.Find("Price");
@@ -59,13 +53,9 @@ namespace SandJamTest.Scene3D
                     var coinIcon = placeholder.transform.Find("Price coin"); if (coinIcon) coinIcon.gameObject.SetActive(false);
                     foreach (var sprite in placeholder.GetComponentsInChildren<SpriteRenderer>(true)) sprite.color = new Color(.55f, .55f, .62f, sprite.color.a);
                 }
-                if (owner.Levels) { placeholders[action] = placeholder; AddBadge(action, image); }
-                if(owner.ReferenceBoosterLabels || owner.Levels)continue;
-                var price = placeholder.transform.Find("Price");
-                if (price) foreach (var label in price.GetComponentsInChildren<TextMesh>(true)) label.text = "Use";
-                var coin = placeholder.transform.Find("Price coin"); if (coin) coin.gameObject.SetActive(false);
+                placeholders[action] = placeholder; AddBadge(action, image);
             }
-            if (owner.Levels) MatchOriginalButtonLayout();
+            MatchOriginalButtonLayout();
         }
 
         // Original gameplay HUD: the booster buttons are ~15% larger and run off the right screen edge, their left
@@ -175,7 +165,7 @@ namespace SandJamTest.Scene3D
             if (screen.Current != VideoScreen.Page.Gameplay || Busy || controller.Game == null || controller.Game.State != GameState.Playing) return false;
             controller.SuppressInputThisFrame();
             if (PickerOpen) { Cancel(); return false; }
-            if (screen.Levels && screen.Levels.PlayedNumber < OriginalConfig.BoosterUnlockLevel(action))
+            if (screen.Levels.PlayedNumber < OriginalConfig.BoosterUnlockLevel(action))
             { Tell("Unlocks at level " + OriginalConfig.BoosterUnlockLevel(action)); return false; }
             if (!CanAfford(action)) return false;
             if (action == "swap")

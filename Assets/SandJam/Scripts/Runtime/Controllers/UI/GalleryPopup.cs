@@ -14,9 +14,7 @@ namespace SandJamTest.Scene3D
         Transform galleryGrid;
         List<GalleryCollections.Info> galleryList;
         int galleryIndex;
-        float galleryScroll, galleryScrollMax, galleryPressY, galleryPressScroll;
-        bool galleryPressing, galleryDragged;
-        string galleryPending;
+        readonly DragScroller scroll = new DragScroller();
         const float GridTop = .02f, GridBottom = -4.2f;
 
         SpriteRenderer GalleryArt(string sprite, float x, float y, float w, float h, float z, Transform parent = null)
@@ -115,7 +113,7 @@ namespace SandJamTest.Scene3D
         {
             foreach (var o in galleryDynamic) if (o) Destroy(o);
             galleryDynamic.Clear();
-            galleryScroll = 0;
+            scroll.Value = 0;
             if (galleryList.Count == 0) { GalleryText("Beat level 15 to unlock\nyour first collection!", 0, 1.5f, .05f, -6.6f); return; }
             var info = galleryList[galleryIndex];
             int won = Campaign.LevelNumber - 1;
@@ -194,7 +192,7 @@ namespace SandJamTest.Scene3D
                 MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
             }
             int rows = (info.Count + 2) / 3;
-            galleryScrollMax = Mathf.Max(0, .85f + rows * gy - (GridTop - GridBottom));
+            scroll.Max = Mathf.Max(0, .85f + rows * gy - (GridTop - GridBottom));
             ClipGrid();
         }
 
@@ -223,7 +221,7 @@ namespace SandJamTest.Scene3D
         void ClipGrid()
         {
             if (!galleryGrid) return;
-            galleryGrid.localPosition = new Vector3(0, galleryScroll, 0);
+            galleryGrid.localPosition = new Vector3(0, scroll.Value, 0);
             // A card (1.46 tall) shows while its centre keeps it mostly inside the band.
             foreach (Transform card in galleryGrid)
             {
@@ -233,12 +231,7 @@ namespace SandJamTest.Scene3D
         }
 
         public override bool Handles(string action) { return action.StartsWith("gallery-"); }
-        public override bool Handle(string action) { return HandleGallery(action); }
-        bool HandleGallery(string action)
-        {
-            galleryPending = action;
-            return true;
-        }
+        public override bool Handle(string action) { scroll.Hold(action); return true; }
         void RunGalleryAction(string action)
         {
             var info = galleryList[galleryIndex];
@@ -250,29 +243,10 @@ namespace SandJamTest.Scene3D
             RefreshGallery();
         }
 
-        // Drag / wheel scrolling of the grid; buttons fire on release without a drag (like the shop).
+        // Drag / wheel scrolling of the grid (only below the grid's top); buttons fire on release without a drag.
         public override void Tick()
         {
-            if (Open != gallery.Root) return;
-            var cam = screen.UiCamera; if (!cam) return;
-            var pointer = Input.mousePosition;
-            if (float.IsInfinity(pointer.x) || float.IsNaN(pointer.x) || float.IsInfinity(pointer.y) || float.IsNaN(pointer.y)) return;
-            float y = cam.ScreenToWorldPoint(pointer).y;
-            if (Input.GetMouseButtonDown(0)) { galleryPressing = true; galleryDragged = false; galleryPressY = y; galleryPressScroll = galleryScroll; }
-            if (galleryPressing && Input.GetMouseButton(0) && y < GridTop)
-            {
-                float delta = y - galleryPressY;
-                if (Mathf.Abs(delta) > .12f) galleryDragged = true;
-                if (galleryDragged) { galleryScroll = Mathf.Clamp(galleryPressScroll + delta, 0, galleryScrollMax); ClipGrid(); }
-            }
-            if (galleryPressing && Input.GetMouseButtonUp(0))
-            {
-                galleryPressing = false;
-                if (!galleryDragged && galleryPending != null) RunGalleryAction(galleryPending);
-                galleryPending = null;
-            }
-            float wheel = Input.mouseScrollDelta.y;
-            if (Mathf.Abs(wheel) > .01f) { galleryScroll = Mathf.Clamp(galleryScroll - wheel * .6f, 0, galleryScrollMax); ClipGrid(); }
+            if (Open == gallery.Root && scroll.Tick(screen.UiCamera, RunGalleryAction, GridTop)) ClipGrid();
         }
     }
 }

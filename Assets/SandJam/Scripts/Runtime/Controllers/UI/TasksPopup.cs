@@ -184,8 +184,7 @@ namespace SandJamTest.Scene3D
         public void OpenTasks(TaskBoard.Kind kind) { if (Open) return; shownKind = kind; Show(tasksPanel); RefreshTasksPanel(); }
 
         public override bool Handles(string action) { return action.StartsWith("daily-") || action.StartsWith("tasks-"); }
-        public override bool Handle(string action) { return HandlePanels(action); }
-        bool HandlePanels(string action)
+        public override bool Handle(string action)
         {
             switch (action)
             {

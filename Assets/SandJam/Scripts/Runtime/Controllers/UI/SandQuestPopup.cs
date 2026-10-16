@@ -96,7 +96,7 @@ namespace SandJamTest.Scene3D
         // Home: the offer greets the player; a finished run shows its result first.
         public void ShowSandQuestOnHome()
         {
-            if (Open || !screen.Levels) return;
+            if (Open) return;
             if (SandQuest.ResultPending) { ShowQuestResult(); return; }
             if (SandQuest.ShouldOffer) { SandQuest.MarkOffered(); Show(questOffer); RefreshQuestTexts(); }
         }
@@ -129,8 +129,7 @@ namespace SandJamTest.Scene3D
         }
 
         public override bool Handles(string action) { return action.StartsWith("quest-"); }
-        public override bool Handle(string action) { return HandleSandQuest(action); }
-        bool HandleSandQuest(string action)
+        public override bool Handle(string action)
         {
             switch (action)
             {

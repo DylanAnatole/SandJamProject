@@ -11,9 +11,8 @@ namespace SandJamTest.Scene3D
         Popup shop;
         Transform shopContent;
         TextMesh[] shopToast;
-        float shopScroll, shopScrollMax, shopToastUntil, shopPressY, shopPressScroll;
-        bool shopPressing, shopDragged;
-        string shopPendingAction;
+        float shopToastUntil;
+        readonly DragScroller scroll = new DragScroller();
         const float ShopUnit = 5.2f / 342f;      // mockup pixels → popup units
         const float ShopTop = 2.95f;             // where mockup row 185 (first card) sits when not scrolled (under the header)
         static readonly string[] BoosterIcons = { "Shop/icon-flare", "Shop/icon-swap", "Shop/icon-select" };
@@ -56,7 +55,7 @@ namespace SandJamTest.Scene3D
             int[] boosterPrices = { 400, 1300, 2000 };
             for (int i = 0; i < 3; i++) BoosterCell(new[] { 63f, 167f, 270f }[i], 1542 + D, i, 3, boosterPrices[i]);
             BigBoosterBundle(1720 + D, 5, 6000);
-            shopScrollMax = Mathf.Max(0, (1820 + D - 185) * ShopUnit - (ShopTop + 3.9f)); // list ends above the navbar
+            scroll.Max = Mathf.Max(0, (1820 + D - 185) * ShopUnit - (ShopTop + 3.9f)); // list ends above the navbar
 
             // Fixed header drawn over the scrolling list.
             // Fixed SAND SHOP header under the Home top bar, drawn over the scrolling list.
@@ -192,7 +191,7 @@ namespace SandJamTest.Scene3D
         public void OpenShop()
         {
             if (Open) return;
-            shopScroll = 0; shopContent.localPosition = Vector3.zero;
+            scroll.Reset(); shopContent.localPosition = Vector3.zero;
             SetText(shopToast, "");
             Show(shop); RefreshPageLives(shop);
         }
@@ -201,13 +200,7 @@ namespace SandJamTest.Scene3D
 
         // Shop buttons fire on release without a drag, so scrolling never buys anything by accident.
         public override bool Handles(string action) { return action.StartsWith("shop-"); }
-        public override bool Handle(string action) { return HandleShop(action); }
-        bool HandleShop(string action)
-        {
-
-            shopPendingAction = action;
-            return true;
-        }
+        public override bool Handle(string action) { scroll.Hold(action); return true; }
         void RunShopAction(string action)
         {
             if (action == "shop-iap") { ShopToast("Purchases are not available"); return; }
@@ -223,26 +216,8 @@ namespace SandJamTest.Scene3D
         {
             if (Open != shop.Root) return;
             if (shopToastUntil > 0 && Time.unscaledTime > shopToastUntil) { SetText(shopToast, ""); shopToastUntil = 0; }
-            var cam = screen.UiCamera; if (!cam) return;
-            var pointer = Input.mousePosition;
-            if (float.IsInfinity(pointer.x) || float.IsNaN(pointer.x) || float.IsInfinity(pointer.y) || float.IsNaN(pointer.y)) return; // no pointer (unfocused editor)
-            float y = cam.ScreenToWorldPoint(pointer).y;
-            if (Input.GetMouseButtonDown(0)) { shopPressing = true; shopDragged = false; shopPressY = y; shopPressScroll = shopScroll; }
-            if (shopPressing && Input.GetMouseButton(0))
-            {
-                float delta = y - shopPressY;
-                if (Mathf.Abs(delta) > .12f) shopDragged = true;
-                if (shopDragged) shopScroll = Mathf.Clamp(shopPressScroll + delta, 0, shopScrollMax);
-            }
-            if (shopPressing && Input.GetMouseButtonUp(0))
-            {
-                shopPressing = false;
-                if (!shopDragged && shopPendingAction != null) RunShopAction(shopPendingAction);
-                shopPendingAction = null;
-            }
-            float wheel = Input.mouseScrollDelta.y;
-            if (Mathf.Abs(wheel) > .01f) shopScroll = Mathf.Clamp(shopScroll - wheel * .6f, 0, shopScrollMax);
-            shopContent.localPosition = new Vector3(0, shopScroll, 0);
+            scroll.Tick(screen.UiCamera, RunShopAction);
+            shopContent.localPosition = new Vector3(0, scroll.Value, 0);
         }
     }
 }

@@ -624,7 +624,6 @@ namespace SandJamTest.Scene3D
         // After a win: the gallery card of the collection this level belongs to (none for the tutorial levels).
         public bool ShowCongrats()
         {
-            if (!screen.Levels) return false;
             int level = screen.Levels.PlayedNumber;
             var info = GalleryCollections.ForLevel(level);
             if (info == null) return false;
@@ -815,7 +814,7 @@ namespace SandJamTest.Scene3D
             dim.localScale = full / Mathf.Max(.05f, scale);
         }
         readonly System.Collections.Generic.Dictionary<Transform, Vector3> backdropScales = new System.Collections.Generic.Dictionary<Transform, Vector3>();
-        int LevelShown { get { return screen.Levels ? screen.Levels.PlayedNumber : Campaign.LevelNumber; } }
+        int LevelShown { get { return screen.Levels.PlayedNumber; } }
 
         internal void Show(Popup p)
         {
@@ -866,7 +865,7 @@ namespace SandJamTest.Scene3D
                     // Giving up the level costs a heart (original: Out of Space ✕ → Level Failed with -1).
                     gaveUp = true;
                     LivesManager.LoseLife();
-                    if (screen.Levels) GameEvents.RaiseLevelLost(screen.Levels.PlayedNumber);
+                    GameEvents.RaiseLevelLost(screen.Levels.PlayedNumber);
                     ShowFailed(true, false); return true;
                 case "speed-up":
                     // No ads in the clone: the rewarded video is granted straight away.
@@ -888,7 +887,7 @@ namespace SandJamTest.Scene3D
                     Close();
                     if (screen.Current == VideoScreen.Page.Gameplay) { gaveUp = false; screen.Feedback.Retry(); }
                     return true;
-                case "congrats-continue": Close(); if (screen.Levels) screen.Levels.LoadNext(); return true;
+                case "congrats-continue": Close(); screen.Levels.LoadNext(); return true;
             }
             return true;
         }

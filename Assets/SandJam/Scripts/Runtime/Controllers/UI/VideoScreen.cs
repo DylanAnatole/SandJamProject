@@ -8,7 +8,6 @@ namespace SandJamTest.Scene3D
     public sealed class VideoScreen : MonoBehaviour
     {
         public SandJamSceneController Controller;
-        public bool ReferenceBoosterLabels;
         public LevelManager Levels;
         public Camera UiCamera;
         public TextMesh Status;
@@ -44,7 +43,8 @@ namespace SandJamTest.Scene3D
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
             Feedback=gameObject.AddComponent<GameplayFeedbackController>();Feedback.Initialize(this);
-            if(Levels){Ui=gameObject.AddComponent<CampaignUi>();Ui.Initialize(this);Popups=gameObject.AddComponent<PopupScreens>();Popups.Initialize(this);}
+            if(!Levels)Debug.LogError("VideoScreen needs its LevelManager (Levels).",this);
+            Ui=gameObject.AddComponent<CampaignUi>();Ui.Initialize(this);Popups=gameObject.AddComponent<PopupScreens>();Popups.Initialize(this);
             UiFont.ApplyAll();
         }
 
@@ -369,8 +369,9 @@ namespace SandJamTest.Scene3D
             winPresentationTime=0;
             if (Boosters) Boosters.Cancel();
             Controller.Restart();Controller.Advance(0);Show(Page.Gameplay);
-            if(Levels)GameEvents.RaiseLevelStarted(Levels.PlayedNumber>0?Levels.PlayedNumber:Campaign.LevelNumber);
-            if(Popups && Levels)Popups.ShowIntrosFor(Levels.PlayedNumber>0?Levels.PlayedNumber:Campaign.LevelNumber);
+            int level=Levels.PlayedNumber>0?Levels.PlayedNumber:Campaign.LevelNumber;
+            GameEvents.RaiseLevelStarted(level);
+            Popups.ShowIntrosFor(level);
         }
         // Page transition: the new page appears out of a quick dark veil instead of a hard cut.
         SpriteRenderer fade; float fadeTime, fadeDuration;
@@ -433,46 +434,49 @@ namespace SandJamTest.Scene3D
             if(Current==Page.Celebration && elapsed>SuperbFx.Duration)Show(Page.Result);
             if(Current==Page.Gameplay && Controller.Game!=null)
             {
-                Status.text=Controller.Game.State==GameState.Lost?(Popups?"":"Out of Space · R: retry"):Boosters && !string.IsNullOrEmpty(Boosters.Message)?Boosters.Message:Controller.SelectionFeedback;
+                Status.text=Controller.Game.State==GameState.Lost?"":!string.IsNullOrEmpty(Boosters.Message)?Boosters.Message:Controller.SelectionFeedback;
                 if(Controller.Game.State==GameState.Won)
                 {
-                    if(Levels)Levels.RecordCompletion();
+                    Levels.RecordCompletion();
                     winPresentationTime+=Time.unscaledDeltaTime;
                     if(winPresentationTime>=1.65f)Show(Page.Celebration);
                 }
                 else winPresentationTime=0;
             }
-            if(Input.GetKeyDown(KeyCode.Escape) && !(Popups && Popups.Open))Show(Page.Home);
-            if(Input.GetMouseButtonDown(0) && !(Boosters && Boosters.PickerOpen) && !(Feedback && Feedback.FailureVisible && !Popups))
+            if(Input.GetKeyDown(KeyCode.Escape) && !Popups.Open)Show(Page.Home);
+            if(Input.GetMouseButtonDown(0) && !Boosters.PickerOpen)
             {
                 RaycastHit hit;
-                if(Physics.Raycast((UiCamera?UiCamera:Controller.GameCamera).ScreenPointToRay(Input.mousePosition),out hit,100,1<<9))
-                {
-                    var button=hit.collider.GetComponent<VideoUiButton>();
-                    if(button)button.Press();
-                    if(button && !button.Action.StartsWith("booster:"))GameEvents.RaiseButtonClicked(button.Action);
-                    // While a popup is open only its own buttons respond.
-                    if(Popups && (Popups.Open || (Feedback && Feedback.FailureVisible))){if(Popups.Owns(button))Popups.Handle(button.Action);return;}
+                if(!Physics.Raycast((UiCamera?UiCamera:Controller.GameCamera).ScreenPointToRay(Input.mousePosition),out hit,100,1<<9))return;
+                var button=hit.collider.GetComponent<VideoUiButton>();
+                if(button){button.Press();if(!button.Action.StartsWith("booster:"))GameEvents.RaiseButtonClicked(button.Action);}
+                // While a popup is open only its own buttons respond.
+                if(Popups.Open || Feedback.FailureVisible){if(Popups.Owns(button))Popups.Handle(button.Action);return;}
+                if(button)HandleButton(button.Action);
+            }
+        }
+        void HandleButton(string action)
+        {
+            if(action.StartsWith("booster:")){Boosters.Activate(action.Substring(8));return;}
+            switch(action)
+            {
+                case "play":
+                    if(!LivesManager.CanPlay)Popups.ShowNoLives();
                     // After a win the campaign has advanced; load that level instead of replaying the old one.
-                    if(button && button.Action=="play")
-                    {
-                        if(Levels && !LivesManager.CanPlay){if(Popups)Popups.ShowNoLives();}
-                        else if(Levels && Levels.PlayedNumber!=Campaign.LevelNumber)Levels.Reload(true);
-                        else Play();
-                    }
-                    else if(button && button.Action=="home")Show(Page.Home);
-                    else if(button && button.Action=="sand-quest" && Popups)Popups.OpenSandQuest();
-                    else if(button && button.Action=="shop" && Popups)Popups.OpenShop();
-                    else if(button && button.Action=="gallery" && Popups)Popups.OpenGallery();
-                    else if(button && button.Action=="daily-rewards" && Popups)Popups.OpenDailyRewards();
-                    else if(button && button.Action=="daily-tasks" && Popups)Popups.OpenTasks(TaskBoard.Kind.Daily);
-                    else if(button && button.Action=="weekly-tasks" && Popups)Popups.OpenTasks(TaskBoard.Kind.Weekly);
-                    // Original: the collection card (CONGRATS · category · % completed) comes before the next level.
-                    else if(button && button.Action=="next-level" && Levels){if(!(Popups && Popups.ShowCongrats()))Levels.LoadNext();}
-                    else if(button && button.Action=="double" && Levels)Levels.DoubleReward();
-                    else if(button && button.Action=="settings" && Ui)Ui.OpenSettings();
-                    else if(button && button.Action.StartsWith("booster:") && Boosters) Boosters.Activate(button.Action.Substring(8));
-                }
+                    else if(Levels.PlayedNumber!=Campaign.LevelNumber)Levels.Reload(true);
+                    else Play();
+                    break;
+                case "home":Show(Page.Home);break;
+                case "sand-quest":Popups.OpenSandQuest();break;
+                case "shop":Popups.OpenShop();break;
+                case "gallery":Popups.OpenGallery();break;
+                case "daily-rewards":Popups.OpenDailyRewards();break;
+                case "daily-tasks":Popups.OpenTasks(TaskBoard.Kind.Daily);break;
+                case "weekly-tasks":Popups.OpenTasks(TaskBoard.Kind.Weekly);break;
+                // Original: the collection card (CONGRATS · category · % completed) comes before the next level.
+                case "next-level":if(!Popups.ShowCongrats())Levels.LoadNext();break;
+                case "double":Levels.DoubleReward();break;
+                case "settings":Ui.OpenSettings();break;
             }
         }
         void Start()

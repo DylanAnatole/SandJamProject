@@ -19,7 +19,7 @@ namespace SandJamTest.Scene3D
         int shownCoins = -1, shownLevel = -1;
         TextMesh[] joinLabels = new TextMesh[0];
         bool shownDoubled;
-        public bool SettingsOpen { get { return screen.Popups && screen.Popups.Open; } }
+        public bool SettingsOpen { get { return screen.Popups.Open; } }
 
         public void Initialize(VideoScreen owner)
         {
@@ -155,12 +155,12 @@ namespace SandJamTest.Scene3D
             hit.AddComponent<VideoUiButton>().Action = action;
         }
 
-        int DisplayedLevel { get { return screen.Levels ? screen.Levels.PlayedNumber : Campaign.LevelNumber; } }
+        int DisplayedLevel { get { return screen.Levels.PlayedNumber; } }
 
         public void Refresh()
         {
             int coins = Campaign.Coins, level = DisplayedLevel;
-            bool doubled = screen.Levels && screen.Levels.RewardDoubled;
+            bool doubled = screen.Levels.RewardDoubled;
             if (coins == shownCoins && level == shownLevel && doubled == shownDoubled) return;
             shownCoins = coins; shownLevel = level; shownDoubled = doubled;
             if (homeNumber) homeNumber.text = Campaign.LevelNumber.ToString();
@@ -269,7 +269,7 @@ namespace SandJamTest.Scene3D
 
         public void OpenSettings()
         {
-            if (screen.Popups) screen.Popups.ShowSettings();
+            screen.Popups.ShowSettings();
         }
     }
 }
