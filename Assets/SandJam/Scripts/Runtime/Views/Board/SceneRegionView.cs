@@ -56,8 +56,16 @@ namespace SandJamTest.Scene3D
         public void AttachBoard(SandBoardTextureView board)
         {
             Board=board; Geometry.GetComponent<MeshRenderer>().enabled=false;
-            // Labels revealed after startup must sort above the shared transparent board sprite.
+            SortCounter();
+        }
+        // Counters sort above the shared transparent board sprite, the digits one order above their dark outline
+        // copies: on the tilted board, depth alone let the copies of counters near the top draw over the white
+        // digits (they read as black numbers). Re-applied when a counter first shows, since its outline copies are
+        // created then.
+        void SortCounter()
+        {
             foreach (var renderer in Counter.GetComponentsInChildren<MeshRenderer>(true)) renderer.sortingOrder=10;
+            Counter.GetComponent<MeshRenderer>().sortingOrder=11;
         }
         public Color32 SolidColor { get { return solid; } }
         // World point where the falling stream currently hits the sand surface.
@@ -140,6 +148,7 @@ namespace SandJamTest.Scene3D
             var original=OverrideSandColor?null:OriginalConfig.Color(region.Data.ColorType);
             empty=region.InformationVisible && original!=null && original.init.a>0?(Color32)original.init:(Color32)Color.Lerp(EmptyTint,(Color)solid,region.InformationVisible?OpenTintStrength:0f);
             Counter.gameObject.SetActive(region.InformationVisible);
+            if(region.InformationVisible) SortCounter();
             var backing=transform.Find("Amount backing"); if(backing) backing.gameObject.SetActive(region.InformationVisible);
             Counter.text=!region.InformationVisible || region.Remaining==0?"":DisplayAmount.Text(DisplayAmount.Units(region.Remaining,Divider));
             PaintBase(); PaintMoving();
