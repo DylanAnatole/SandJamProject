@@ -13,7 +13,7 @@ namespace SandJamTest.Scene3D
         // (the tuned colours above) or dark — backdrop, picture frame and lane banks are recoloured.
         static readonly string[] FrameParts = { "Solid board frame", "Raised board frame", "Tray top", "Tray bevel", "Extruded plinth" };
         static readonly string[] SideParts = { "Left lane bank", "Right booster bank", "Left solid rail", "Right solid rail", "Left rail top", "Right rail top", "Left lane rail", "Right booster rail" };
-        public float PadTilt = 30f, PadThickness = 1f;
+        public float PadTilt = 55f, PadThickness = 1f, PadDepth = 1.55f;
         public int ThemeIndex { get; private set; }
         Color top, middle, bottom;
         Camera filler;
@@ -61,10 +61,18 @@ namespace SandJamTest.Scene3D
                 foreach (Transform child in stash)
                     if (child.name.StartsWith("Solid waiting pad"))
                     {
-                        // Original pads are chunky tiles: thicker, and tilted a little less so the front edge shows.
+                        // Original pads are tiles lying nearly flat in front of the stand, deep enough to read as
+                        // ~0.66 of their width on screen (recording 2: 112 x 75 px), skewed by the perspective.
                         child.localRotation = Quaternion.Euler(PadTilt, 0, 0);
-                        var ls = child.localScale; child.localScale = new Vector3(ls.x, ls.y, PadThickness);
+                        var ls = child.localScale; child.localScale = new Vector3(ls.x, ls.y * PadDepth, PadThickness);
                     }
+            // A cube in the stash stands in the middle of its pad (original), not in front of it.
+            for (int i = 0; stash && i < controller.StashSlots.Length; i++)
+            {
+                var pad = stash.Find("Solid waiting pad " + i); var pr = pad ? pad.GetComponent<Renderer>() : null; if (!pr) continue;
+                var slot = controller.StashSlots[i]; var pc = pr.bounds.center;
+                slot.position = new Vector3(slot.position.x, pc.y, pc.z);
+            }
             EvenFrameBorder(controller);
             RoundFrame(controller);
             WhiteRailEdges(controller);

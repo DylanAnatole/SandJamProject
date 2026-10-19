@@ -86,13 +86,17 @@ namespace SandJamTest.Scene3D
         void ShowLegs(bool visible) { if (legs && legs.enabled != visible) legs.enabled = visible; }
 
         public const float CubeScale = .9f;
+        // Original: a cube on its waiting pad reads ~0.86 of its size in the lanes (the stash sits further back). It
+        // shrinks while running to the pad and is full size again in the lanes.
+        const float StashSize = .86f;
+        float size = 1, sizeTarget = 1;
         public void Bind(Shooter shooter, Vector3 position)
         {
             Shooter = shooter;
             gameObject.SetActive(true);
             if (baseScale == Vector3.zero) { baseScale = Visual.localScale * CubeScale; // original cubes are ~14% smaller
                baseRotation=Visual.localRotation;basePosition=Visual.localPosition; }
-            squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = basePosition;
+            squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = basePosition; size = sizeTarget = 1;
             Visual.localScale = baseScale;
             Visual.localRotation = baseRotation;
             transform.position = destination = from = position;
@@ -109,11 +113,12 @@ namespace SandJamTest.Scene3D
         }
 
         // Queue advance inside a lane: quick slide with a small hop, no legs.
-        public void SlideTo(Vector3 position) { Begin(position, Gait.Slide, SlideSeconds); }
+        public void SlideTo(Vector3 position) { sizeTarget = 1; Begin(position, Gait.Slide, SlideSeconds); }
         // Lane -> waiting slot: run on legs, duration from distance.
         public void RunTo(Vector3 position)
         {
             float seconds = Mathf.Clamp(Vector3.Distance(transform.position, position) / RunSpeed, MinRun, MaxRun);
+            sizeTarget = StashSize;
             Begin(position, Gait.Run, seconds);
         }
 
@@ -231,7 +236,8 @@ namespace SandJamTest.Scene3D
             squashVelocity += accel * delta; squash += squashVelocity * delta;
             squash = Mathf.Clamp(squash, -.35f, .35f);
             if (Mathf.Abs(squash) < .0005f && Mathf.Abs(squashVelocity) < .01f) { squash = 0; squashVelocity = 0; }
-            Visual.localScale = new Vector3(baseScale.x * (1 - squash * .5f), baseScale.y * (1 + squash), baseScale.z * (1 - squash * .5f));
+            size = Mathf.MoveTowards(size, sizeTarget, delta * 1.2f); // about the length of the run to the pad
+            Visual.localScale = size * new Vector3(baseScale.x * (1 - squash * .5f), baseScale.y * (1 + squash), baseScale.z * (1 - squash * .5f));
             float shake = 0;
             if (shakeTime > 0) { shakeTime = Mathf.Max(0, shakeTime - delta); shake = Mathf.Sin(shakeTime * 70f) * .06f * (shakeTime / .28f); }
             Visual.localPosition = basePosition + new Vector3(shake, 0, 0);
