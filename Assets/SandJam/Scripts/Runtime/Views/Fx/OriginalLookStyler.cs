@@ -20,8 +20,20 @@ namespace SandJamTest.Scene3D
         Mesh gradientMesh;
         Material gradientMaterial;
 
+        // Measured on recording 2 (level 267, 888 px wide): at the same camera the original picture is ~3.5% larger,
+        // and its frame border is ~6.7% of the picture's width at the sides and top. The bottom border is the same and
+        // disappears into the stand's slot (the stand's top meets the picture's lower edge).
+        const float PictureScale = 1.035f, FrameSide = .067f;
         public void Apply(SandJamSceneController controller)
         {
+            var picture = controller.Board ? controller.Board.transform.parent : null;
+            if (picture)
+            {
+                // Grown about its own centre (board, regions and counters move with it); the frame follows below.
+                var c = controller.Board.Renderer.bounds.center; var p = picture.position;
+                picture.localScale *= PictureScale;
+                picture.position = new Vector3(c.x + (p.x - c.x) * PictureScale, c.y + (p.y - c.y) * PictureScale, p.z);
+            }
             var levels = FindObjectOfType<LevelManager>();
             ThemeIndex = levels ? OriginalThemes.IndexForLevel(levels.PlayedNumber > 0 ? levels.PlayedNumber : Campaign.LevelNumber) : OriginalThemes.Lavender;
             top = BackdropTop; middle = BackdropMiddle; bottom = BackdropBottom;
@@ -73,7 +85,9 @@ namespace SandJamTest.Scene3D
             if (!board || !frame) return;
             var o = frame.bounds; var b = board.bounds;
             float front = Mathf.Min(o.min.z, b.min.z - .02f), back = o.max.z;
-            var outer = RoundedLoop(o.min.x, o.max.x, o.min.y, o.max.y, .34f);
+            // Border from the picture, in the original's proportions (the modelled frame was thicker at the sides).
+            float side = b.size.x * FrameSide;
+            var outer = RoundedLoop(b.min.x - side, b.max.x + side, b.min.y - side, b.max.y + side, .34f);
             var inner = RoundedLoop(b.min.x, b.max.x, b.min.y, b.max.y, .16f);
             var v = new System.Collections.Generic.List<Vector3>(); var n = new System.Collections.Generic.List<Vector3>(); var t = new System.Collections.Generic.List<int>();
             int count = outer.Count;
@@ -204,7 +218,7 @@ namespace SandJamTest.Scene3D
         // Original stand: a solid slab with a slot cut into its top; the picture frame is plugged into the slot,
         // like two blocks fitted together. Built as real geometry in the frame's own material, tipped a little toward
         // the camera so the slab top and the slot mouth beside each post are visible.
-        const float StandTilt = -20f;
+        const float StandTilt = -6f;
         void BuildFrameFeet(SandJamSceneController controller)
         {
             var renderers = controller.GetComponentsInChildren<Renderer>(true);
@@ -213,8 +227,12 @@ namespace SandJamTest.Scene3D
             if (!plinth || !frame || plinth.transform.parent.Find("Frame stand")) return;
             var fb = frame.bounds; var parent = plinth.transform.parent;
             plinth.enabled = false;
-            float width = fb.size.x * 1.11f, depth = .8f, height = .32f, slotDepth = .28f;
-            float slotHalfX = fb.extents.x + .07f, slotHalfZ = fb.extents.z + .02f;
+            // The rounded frame (RoundFrame) reaches from just in front of the picture to the old frame's back: the slot
+            // spans that depth, with a lip in front thick enough to hide the frame's lower border.
+            var board = controller.Board ? controller.Board.Renderer.bounds : fb;
+            float frontZ = Mathf.Min(fb.min.z, board.min.z - .02f), centreZ = (frontZ + fb.max.z) * .5f;
+            float width = fb.size.x * 1.11f, height = .32f, slotDepth = .28f;
+            float slotHalfX = fb.extents.x + .07f, slotHalfZ = (fb.max.z - frontZ) * .5f + .02f, depth = slotHalfZ * 2 + .3f;
             var mesh = new Mesh { name = "Frame stand" };
             var vertices = new System.Collections.Generic.List<Vector3>(); var normals = new System.Collections.Generic.List<Vector3>();
             var body = new System.Collections.Generic.List<int>(); var floor = new System.Collections.Generic.List<int>();
@@ -234,11 +252,13 @@ namespace SandJamTest.Scene3D
             var stand = new GameObject("Frame stand") { layer = frame.gameObject.layer };
             stand.transform.SetParent(parent, false);
             // The slab top sits high enough to hide the frame's rounded bottom corners inside the slot.
-            stand.transform.position = new Vector3(fb.center.x, fb.min.y + .27f, fb.center.z);
+            stand.transform.position = new Vector3(fb.center.x, fb.min.y + .27f, centreZ);
             stand.transform.rotation = Quaternion.Euler(StandTilt, 0, 0);
             var scale = parent.lossyScale; stand.transform.localScale = new Vector3(1 / scale.x, 1 / scale.y, 1 / scale.z);
             stand.AddComponent<MeshFilter>().sharedMesh = mesh;
             var bodyMaterial = new Material(frame.sharedMaterial);
+            // Its front faces the light differently from the frame: rendered #5F7F9D, the original's reads #5576A6.
+            if (bodyMaterial.HasProperty("_Color")) { var fc = frame.sharedMaterial.color; bodyMaterial.color = new Color(fc.r * .895f, fc.g * .93f, Mathf.Min(1, fc.b * 1.06f), fc.a); }
             var slotMaterial = new Material(frame.sharedMaterial);
             if (slotMaterial.HasProperty("_Color")) slotMaterial.color = Color.Lerp(frame.sharedMaterial.color, Color.black, .55f);
             stand.AddComponent<MeshRenderer>().sharedMaterials = new[] { bodyMaterial, slotMaterial };
