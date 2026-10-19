@@ -147,9 +147,11 @@ namespace SandJamTest.Scene3D
             if(rimNow && bar)FitHangers(bar,rimNow.GetComponent<Renderer>().bounds.max.y-.02f,false);
             ReplaceLevelSign(bar);
             ReplaceJoinPlaque();
-            // Navbar: the original icons and captions are noticeably bigger.
-            foreach(var name in new[]{"icon-shop","icon-home","icon-cards"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.15f;}
-            foreach(var name in new[]{"SHOP","HOME","GALLERY"}){var t=Home.transform.Find(name);if(t)t.localScale*=1.22f;}
+            // Navbar, measured on the original Home (recording 2, 888x1920): the bar sits 19 px lower, the selected tab
+            // rises 12 px higher above it, the icons are lower (shop and home bigger, gallery smaller) and so are the captions.
+            NavPlace("bg-navbar",1,0,19);NavPlace("bg-navBar-seleckted",1,0,-12);
+            NavPlace("icon-shop",1.15f*1.1f,-6.5f,17.5f);NavPlace("icon-home",1.15f*1.12f,0,16);NavPlace("icon-cards",1.15f*.87f,10,19);
+            foreach(var name in new[]{"SHOP","HOME","GALLERY"})NavPlace(name,1.22f,0,9);
             // Walkway as a 3D ledge (original Home, measured): a shaded back edge, two rows of tiles split by a joint,
             // joints leaning outward in perspective and a front lip falling into the shadow of the stage below. It is
             // drawn as one texture, replacing the flat band, its thin edge line and the separate joint sprites.
@@ -189,6 +191,16 @@ namespace SandJamTest.Scene3D
         }
         // Original Home level sign: the brushed blue panel art (Group 10295), ~86% as wide as the drawn sign, hung
         // from two thin dark rods; the number and LEVEL in white with only a soft blue edge.
+        // Scales a Home part about its own centre and moves it by (dx, dy) screen pixels of the 1920 px tall recording
+        // (dy downward).
+        void NavPlace(string name,float scale,float dxPx,float dyPx)
+        {
+            var t=Home.transform.Find(name);if(!t)return;
+            var r=t.GetComponentInChildren<Renderer>();var before=r?r.bounds.center:t.position;
+            t.localScale*=scale;
+            const float Px=10.75f/1920;
+            t.position+=before-(r?r.bounds.center:t.position)+new Vector3(dxPx,-dyPx,0)*Px;
+        }
         // A flat strip of the top bar between two heights, just in front of it.
         void BarStrip(SpriteRenderer bar,string name,float bottom,float top,Color32 color)
         {
