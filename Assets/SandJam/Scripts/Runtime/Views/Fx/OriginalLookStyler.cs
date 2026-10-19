@@ -241,18 +241,20 @@ namespace SandJamTest.Scene3D
             var fb = frame.bounds; var parent = plinth.transform.parent;
             plinth.enabled = false;
             // The rounded frame (RoundFrame) reaches from just in front of the picture to the old frame's back: the slot
-            // spans that depth, with a lip in front thick enough to hide the frame's lower border.
+            // spans that depth.
             var board = controller.Board ? controller.Board.Renderer.bounds : fb;
             float frontZ = Mathf.Min(fb.min.z, board.min.z - .02f), centreZ = (frontZ + fb.max.z) * .5f;
-            float width = fb.size.x * 1.11f, height = .32f, slotDepth = .28f;
-            float slotHalfX = fb.extents.x + .07f, slotHalfZ = (fb.max.z - frontZ) * .5f + .02f, depth = slotHalfZ * 2 + .3f;
+            // Measured (recording 2, level 268): the frame stands at the slab's front, behind a thin lip; most of the slab
+            // top lies behind it (seen beside the posts), and the tall front face rounds off into its lower edge.
+            float width = fb.size.x * 1.11f, height = .32f, slotDepth = .28f, frontLip = .05f, backLip = 1f;
+            float slotHalfX = fb.extents.x + .07f, slotHalfZ = (fb.max.z - frontZ) * .5f + .02f;
             var mesh = new Mesh { name = "Frame stand" };
             var vertices = new System.Collections.Generic.List<Vector3>(); var normals = new System.Collections.Generic.List<Vector3>();
             var body = new System.Collections.Generic.List<int>(); var floor = new System.Collections.Generic.List<int>();
-            float hx = width * .5f, hz = depth * .5f;
-            AddBox(vertices, normals, body, new Vector3(-hx, -height, -hz), new Vector3(hx, -slotDepth, hz));          // under the slot
-            AddBox(vertices, normals, body, new Vector3(-hx, -slotDepth, -hz), new Vector3(hx, 0, -slotHalfZ), .08f); // front lip, soft top edge
-            AddBox(vertices, normals, body, new Vector3(-hx, -slotDepth, slotHalfZ), new Vector3(hx, 0, hz));         // back lip
+            float hx = width * .5f, front = -slotHalfZ - frontLip, back = slotHalfZ + backLip;
+            AddBox(vertices, normals, body, new Vector3(-hx, -height, front), new Vector3(hx, 0, -slotHalfZ), .03f, .14f); // front lip, rounded edges
+            AddBox(vertices, normals, body, new Vector3(-hx, -height, -slotHalfZ), new Vector3(hx, -slotDepth, back));    // under the slot
+            AddBox(vertices, normals, body, new Vector3(-hx, -slotDepth, slotHalfZ), new Vector3(hx, 0, back));         // back lip
             AddBox(vertices, normals, body, new Vector3(-hx, -slotDepth, -slotHalfZ), new Vector3(-slotHalfX, 0, slotHalfZ)); // left end
             AddBox(vertices, normals, body, new Vector3(slotHalfX, -slotDepth, -slotHalfZ), new Vector3(hx, 0, slotHalfZ));   // right end
             // Dark slot floor.
@@ -283,8 +285,9 @@ namespace SandJamTest.Scene3D
                 shadow.transform.position += new Vector3(fb.center.x - shadow.bounds.center.x, 0, 0);
             }
         }
-        // Box; `bevel` cuts a 45° chamfer along its top-front edge (the soft rounded edge of the original slab).
-        static void AddBox(System.Collections.Generic.List<Vector3> v, System.Collections.Generic.List<Vector3> n, System.Collections.Generic.List<int> t, Vector3 a, Vector3 b, float bevel = 0)
+        // Box; `bevel` cuts a 45° chamfer along its top-front edge, `lowBevel` a chamfer that high (no deeper than the box)
+        // along its bottom-front edge: the slab's rounded edges.
+        static void AddBox(System.Collections.Generic.List<Vector3> v, System.Collections.Generic.List<Vector3> n, System.Collections.Generic.List<int> t, Vector3 a, Vector3 b, float bevel = 0, float lowBevel = 0)
         {
             void Face(Vector3 normal, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
             {
@@ -292,11 +295,13 @@ namespace SandJamTest.Scene3D
                 for (int k = 0; k < 4; k++) n.Add(normal);
                 t.AddRange(new[] { i0, i0 + 1, i0 + 2, i0, i0 + 2, i0 + 3 });
             }
-            float tz = a.z + bevel, fy = b.y - bevel;
+            float tz = a.z + bevel, fy = b.y - bevel, bz = a.z + Mathf.Min(lowBevel, b.z - a.z), by = a.y + lowBevel;
             Face(Vector3.up, new Vector3(a.x, b.y, tz), new Vector3(a.x, b.y, b.z), new Vector3(b.x, b.y, b.z), new Vector3(b.x, b.y, tz));
-            Face(Vector3.down, new Vector3(a.x, a.y, a.z), new Vector3(b.x, a.y, a.z), new Vector3(b.x, a.y, b.z), new Vector3(a.x, a.y, b.z));
-            Face(Vector3.back, new Vector3(a.x, a.y, a.z), new Vector3(a.x, fy, a.z), new Vector3(b.x, fy, a.z), new Vector3(b.x, a.y, a.z));
+            Face(Vector3.down, new Vector3(a.x, a.y, bz), new Vector3(b.x, a.y, bz), new Vector3(b.x, a.y, b.z), new Vector3(a.x, a.y, b.z));
+            Face(Vector3.back, new Vector3(a.x, by, a.z), new Vector3(a.x, fy, a.z), new Vector3(b.x, fy, a.z), new Vector3(b.x, by, a.z));
             if (bevel > 0) Face(new Vector3(0, 1, -1).normalized, new Vector3(a.x, fy, a.z), new Vector3(a.x, b.y, tz), new Vector3(b.x, b.y, tz), new Vector3(b.x, fy, a.z));
+            if (lowBevel > 0) Face(new Vector3(0, -.3f, -1).normalized, // shaded as the rounded edge, not a dark underside
+                new Vector3(a.x, a.y, bz), new Vector3(a.x, by, a.z), new Vector3(b.x, by, a.z), new Vector3(b.x, a.y, bz));
             Face(Vector3.forward, new Vector3(b.x, a.y, b.z), new Vector3(b.x, b.y, b.z), new Vector3(a.x, b.y, b.z), new Vector3(a.x, a.y, b.z));
             Face(Vector3.left, new Vector3(a.x, a.y, b.z), new Vector3(a.x, b.y, b.z), new Vector3(a.x, b.y, a.z), new Vector3(a.x, a.y, a.z));
             Face(Vector3.right, new Vector3(b.x, a.y, a.z), new Vector3(b.x, b.y, a.z), new Vector3(b.x, b.y, b.z), new Vector3(b.x, a.y, b.z));
