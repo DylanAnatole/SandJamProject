@@ -50,10 +50,12 @@ namespace SandJamTest.Scene3D
             MatchOriginalButtonLayout();
         }
 
-        // Original gameplay HUD: the booster buttons are ~15% larger and run off the right screen edge, their left
-        // edge at ~85% of the screen width (ours sat fully on screen with a margin).
+        // Original gameplay HUD (recording 2, 888 x 1920): the booster buttons run off the right screen edge, their
+        // left edge at ~85% of the screen width, 86 px tall and 124 px apart (ours were 104 tall, 139 apart).
+        const float ButtonScale = .955f, ButtonSpacing = .89f;
         void MatchOriginalButtonLayout()
         {
+            var placed = new List<KeyValuePair<Transform, Transform>>(); // group root, button image
             foreach (var pair in buttons)
             {
                 var image = pair.Value; var root = placeholders.ContainsKey(pair.Key) ? placeholders[pair.Key].transform : image.parent;
@@ -61,7 +63,7 @@ namespace SandJamTest.Scene3D
                 var cam = SpriteFactory.CameraForLayer(image.gameObject.layer);
                 if (!cam) continue;
                 var pivot = r.bounds.center;
-                root.localScale *= 1.15f;
+                root.localScale *= ButtonScale; placed.Add(new KeyValuePair<Transform, Transform>(root, image));
                 root.position += pivot - r.bounds.center; // grow about the button's centre
                 var b = r.bounds; float z = cam.WorldToScreenPoint(b.center).z;
                 var target = cam.ViewportToWorldPoint(new Vector3(.852f, 0, z));
@@ -76,6 +78,11 @@ namespace SandJamTest.Scene3D
                     t.position += new Vector3(visibleCentre - r.bounds.center.x, 0, 0);
                 }
             }
+            // Closer together, the top button kept in place (measured on the button images: the groups' own pivots
+            // sit far from the buttons).
+            if (placed.Count == 0) return;
+            float top = placed.Max(e => e.Value.position.y);
+            foreach (var e in placed) e.Key.position += Vector3.up * (top + (e.Value.position.y - top) * ButtonSpacing - e.Value.position.y);
         }
 
         // Shrinks a label (with its outline copies) about its centre so it is at most maxWidth wide

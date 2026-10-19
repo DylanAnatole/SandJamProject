@@ -211,6 +211,7 @@ namespace SandJamTest.Scene3D
                 if (m.HasProperty("_GrainStrength")) m.SetFloat("_GrainStrength", 0);
             }
         }
+        const float LaneWallOut = .17f, LaneWallDown = .3f;
         void TiltLaneWalls(SandJamSceneController controller)
         {
             float angle = Mathf.Atan(SceneActorView.DepthPerUnit) * Mathf.Rad2Deg;
@@ -221,6 +222,10 @@ namespace SandJamTest.Scene3D
                 t.RotateAround(new Vector3(t.position.x, SceneActorView.DepthOriginY, t.position.z), Vector3.right, angle);
                 // Keep the on-screen height: the tilt alone would shorten the wall.
                 var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y / Mathf.Cos(angle * Mathf.Deg2Rad), ls.z);
+                // Original (recording 2, 888 px wide): the banks start ~54 px lower and stand ~30 px further out from
+                // the cubes than the modelled ones.
+                float side = r.name.StartsWith("Left") ? -1 : 1;
+                t.position += new Vector3(side * LaneWallOut, -LaneWallDown, 0);
             }
         }
         // Original stand: a solid slab with a slot cut into its top; the picture frame is plugged into the slot,
