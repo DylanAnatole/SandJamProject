@@ -84,14 +84,9 @@ namespace SandJamTest.Scene3D
         }
         void StyleHome()
         {
-            Tint(Home.transform.Find("Level sign blue"),new Color32(80,160,241,255));
-            Tint(Home.transform.Find("Sign inset"),new Color32(104,180,236,255));
-            Tint(Home.transform.Find("Level sign rim"),new Color32(178,232,250,255));
-            Tint(Home.transform.Find("Lower stage"),new Color32(38,91,132,255));
-            // Colours measured on the original Home (recording, level 267).
-            // (sprites render ~12% darker here, so the sign colours are pre-brightened to land on the measured ones)
-            Tint(Home.transform.Find("Level sign blue"),new Color32(106,192,255,255));
-            Tint(Home.transform.Find("Sign inset"),new Color32(124,206,255,255));
+            // Colours measured on the original Home (recording, level 267). The sign's blue panel and inset are tinted
+            // below, once they use plain sprites.
+            Tint(Home.transform.Find("Lower stage"),new Color32(34,82,118,255));
             Tint(Home.transform.Find("Level sign rim"),new Color32(158,206,242,255));
             Tint(Home.transform.Find("Level sign shadow"),new Color32(13,71,116,255));
             Tint(Home.transform.Find("Top bar"),new Color32(54,112,157,255));
@@ -138,7 +133,14 @@ namespace SandJamTest.Scene3D
             }
             var bar=Home.transform.Find("Top bar")?Home.transform.Find("Top bar").GetComponent<SpriteRenderer>():null;
             // Reaches well past the top edge: tall phones (19.5:9) see above the design box.
-            if(bar){float barBottom=4.2f,barTop=8f;var bps=bar.transform.parent.lossyScale;bar.transform.localScale=new Vector3(bar.transform.localScale.x,(barTop-barBottom)/bps.y,1);bar.transform.position=new Vector3(0,(barTop+barBottom)*.5f,bar.transform.position.z);}
+            if(bar){float barBottom=4.2f,barTop=8f;var bps=bar.transform.parent.lossyScale;bar.transform.localScale=new Vector3(bar.transform.localScale.x,(barTop-barBottom)/bps.y,1);bar.transform.position=new Vector3(0,(barTop+barBottom)*.5f,bar.transform.position.z);
+                // Original (measured, 1920 px tall): a darker band over the phone's status area (top 107 px, #2C6791)
+                // and a thin dark line along the bar's lower edge (~4 px, #2C648F). Shop / Gallery copy both.
+                BarStrip(bar,"Top bar status band",4.78f,barTop,new Color32(44,103,145,255));
+                BarStrip(bar,"Top bar edge",barBottom,barBottom+.025f,new Color32(44,100,143,255));
+                // The settings button and the lives / coin counters sit higher on the original's bar (~0.11 units).
+                foreach(Transform child in Home.transform)
+                    if(!child.name.StartsWith("Top bar") && System.Array.IndexOf(PopupScreens.TopBarParts,child.name)>=0)child.position+=Vector3.up*.11f;}
             foreach(var name in new[]{"generalBackground-main","bg-navbar"}){var t=Home.transform.Find(name);if(t){var ls=t.localScale;t.localScale=new Vector3(ls.x*1.12f,ls.y,ls.z);}}
             // Hangers run from the top bar down to the sign.
             var rimNow=Home.transform.Find("Level sign rim");
@@ -174,6 +176,8 @@ namespace SandJamTest.Scene3D
             var play=Home.transform.Find("PLAY");
             if(play)foreach(var label in play.GetComponentsInChildren<TextMesh>(true))if(label.name!="Text outline"){label.transform.localScale*=1.3f;break;}
             if(!stage || !walk)return;
+            var stageArt=stage.GetComponent<Renderer>();
+            if(stageArt)AddStagePattern(stageArt,floorBottom,(walkway?walkway.position.z:stage.position.z)-.01f);
             var cone=new GameObject("Stage spotlight"){layer=Home.layer}.AddComponent<SpriteRenderer>();
             cone.transform.SetParent(Home.transform,true);
             cone.sprite=SpotlightSprite();
@@ -181,10 +185,19 @@ namespace SandJamTest.Scene3D
             float top=floorTop,bottom=floorBottom-2.5f;
             cone.transform.position=new Vector3(0,(top+bottom)/2,(walkway?walkway.position.z:stage.position.z)-.02f);
             var size=cone.sprite.bounds.size;var parent=cone.transform.parent.lossyScale;
-            cone.transform.localScale=new Vector3(3.2f/size.x/parent.x,(top-bottom)/size.y/parent.y,1);
+            cone.transform.localScale=new Vector3(SpotlightWidth/size.x/parent.x,(top-bottom)/size.y/parent.y,1);
         }
         // Original Home level sign: the brushed blue panel art (Group 10295), ~86% as wide as the drawn sign, hung
         // from two thin dark rods; the number and LEVEL in white with only a soft blue edge.
+        // A flat strip of the top bar between two heights, just in front of it.
+        void BarStrip(SpriteRenderer bar,string name,float bottom,float top,Color32 color)
+        {
+            var r=new GameObject(name){layer=Home.layer}.AddComponent<SpriteRenderer>();
+            r.transform.SetParent(Home.transform,false);
+            r.sprite=SpriteFactory.White;r.color=color;r.sortingOrder=bar.sortingOrder;r.sharedMaterial=bar.sharedMaterial;
+            r.transform.position=new Vector3(0,(top+bottom)*.5f,bar.transform.position.z-.001f);
+            r.FitWorldSize(6.4f,top-bottom);
+        }
         // Hangers run from just under the top bar down to the sign (bottom). rods: straight square-ended dark rods
         // (~0.09 wide, with the sign art) instead of the stretched template pills.
         void FitHangers(SpriteRenderer bar,float bottom,bool rods)
@@ -210,8 +223,9 @@ namespace SandJamTest.Scene3D
             var art=go.AddComponent<SpriteRenderer>();
             art.sprite=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,.5f),100);
             art.sharedMaterial=SpriteFactory.PlainSprite;art.sortingOrder=rr.sortingOrder;
-            // Original: ~34% of the screen width (150 px of 444), its own 0.8 aspect, top where the drawn sign's top was.
-            float width=5.0f*.34f,height=width*753f/606f; // art is 606x753 (the imported texture may be resized square)
+            // Original (measured on the 888 px recording): the blue panel is 32% of the screen wide, top where the drawn
+            // sign's top was; the art (with its rim) is drawn at 37% of a 5-unit screen so the panels match.
+            float width=5.0f*.37f,height=width*753f/606f; // art is 606x753 (the imported texture may be resized square)
             art.FitWorldSize(width,height);
             go.transform.position=new Vector3(rb.center.x,rb.max.y-height*.5f,rim.position.z);
             foreach(var name in new[]{"Level sign blue","Sign inset","Level sign rim","Level sign shadow"}){var t=Home.transform.Find(name);if(t){var r=t.GetComponent<Renderer>();if(r)r.enabled=false;}}
@@ -257,18 +271,51 @@ namespace SandJamTest.Scene3D
             var sr=r as SpriteRenderer;if(sr){sr.color=color;return;}
             if(r.sharedMaterial && r.sharedMaterial.HasProperty("_Color"))r.material.color=color;
         }
+        // Original lower stage: faint pixel diamonds (little checkered sparkles, a shade darker than the stage) in a
+        // staggered grid below the walkway, under the spotlight. Measured on the recording: ~0.21 units across,
+        // 1.08 apart in a row, rows 0.6 apart, every other row shifted half a step.
+        void AddStagePattern(Renderer stageArt,float top,float z)
+        {
+            const float ppu=48f,stepX=1.08f,stepY=.6f,motif=.21f;
+            float left=-3.2f,width=6.4f,bottom=stageArt.bounds.min.y,height=top-bottom;
+            if(height<=.3f)return;
+            int w=Mathf.CeilToInt(width*ppu),h=Mathf.CeilToInt(height*ppu);
+            var t=new Texture2D(w,h,TextureFormat.RGBA32,false){filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp,name="Stage pattern"};
+            var px=new Color32[w*h];var ink=new Color32(14,38,70,50);float cell=motif/5f;int c=Mathf.Max(1,Mathf.RoundToInt(cell*ppu));
+            for(int row=0;(row+.4f)*stepY<height;row++)
+                for(int col=-1;col*stepX<width+stepX;col++)
+                {
+                    float cx=(col+(row%2)*.5f)*stepX+.3f,cy=height-(row+.4f)*stepY;
+                    for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+                    {
+                        if(Mathf.Abs(dx)+Mathf.Abs(dy)>2 || ((dx+dy)&1)!=0)continue; // checkered diamond: centre, corners, tips
+                        int x0=Mathf.RoundToInt((cx+dx*cell)*ppu)-c/2,y0=Mathf.RoundToInt((cy+dy*cell)*ppu)-c/2;
+                        for(int y=y0;y<y0+c;y++)for(int x=x0;x<x0+c;x++)if(x>=0&&y>=0&&x<w&&y<h)px[y*w+x]=ink;
+                    }
+                }
+            t.SetPixels32(px);t.Apply(false,true);
+            var r=new GameObject("Stage pattern"){layer=Home.layer}.AddComponent<SpriteRenderer>();
+            r.transform.SetParent(Home.transform,true);
+            r.sprite=Sprite.Create(t,new Rect(0,0,w,h),new Vector2(.5f,.5f),ppu);
+            r.sharedMaterial=SpriteFactory.PlainSprite;r.sortingOrder=stageArt.sortingOrder;
+            r.transform.position=new Vector3(left+width*.5f,bottom+height*.5f,z);
+            var ps=r.transform.parent.lossyScale;r.transform.localScale=new Vector3(1/ps.x,1/ps.y,1);
+        }
         // Trapezoid of light: narrower under the walkway, widening and fading out towards the bottom.
+        // Measured on the original (888 px wide): 41% of the screen wide on the walkway, ~50% mid-stage, ~68% near
+        // the bottom, i.e. about 2.2 units at the top widening to 3.9.
+        const float SpotlightWidth=4.4f;
         static Sprite SpotlightSprite()
         {
-            // Covers the walkway (top quarter, even light) and the stage below (fading out); 3.2 units wide, the lit
-            // column ~2 units at the top with a soft edge.
+            // Covers the walkway (top quarter, even light) and the stage below (fading out); SpotlightWidth wide, with
+            // a soft edge.
             const int w=128,h=128;var t=new Texture2D(w,h,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp};
             const float lit=.25f;
             for(int y=0;y<h;y++)
             {
                 float v=y/(float)(h-1);                        // 0 bottom, 1 top
                 float down=1-v;                                // 0 top, 1 bottom
-                float half=.31f+.06f*down;                     // widens slightly downwards
+                float half=.25f+.2f*down;                      // half width, fraction of SpotlightWidth: 1.1 units -> 2
                 float fade=down<lit?1:Mathf.Pow(Mathf.Clamp01(1-(down-lit)/(1-lit)),1.3f);
                 for(int x=0;x<w;x++)
                 {

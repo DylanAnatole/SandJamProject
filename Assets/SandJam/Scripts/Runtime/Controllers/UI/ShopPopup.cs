@@ -61,8 +61,10 @@ namespace SandJamTest.Scene3D
             // Fixed SAND SHOP header under the Home top bar, drawn over the scrolling list.
             // Original: the band spans ~80% of the screen, the title tab ~45%.
             var header = ShopArt("Shop/bg-header1-shop", 168, 0, 4.2f, -7.4f, null); header.transform.localPosition = new Vector3(0, 3.7f, -7.4f);
-            var bar = Child<SpriteRenderer>(shop, "Header bar", new Vector3(0, 4.1f, -7.3f));
-            bar.sprite = SpriteFactory.White; bar.color = new Color(.15f, .3f, .48f); bar.transform.localScale = new Vector3(8, 1.6f, 1);
+            // The band ends at the Home top bar's lower edge (y 4.2): it used to reach up to 4.9 and cover the bottom
+            // half of the copied top bar (settings, lives, coins), which the original keeps whole.
+            var bar = Child<SpriteRenderer>(shop, "Header bar", new Vector3(0, 3.75f, -7.3f));
+            bar.sprite = SpriteFactory.White; bar.color = new Color(.15f, .3f, .48f); bar.transform.localScale = new Vector3(8, .9f, 1);
             SetText(OutlinedLabel(shop, "Shop title", new Vector3(0, 3.7f, -7.6f), .048f), "SAND SHOP");
             // Bottom strip behind the navbar so scrolled cards never show under it.
             var foot = Child<SpriteRenderer>(shop, "Footer bar", new Vector3(0, -5.1f, -7.3f)); foot.sprite = bar.sprite;

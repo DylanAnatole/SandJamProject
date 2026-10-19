@@ -8,7 +8,7 @@ namespace SandJamTest.Scene3D
     // into the page in front of its content; the navbar switches pages.
     public sealed partial class PopupScreens
     {
-        static readonly string[] TopBarParts = { "Top bar", "icon-settings-v2", "bg-currency", "button-plus_0", "icon-coin", "2040", "Full", "icon-heart-big", "5" };
+        internal static readonly string[] TopBarParts = { "Top bar", "Top bar status band", "Top bar edge", "icon-settings-v2", "bg-currency", "button-plus_0", "icon-coin", "2040", "Full", "icon-heart-big", "5" };
         static readonly string[] NavbarParts = { "bg-navbar", "bg-navBar-seleckted", "icon-shop", "icon-home", "icon-cards", "SHOP", "HOME", "GALLERY" };
 
         internal void AddPageChrome(Popup page, string activeIcon)
