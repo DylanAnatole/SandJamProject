@@ -54,7 +54,7 @@ Cập nhật: 20/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 |---|---|---|
 | Home: đèn, bảng Level, sân khấu, thanh trên | ✅ | |
 | Thanh điều hướng Shop / Home / Gallery | ✅ | |
-| Sand Shop | 🟡 | Mua booster chạy thật; gói tiền thật chỉ hiển thị |
+| Sand Shop | ✅ | Mở ở mục BOOSTERS như bản gốc; gói tiền thật chỉ hiển thị (không thanh toán) |
 | Gallery (bộ sưu tập, thẻ úp "Claim") | ✅ | Lưới thẻ đúng cỡ; nút "Claim All Cards" bản gốc xanh thép, bản mình xanh tím (nhỏ) |
 | Sand Quest (rương JOIN) | 🟡 | Có, chưa so kỹ với video |
 | Cài đặt | ✅ | |

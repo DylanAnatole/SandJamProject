@@ -14,7 +14,7 @@ namespace SandJamTest.Scene3D
         float shopToastUntil;
         readonly DragScroller scroll = new DragScroller();
         const float ShopUnit = 5.2f / 342f;      // mockup pixels → popup units
-        const float ShopTop = 2.95f;             // where mockup row 185 (first card) sits when not scrolled (under the header)
+        const float ShopTop = 2.75f;             // where mockup row 185 (first card) sits when not scrolled (under the header)
         static readonly string[] BoosterIcons = { "Shop/icon-flare", "Shop/icon-swap", "Shop/icon-select" };
         static readonly string[] BoosterActions = { "rocket", "swap", "select" };
 
@@ -27,13 +27,13 @@ namespace SandJamTest.Scene3D
             shop = Blank("Shop page");
             shop.RightButton.transform.parent.gameObject.SetActive(false);
             var backdrop = shop.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>();
-            backdrop.color = new Color(.17f, .35f, .55f, 1f); // the shop's navy page colour
+            backdrop.color = new Color(.122f, .294f, .443f, 1f); // the shop's navy page colour (reads #1B4162, recording 2)
             shopContent = new GameObject("Shop content") { layer = shop.Root.layer }.transform;
             shopContent.SetParent(shop.Root.transform, false);
 
             // Bundles: coins + one row of boosters, green price button.
             // Store prices as shown in the Vietnamese store (recording 2026-10-08); the starter price was not visible.
-            // Recording 2026-10-08: the list opens with REMOVE ADS (249000) and the No Ads Pack (499000).
+            // Recording 2026-10-08: the list starts with REMOVE ADS (249000) and the No Ads Pack (499000).
             RemoveAdsCard(250.5f);
             NoAdsPack(419.5f);
             const float D = 339.5f; // everything below moves down by the two no-ads cards
@@ -55,17 +55,26 @@ namespace SandJamTest.Scene3D
             int[] boosterPrices = { 400, 1300, 2000 };
             for (int i = 0; i < 3; i++) BoosterCell(new[] { 63f, 167f, 270f }[i], 1542 + D, i, 3, boosterPrices[i]);
             BigBoosterBundle(1720 + D, 5, 6000);
-            scroll.Max = Mathf.Max(0, (1820 + D - 185) * ShopUnit - (ShopTop + 3.9f)); // list ends above the navbar
+            // The list ends well above the navbar: opened at its end, the BOOSTERS header sits right under the title
+            // (recording 2, 12 s: header top at 460 px).
+            scroll.Max = Mathf.Max(0, (1820 + D - 154) * ShopUnit - (ShopTop + 3.9f));
 
             // Fixed header drawn over the scrolling list.
             // Fixed SAND SHOP header under the Home top bar, drawn over the scrolling list.
             // Original: the band spans ~80% of the screen, the title tab ~45%.
-            var header = ShopArt("Shop/bg-header1-shop", 168, 0, 4.2f, -7.4f, null); header.transform.localPosition = new Vector3(0, 3.7f, -7.4f);
+            // Recording 2 (12 s): the title tab 332 x 174 px centred at 353 px, the band behind it 100 px tall, the
+            // title 49 px high (were 385 x 130 at 307, 74 and 43).
+            const float HeaderY = 3.44f;
+            var header = ShopArt("Shop/bg-header1-shop", 168, 0, 4.2f, -7.4f, null); header.transform.localPosition = new Vector3(0, HeaderY, -7.4f);
+            header.transform.localScale = Vector3.Scale(header.transform.localScale, new Vector3(.94f, 1.34f, 1));
             // The band ends at the Home top bar's lower edge (y 4.2): it used to reach up to 4.9 and cover the bottom
             // half of the copied top bar (settings, lives, coins), which the original keeps whole.
-            var bar = Child<SpriteRenderer>(shop, "Header bar", new Vector3(0, 3.75f, -7.3f));
-            bar.sprite = SpriteFactory.White; bar.color = new Color(.15f, .3f, .48f); bar.transform.localScale = new Vector3(8, .9f, 1);
-            SetText(OutlinedLabel(shop, "Shop title", new Vector3(0, 3.7f, -7.6f), .048f), "SAND SHOP");
+            // Page colour from the top bar down to the header band's lower edge (400 px), so the list never shows
+            // above it.
+            const float HeaderBottom = 3.135f;
+            var bar = Child<SpriteRenderer>(shop, "Header bar", new Vector3(0, (HeaderBottom + 4.2f) * .5f, -7.3f));
+            bar.sprite = SpriteFactory.White; bar.color = backdrop.color; bar.transform.localScale = new Vector3(8, 4.2f - HeaderBottom, 1);
+            SetText(OutlinedLabel(shop, "Shop title", new Vector3(0, HeaderY, -7.6f), .055f), "SAND SHOP");
             // Bottom strip behind the navbar so scrolled cards never show under it.
             var foot = Child<SpriteRenderer>(shop, "Footer bar", new Vector3(0, -5.1f, -7.3f)); foot.sprite = bar.sprite;
             foot.color = bar.color; foot.transform.localScale = new Vector3(8, 1.8f, 1);
@@ -171,23 +180,26 @@ namespace SandJamTest.Scene3D
         void BoosterCell(float x, float y, int booster, int count, int price)
         {
             SectionCell("boosterSection", x, y, "shop-buy:" + BoosterActions[booster] + ":" + count + ":" + price);
-            ShopArt(BoosterIcons[booster], x, y - 32, 48 * ShopUnit, -6.5f, shopContent);
-            ShopText("x" + count, x, y + 10, .036f, -6.6f, true, Color.white);
-            ShopArt("Shop/icon-coin_1", x - 26, y + 50, 18 * ShopUnit, -6.6f, shopContent);
-            ShopText(price.ToString(), x + 6, y + 50, .032f, -6.6f, true, Color.white);
+            // Recording 2 (12 s): a larger icon with its count over its lower part, a larger price.
+            ShopArt(BoosterIcons[booster], x, y - 26, 62 * ShopUnit, -6.5f, shopContent);
+            ShopText("x" + count, x - 4, y - 4, .04f, -6.6f, true, Color.white);
+            ShopArt("Shop/icon-coin_1", x - 30, y + 48, 22 * ShopUnit, -6.6f, shopContent);
+            ShopText(price.ToString(), x + 8, y + 48, .042f, -6.6f, true, Color.white);
         }
         void BigBoosterBundle(float y, int each, int price)
         {
             ShopPanel("Shop/bg-boosterSection-big-shop", 168, y, 300, 160, -6.3f);
             ShopPanel("Shop/bg-slot-boosterSection-big-shop", 168, y - 30, 270, 70, -6.4f);
-            BoosterRow(85, 83, y - 34, 44, "x" + each, 22, 16, .036f);
+            BoosterRow(85, 83, y - 34, 56, "x" + each, 0, 16, .04f);
             PriceButton(167, y + 42, 135, price.ToString(), "shop-buy:all:" + each + ":" + price, true);
         }
 
         public void OpenShop()
         {
             if (Open) return;
-            scroll.Reset(); shopContent.localPosition = Vector3.zero;
+            // The original opens on the BOOSTERS section at the end of the list (recording 2, 6 s and 11 s); the
+            // real-money packs are above it.
+            scroll.Reset(); scroll.Value = scroll.Max; shopContent.localPosition = new Vector3(0, scroll.Value, 0);
             SetText(shopToast, "");
             Show(shop); RefreshPageLives(shop);
         }

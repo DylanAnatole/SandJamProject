@@ -413,3 +413,34 @@ một phần.
 - Khung vàng bao đều quanh thẻ "?".
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Sand Shop theo bản gốc
+
+**Đo / lý do** (video 2, giây 6–12)
+
+- Shop bản gốc mở ở cuối danh sách, tức mục BOOSTERS (3 booster lẻ, gói combo 6000), cuộn lên mới thấy các gói
+  tiền thật. Bản mình mở ở đầu danh sách (Remove Ads).
+- Phần tiêu đề:
+  - bản gốc: bảng "SAND SHOP" 332×174 px, tâm ở 353 px; dải xanh cao 100 px; chữ cao 49 px;
+  - bản mình: 385×130 px, tâm ở 307 px; dải 74 px; chữ 43 px.
+- Mục BOOSTERS của bản mình thấp hơn khoảng 85 px.
+- Biểu tượng booster của bản mình nhỏ hơn khoảng 25%, chữ giá nhỏ hơn.
+- Nền trang bản gốc (27,65,98); bản mình (38,77,122).
+
+**Sửa** (`ShopPopup`)
+
+- `OpenShop` mở ở cuối danh sách.
+- `scroll.Max` dừng cao hơn.
+- `HeaderY` / `HeaderBottom`: bảng tiêu đề thấp hơn và cao hơn; dải che màu nền trang chạy từ thanh trên xuống đáy
+  tiêu đề.
+- `ShopTop` hạ xuống để thẻ đầu không bị khuất.
+- Biểu tượng booster 48 → 62, chữ "x3" đặt chồng lên biểu tượng, giá to hơn; gói combo 44 → 56.
+- Đổi màu nền trang.
+
+**Kiểm tra**
+
+- Tiêu đề chữ ở 321 px, cao 49 px; bản gốc 325 px, cao 49 px.
+- Mục BOOSTERS ở 457 px; bản gốc 460 px.
+- Ô booster ở 651 px; bản gốc 645 px.
+- Đầu danh sách giống giây 9.
+- Run all checks qua 8/8.
+
