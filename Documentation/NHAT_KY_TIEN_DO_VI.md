@@ -282,3 +282,22 @@ một phần.
 - Tự chơi thắng level 68.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Khối xoay về vùng đang đổ và lắc nhẹ
+
+**Đo / lý do** (video 2, giây 59–60,4)
+
+- Khi đổ cát, khối gốc xoay khoảng 25° về phía vùng nhận cát và lắc nhẹ theo nhịp.
+- Khối của mình đứng thẳng: phần rung có sẵn chỉ chạy với khối không có khung xương (`!Motion`).
+
+**Sửa**
+
+- `SandJamSceneController`: mỗi lần bắn cát ghi vị trí vùng đích vào `PourTarget` của khối.
+- `SceneActorView`: khi đang đổ, xoay về phía vùng đó (`PourYaw` 25°) và lắc (`PourWobble` 4°, tốc độ
+  `PourWobbleSpeed`), dùng lại `ApplyYaw` (thêm trục roll).
+
+**Kiểm tra**
+
+- So từng khung hình với bản gốc.
+- Tự chơi thắng level 68.
+- Run all checks qua 8/8.
+

@@ -50,6 +50,10 @@ namespace SandJamTest.Scene3D
         public static float LegTurnSign = 1;
         // The body itself turns MaxYaw while running, the legs a little further; they also swing down out from under
         // the block so they show below it (recording 2, 48.8-49.1 s: legs ~60% of the block height below it).
+        // Where the sand from this box is going (set on every shot) and how it turns and rocks while pouring.
+        public Vector3 PourTarget;
+        const float PourYaw = 25f, PourWobble = 4f, PourWobbleSpeed = 18f;
+        float roll;
         const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.6f;
         Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
         void FindRig()
@@ -90,7 +94,7 @@ namespace SandJamTest.Scene3D
         }
         void ApplyYaw()
         {
-            if (pose) { pose.localRotation = poseBase * Quaternion.Euler(0, yaw, 0); transform.localRotation = Quaternion.identity; }
+            if (pose) { pose.localRotation = poseBase * Quaternion.Euler(0, yaw, roll); transform.localRotation = Quaternion.identity; }
             else transform.localRotation = Quaternion.Euler(0, yaw, 0);
         }
         // Legs only exist while running; sitting in the lane or on a waiting slot the block rests on its base.
@@ -215,7 +219,11 @@ namespace SandJamTest.Scene3D
             else
             {
                 transform.position = destination;
-                yaw = Mathf.MoveTowards(yaw, 0, delta * 420);
+                // Pouring from its pad: the original box turns toward the region it fills and rocks a little
+                // (recording 2, 59-60.4 s).
+                float pourTarget = firing && !Departing ? -Mathf.Sign(PourTarget.x - transform.position.x) * PourYaw : 0;
+                yaw = Mathf.MoveTowards(yaw, pourTarget, delta * 420);
+                roll = firing && !Departing ? Mathf.Sin(Time.time * PourWobbleSpeed) * PourWobble : Mathf.MoveTowards(roll, 0, delta * 60);
                 ApplyYaw();
                 ShowLegs(false);
                 if(!Motion)Visual.localRotation = Quaternion.Euler(firing ? Mathf.Sin(Time.time * 25) * 3 : 0, 0, 0);
