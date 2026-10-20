@@ -25,6 +25,10 @@ namespace SandJamTest.Scene3D
         {
             // Offer popup.
             questOffer = Blank("Sand Quest offer popup");
+            // Over Home the original dims to ~14% (recording 2, 22 s: the sky reads #1A1F27), its coin bar included.
+            questOffer.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, .86f);
+            // Its caption is ~20% smaller than first built (two lines 510 px wide).
+            PopupScreens.HideCoinBar(questOffer);
             // Proportions measured on the original (recording, level 268 Home): a wide panel (~84% of the screen),
             // a big title on the ribbon, the picture inset with margins, a large Start button.
             var offerPanel = Art(questOffer, "SandQuest/bg-sandQuest-popUp", new Vector3(0, .55f, -6.2f), 4.4f);
@@ -32,7 +36,7 @@ namespace SandJamTest.Scene3D
             SetText(OutlinedLabel(questOffer, "Quest title", new Vector3(0, 2.7f, -6.8f), .084f), "Sand Quest");
             Art(questOffer, "SandQuest/quest-Victory", new Vector3(0, .58f, -6.4f), 2.15f);
             questOfferTimer = TimerPill(questOffer, new Vector3(0, -.62f, -6.6f));
-            SetText(OutlinedLabel(questOffer, "Quest offer text", new Vector3(0, -1.15f, -6.8f), .03f), "Sand Quest has started! Beat 10 levels\nto complete the challenge!");
+            SetText(OutlinedLabel(questOffer, "Quest offer text", new Vector3(0, -1.15f, -6.8f), .024f), "Sand Quest has started! Beat 10 levels\nto complete the challenge!");
             GreenButton(questOffer, -1.52f, "quest-start", "Start", 1.2f);
             CloseX(questOffer, new Vector3(1.9f, 2.82f, -8.5f), "quest-close");
 

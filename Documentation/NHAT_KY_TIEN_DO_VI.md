@@ -444,3 +444,25 @@ một phần.
 - Đầu danh sách giống giây 9.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Popup Sand Quest
+
+**Đo / lý do** (video 2, giây 22,3)
+
+- Lớp tối trên Home của bản gốc đen khoảng 86% (trời 187 → 26); bản mình 68% (trời → 59).
+- Popup của mình tự mang một ô xu sáng.
+- Dấu "!" ở nút Gallery vẽ đè lên lớp tối (sortingOrder 40/41).
+- Dòng chữ mô tả rộng hơn bản gốc khoảng 1,27 lần.
+
+**Sửa**
+
+- `SandQuestPopup`: lớp đen 0,86, `HideCoinBar`, chữ mô tả 0,03 → 0,024.
+- `CampaignUi.AlertBadge`: cùng sortingOrder với biểu tượng, nằm trước nhờ độ sâu, nên lớp tối phủ được.
+- Popup Cài đặt dùng lớp xám sáng khác (giây 15), nên chưa gộp chung.
+
+**Kiểm tra**
+
+- Trời (26,31,36) so với bản gốc (26,31,39).
+- Chữ mô tả 509×83 px so với 507×84 px.
+- Dấu "!" vẫn hiện trên Home.
+- Run all checks qua 8/8.
+

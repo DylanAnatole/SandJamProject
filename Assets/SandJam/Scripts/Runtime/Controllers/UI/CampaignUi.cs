@@ -125,9 +125,9 @@ namespace SandJamTest.Scene3D
             root.position = new Vector3(b.max.x + b.size.x * .19f, b.max.y - b.size.y * .26f, icon.position.z - .3f); // measured on the original navbar
             var disc = SpriteFactory.Disc;
             var ring = new GameObject("Ring") { layer = root.gameObject.layer }.AddComponent<SpriteRenderer>();
-            ring.transform.SetParent(root, false); ring.sprite = disc; ring.color = Color.white; ring.sortingOrder = 40;
+            ring.transform.SetParent(root, false); ring.sprite = disc; ring.color = Color.white; ring.sortingOrder = renderer.sortingOrder; // in front of the icon by depth, under popup layers
             var fill = new GameObject("Fill") { layer = root.gameObject.layer }.AddComponent<SpriteRenderer>();
-            fill.transform.SetParent(root, false); fill.transform.localPosition = new Vector3(0, 0, -.01f); fill.sprite = disc; fill.color = new Color(.92f, .2f, .3f); fill.sortingOrder = 41;
+            fill.transform.SetParent(root, false); fill.transform.localPosition = new Vector3(0, 0, -.01f); fill.sprite = disc; fill.color = new Color(.92f, .2f, .3f); fill.sortingOrder = renderer.sortingOrder;
             float d = b.size.y * .58f, s = root.lossyScale.x;
             ring.transform.localScale = Vector3.one * d / s; fill.transform.localScale = Vector3.one * d * .84f / s;
             var mark = new GameObject("Mark") { layer = root.gameObject.layer }.AddComponent<TextMesh>();
