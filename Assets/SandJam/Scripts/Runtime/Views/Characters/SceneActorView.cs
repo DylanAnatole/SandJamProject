@@ -106,13 +106,13 @@ namespace SandJamTest.Scene3D
         // the way there it hops toward the camera, ~1.25x mid-run. Full size again in the lanes.
         const float StashSize = .96f, RunBulge = .25f;
         float size = 1, sizeTarget = 1;
-        public void Bind(Shooter shooter, Vector3 position)
+        public void Bind(Shooter shooter, Vector3 position, float rowSize = 1)
         {
             Shooter = shooter;
             gameObject.SetActive(true);
             if (baseScale == Vector3.zero) { baseScale = Visual.localScale * CubeScale; // original cubes are ~14% smaller
                baseRotation=Visual.localRotation;basePosition=Visual.localPosition; }
-            squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = basePosition; size = sizeTarget = 1;
+            squash = squashVelocity = shakeTime = 0; wasRunning = false; Visual.localPosition = basePosition; size = sizeTarget = rowSize;
             Visual.localScale = baseScale;
             Visual.localRotation = baseRotation;
             transform.position = destination = from = position;
@@ -129,7 +129,7 @@ namespace SandJamTest.Scene3D
         }
 
         // Queue advance inside a lane: quick slide with a small hop, no legs.
-        public void SlideTo(Vector3 position) { sizeTarget = 1; Begin(position, Gait.Slide, SlideSeconds); }
+        public void SlideTo(Vector3 position, float rowSize = 1) { sizeTarget = rowSize; Begin(position, Gait.Slide, SlideSeconds); }
         // Lane -> waiting slot: run on legs, duration from distance.
         public void RunTo(Vector3 position)
         {

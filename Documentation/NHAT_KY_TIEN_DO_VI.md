@@ -339,3 +339,28 @@ một phần.
 - Tự chơi thắng level 68.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Hàng khối to dần và tỏa ra theo phối cảnh
+
+**Đo / lý do** (video 2, giây 150, level 268 lúc vừa vào)
+
+- Bản gốc: mỗi hàng to hơn hàng trên khoảng 12% và giãn ngang khoảng 11%, khoảng cách hàng đều 186 px. Hàng 3 cao
+  166 px so với hàng 1 cao 131 px.
+- Bản mình: các hàng gần như bằng nhau (126 → 136 px).
+
+**Sửa**
+
+- `CharacterQueueController.QueuePosition`: gom hai chỗ viết lặp công thức vị trí; giãn ngang quanh tâm các làn
+  theo `RowScale(order)`.
+- Thêm `RowGrowth` 0,07; khối có thân to sẵn nên 0,07 cho tỉ lệ gần bản gốc nhất (đã thử 0,12: quá to).
+- `SceneActorView.Bind` / `SlideTo` nhận kích thước theo hàng, dùng lại cơ chế `size` có sẵn (trượt lên hàng trên
+  thì nhỏ dần).
+- Đã thử cho hàng tiến về phía camera: hàng 3 giãn tới 223 px nên bỏ.
+
+**Kiểm tra**
+
+- Hàng 1/2/3 cao 126/140/156 px; bản gốc 131/148/166.
+- Hàng 3 nằm ở x 197/380/559; bản gốc 208/386/558.
+- Xích ở level 68 vẫn đúng.
+- Tự chơi thắng level 68 và 268.
+- Run all checks qua 8/8.
+

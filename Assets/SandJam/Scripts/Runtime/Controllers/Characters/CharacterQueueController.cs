@@ -19,6 +19,17 @@ namespace SandJamTest.Scene3D
         public CharacterQueueController(SceneActorView[] characters, Transform[] lanes, Transform[] slots, float spacing)
         { Characters = characters; LaneStarts = lanes; StashSlots = slots; QueueSpacing = spacing * .87f; } // smaller cubes queue closer, as in the original
         public SceneActorView ViewFor(Shooter shooter) { return actors[shooter]; }
+        // Rows further down the lanes are larger and spread out sideways, evenly spaced (recording 2, 150 s: each row
+        // ~12% larger and ~11% wider apart than the one above, at a constant 186 px pitch).
+        const float RowGrowth = .07f;
+        public static float RowScale(int order) { return 1 + RowGrowth * order; }
+        Vector3 QueuePosition(int lane, int order)
+        {
+            float centre = 0; foreach (var start in LaneStarts) centre += start.position.x; centre /= LaneStarts.Length;
+            var p = LaneStarts[lane].position + Vector3.down * QueueSpacing * order;
+            p.x = centre + (p.x - centre) * RowScale(order);
+            return p;
+        }
         public bool CanShoot(SandGame game, int slot)
         { var shooter = game.Slots[slot]; return shooter != null && actors[shooter].AtRest; }
         public void Bind(SandGame Game, LevelData level)
@@ -31,7 +42,7 @@ namespace SandJamTest.Scene3D
                 for (int i = 0; i < queue.Length; i++)
                 {
                     var actor = Characters.Single(a => a.SourceLane == lane && a.SourceOrder == i);
-                    actor.Divider = level.uiDivider; actor.Bind(queue[i], LaneStarts[lane].position + Vector3.down * QueueSpacing * i);
+                    actor.Divider = level.uiDivider; actor.Bind(queue[i], QueuePosition(lane, i), RowScale(i));
                     actors.Add(queue[i], actor);
                 }
             }
@@ -61,7 +72,7 @@ namespace SandJamTest.Scene3D
             for (int lane = 0; lane < Game.Lanes.Length; lane++)
             {
                 int order = 0;
-                foreach (var shooter in Game.Lanes[lane]) actors[shooter].SlideTo(LaneStarts[lane].position + Vector3.down * QueueSpacing * order++);
+                foreach (var shooter in Game.Lanes[lane]) { actors[shooter].SlideTo(QueuePosition(lane, order), RowScale(order)); order++; }
             }
             for (int slot = 0; slot < Game.Slots.Length; slot++)
                 if (Game.Slots[slot] != null) actors[Game.Slots[slot]].RunTo(StashSlots[slot].position);
