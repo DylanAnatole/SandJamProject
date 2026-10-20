@@ -75,6 +75,8 @@ namespace SandJamTest.Scene3D
         }
         MaterialPropertyBlock frameBlock, sandBlock, glassBlock;
         static readonly Color Outline=new Color(.035f,.03f,.06f);
+        // The original's glass walls are almost clear: the background shows through nearly unchanged.
+        const float GlassClarity=.5f;
         public void Apply(bool front,bool docked)
         {
             if(!sand || Actor.Shooter==null)return;
@@ -84,7 +86,10 @@ namespace SandJamTest.Scene3D
             if(docked)front=false;
             // The rig is pitched ~54 deg toward the camera; stand the block back up so the front face
             // (with the number) dominates and the top is a narrow strip, as in the reference renders.
-            var upright=Quaternion.Euler(BlockPitch,0,0);
+            // Out of the lanes the camera sees the block from lower down: it leans back further so its top still shows
+            // (recording 2, 60 s: the open top of a stashed glass box reads in depth; 0 matched it, -15 already shows
+            // the box from below).
+            var upright=Quaternion.Euler(docked?DockedPitch:BlockPitch,0,0);
             sand.localRotation=upright;frameRenderer.transform.localRotation=upright;
             if(glassRenderer)glassRenderer.transform.localRotation=upright;
             var color=fillRenderer.sharedMaterial.GetColor("_Color");
@@ -98,15 +103,16 @@ namespace SandJamTest.Scene3D
             if(glassRenderer)
             {
                 glassRenderer.enabled=glass;
-                if(glass){var tint=Color.Lerp(color,Color.white,.5f);tint.a=1;glassBlock.SetColor("_Color",tint);glassRenderer.SetPropertyBlock(glassBlock);}
+                if(glass){var tint=Color.Lerp(color,Color.white,.5f);tint.a=GlassClarity;glassBlock.SetColor("_Color",tint);glassRenderer.SetPropertyBlock(glassBlock);}
             }
             if(glass)
             {
                 // Sand inside the glass: shrink the solid block to the cage interior and drain it from the top.
                 sand.localPosition=new Vector3(0,.285f,0);
                 sand.localScale=new Vector3(GlassInner.x/BlockSize.x,GlassInner.y*Mathf.Max(.001f,amount)/BlockSize.y,GlassInner.z/BlockSize.z);
-                // Pale glass edges, like the reference waiting-slot boxes.
-                frameBlock.SetColor("_Color",Color.Lerp(color,Color.white,.72f));
+                // Glass edges in the block's own colour (recording 2, 60 s: a yellow box has yellow edges ~#FAD719, a grey
+                // one grey ~#9B9B9D), as bright as its sand.
+                frameBlock.SetColor("_Color",lit);
                 frameBlock.SetFloat("_OutlineWidth",.006f);frameBlock.SetColor("_OutlineColor",Color.Lerp(color,Outline,.55f));
                 frameRenderer.SetPropertyBlock(frameBlock);
                 sandBlock.SetFloat("_OutlineWidth",0);
@@ -192,6 +198,7 @@ namespace SandJamTest.Scene3D
         public static readonly Vector3 BlockSize=new Vector3(.735f,.72f,.646f), GlassInner=new Vector3(.65f,.51f,.552f);
         const float BevelRadius=.11f; // original blocks have softer, rounder edges
         public const float BlockPitch=20f; // less stood up than before: more of the top face shows (original)
+        const float DockedPitch=0f;
         const float BlocksPerUnit=13.5f; // ~10 sand pixels across a face, as in the reference renders
         static Texture2D pixelSand;
 

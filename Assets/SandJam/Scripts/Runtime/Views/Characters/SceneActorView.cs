@@ -36,7 +36,8 @@ namespace SandJamTest.Scene3D
         enum Gait { Slide, Run }
         Gait gait;
         float yaw;
-        const float SlideSeconds=.24f, RunSpeed=4.6f, MinRun=.36f, MaxRun=.62f, ExitSeconds=.75f, ExitPause=.12f;
+        // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
+        const float SlideSeconds=.24f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.75f, ExitPause=.12f;
         // No turning: the body is pitched toward the camera, so any yaw reads as a lopsided diamond. Cubes keep
         // facing the camera and run sideways on their legs.
         const float MaxYaw=0f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
@@ -86,9 +87,9 @@ namespace SandJamTest.Scene3D
         void ShowLegs(bool visible) { if (legs && legs.enabled != visible) legs.enabled = visible; }
 
         public const float CubeScale = .9f;
-        // Original: a cube on its waiting pad reads ~0.86 of its size in the lanes (the stash sits further back). It
-        // shrinks while running to the pad and is full size again in the lanes.
-        const float StashSize = .86f;
+        // Original (recording 2, 48.6-52 s): a cube on its waiting pad reads ~0.96 of its size in the lanes, and on
+        // the way there it hops toward the camera, ~1.25x mid-run. Full size again in the lanes.
+        const float StashSize = .96f, RunBulge = .25f;
         float size = 1, sizeTarget = 1;
         public void Bind(Shooter shooter, Vector3 position)
         {
@@ -237,7 +238,8 @@ namespace SandJamTest.Scene3D
             squash = Mathf.Clamp(squash, -.35f, .35f);
             if (Mathf.Abs(squash) < .0005f && Mathf.Abs(squashVelocity) < .01f) { squash = 0; squashVelocity = 0; }
             size = Mathf.MoveTowards(size, sizeTarget, delta * 1.2f); // about the length of the run to the pad
-            Visual.localScale = size * new Vector3(baseScale.x * (1 - squash * .5f), baseScale.y * (1 + squash), baseScale.z * (1 - squash * .5f));
+            float hop = gait == Gait.Run && !AtRest && !Departing && duration > 0 ? 1 + RunBulge * Mathf.Sin(Mathf.PI * travel / duration) : 1;
+            Visual.localScale = size * hop * new Vector3(baseScale.x * (1 - squash * .5f), baseScale.y * (1 + squash), baseScale.z * (1 - squash * .5f));
             float shake = 0;
             if (shakeTime > 0) { shakeTime = Mathf.Max(0, shakeTime - delta); shake = Mathf.Sin(shakeTime * 70f) * .06f * (shakeTime / .28f); }
             Visual.localPosition = basePosition + new Vector3(shake, 0, 0);

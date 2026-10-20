@@ -212,3 +212,34 @@ Các thay đổi trong ngày:
 - Tự chơi thắng level 267, không có lỗi.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Khối chạy lên ô chờ và khối kính trên ô chờ
+
+**Đo / lý do** (video 2, giây 48,5–52; giây 60)
+
+- Thời gian chạy: bản gốc mất khoảng 0,75 giây từ làn phải tới ô trái cùng; bản mình khoảng 0,55 giây.
+- Kích thước: giữa đường chạy khối gốc to khoảng 1,25 lần (nhảy về phía camera), còn khối của mình nhỏ lại. Trên
+  ô chờ khối gốc rộng khoảng 103 px, khối của mình 79 px. Ô chờ hai bên bằng nhau (111 px).
+- Viền kính: bản gốc mang đúng màu đậm của khối (vàng khoảng #FAD719, xám khoảng #9B9B9D); bản mình pha 72% trắng
+  thành màu kem.
+- Vách kính: bản gốc gần như trong suốt.
+- Góc nhìn: khối gốc trên ô chờ nhìn thấy miệng kính có chiều sâu; khối của mình đứng thẳng.
+
+**Sửa**
+
+- `SceneActorView`:
+  - `RunSpeed` 3,5, `MinRun` 0,45, `MaxRun` 0,8;
+  - `StashSize` 0,96;
+  - `RunBulge` 0,25: khối to lên giữa đường chạy.
+- `CharacterSandVessel`:
+  - viền kính dùng màu cát;
+  - `GlassClarity` 0,5;
+  - `DockedPitch` = 0° cho khối đã rời làn. Đã thử −15°: ngả sai chiều.
+
+**Kiểm tra**
+
+- Chạy khoảng 0,7 giây; lúc chạy rộng 127 px, bản gốc 125–133 px.
+- Trên ô chờ 103×118 px, bản gốc 103×113 px.
+- Cặp xích chạy lên ô chờ vẫn đúng.
+- Tự chơi thắng level 68 và 120.
+- Run all checks qua 8/8.
+
