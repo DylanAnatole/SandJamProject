@@ -57,7 +57,7 @@ Cập nhật: 20/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 | Sand Shop | ✅ | Mở ở mục BOOSTERS như bản gốc; gói tiền thật chỉ hiển thị (không thanh toán) |
 | Gallery (bộ sưu tập, thẻ úp "Claim") | ✅ | Lưới thẻ đúng cỡ; nút "Claim All Cards" bản gốc xanh thép, bản mình xanh tím (nhỏ) |
 | Sand Quest (rương JOIN) | ✅ | Popup mời khớp video 2 (giây 22); bản đồ hành trình chưa có cảnh đối chiếu |
-| Cài đặt | ✅ | |
+| Cài đặt | ✅ | Bản trên Home đo theo video 2 (giây 15); chữ tiêu đề, bề rộng nút còn chênh nhỏ |
 | Loading / splash giữa các level | ✅ | |
 
 ## 5. Công cụ, code, quy trình

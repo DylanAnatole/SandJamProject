@@ -466,3 +466,27 @@ một phần.
 - Dấu "!" vẫn hiện trên Home.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Popup Cài đặt trên Home
+
+**Đo / lý do** (video 2, giây 15)
+
+- Lớp phủ bản gốc là xám (60,61,68) phủ khoảng 83%: nền Home nhạt màu đi, sàn sáng lên (34 → 58). Bản mình là
+  lớp đen xanh 68%.
+- Khung bản gốc 712×888 px; bản mình 747×929 px, thấp hơn 47 px.
+- Nội dung trong khung của bản gốc nằm thấp hơn so với khung.
+- Ô xu của bản mình vẫn sáng.
+
+**Sửa** (`SettingsPopup`)
+
+- Lớp phủ xám, `HideCoinBar`.
+- Bản trên Home: `FitDynamic(.95, 6)` thu nhỏ mọi phần tử động (cả vùng chạm); riêng khung nâng thêm 44 px.
+- Bản trong màn chơi chưa có cảnh đối chiếu, nên giữ nguyên.
+
+**Kiểm tra**
+
+- Khung 709×884 px.
+- Trời (77,84,95) so với (79,84,95).
+- Hàng Rung / Âm thanh / nút ✕ ở 645 / 804 / 402 px; bản gốc 649 / 809 / 407 px.
+- Nút gạt chạy đúng.
+- Run all checks qua 8/8.
+

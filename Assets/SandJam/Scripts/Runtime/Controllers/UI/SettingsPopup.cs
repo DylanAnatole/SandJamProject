@@ -26,6 +26,10 @@ namespace SandJamTest.Scene3D
         {
             settings = Blank("Settings popup");
             settings.RightButton.transform.parent.gameObject.SetActive(false);
+            // Recording 2 (15 s): over Home the original washes the screen with grey (#3C3D44 at ~83%), its coin bar
+            // included.
+            settings.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>().color = new Color32(60, 61, 68, 212);
+            PopupScreens.HideCoinBar(settings);
         }
 
         public override bool Handles(string action) { return action == "toggle-sound" || action == "toggle-haptics" || action == "privacy" || action == "restore"; }
@@ -45,7 +49,7 @@ namespace SandJamTest.Scene3D
             // Game: panel 1221.7 tall centred at y 130.75; MainMenu: 1081.5 tall at y 145.6 (260.6 - 115).
             settingsCentre = inGame ? new Vector2(0, 130.75f) : new Vector2(0, 145.6f);
             settingsHeight = inGame ? 1221.7f : 1081.5f;
-            Sized("Settings/bg-settings", 0, 0, 867.2f, settingsHeight, -6.2f);
+            var panel = Sized("Settings/bg-settings", 0, 0, 867.2f, settingsHeight, -6.2f);
             Sized("Settings/SETTINGS", 0, Top(-140), 641 * .92f, 111 * .92f, -6.4f); // inside the panel's top edge
             hapticKnob = SettingsRow(Top(-308.85f), "Vibration", "toggle-haptics", out hapticKnobText);
             soundKnob = SettingsRow(Top(-502.85f), "Sounds", "toggle-sound", out soundKnobText);
@@ -58,7 +62,22 @@ namespace SandJamTest.Scene3D
             SettingsButton("Settings/button-white", Bottom(inGame ? 343 : 178), 600 * .9f, 190 * .82f, "Restore Purchases", "restore", new Color(.2f, .2f, .38f));
             if (inGame) SettingsButton("Settings/button-green", Bottom(157), 768 * .9f, 244 * .78f, "HOME", "home", Color.white);
             RefreshSettings();
+            // Home panel as measured on recording 2 (15 s): ~5% smaller, the panel 50 px higher than the canvas values
+            // give, its content only 6 px higher.
+            if (!inGame) { FitDynamic(.95f, 6); panel.transform.localPosition += Vector3.up * 44 * VideoScreen.Px; }
             Show(settings);
+        }
+        // Scales the panel's pieces about the popup centre and moves them up (popup space, at its full size).
+        void FitDynamic(float scale, float upPx)
+        {
+            var k = new Vector3(scale, scale, 1);
+            foreach (var o in settingsDynamic)
+            {
+                if (!o) continue;
+                var t = o.transform;
+                t.localPosition = Vector3.Scale(t.localPosition, k) + Vector3.up * upPx * VideoScreen.Px;
+                t.localScale = Vector3.Scale(t.localScale, k);
+            }
         }
 
         // Slot with the setting name on the left and a swipe toggle on the right. Returns the knob.
