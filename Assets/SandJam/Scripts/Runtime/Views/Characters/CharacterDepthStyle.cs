@@ -11,7 +11,7 @@ namespace SandJamTest.Scene3D
         MaterialPropertyBlock properties;
         CharacterSandVessel vessel;
         TextMesh[] labels;
-        Color[] labelColors;
+        Color mainColor;
         int labelState=-1;
         int lastState=-1; float lastAmount=-1; Color lastColor;
         static readonly int Width=Shader.PropertyToID("_OutlineWidth");
@@ -59,14 +59,18 @@ namespace SandJamTest.Scene3D
             int state=highlighted?1:0;
             if(state==labelState || !Actor.AmmoLabel)return;
             labelState=state;
-            if(labels==null){labels=Actor.AmmoLabel.GetComponentsInChildren<TextMesh>(true);labelColors=System.Array.ConvertAll(labels,l=>l.color);}
-            for(int i=0;i<labels.Length;i++)
+            if(labels==null)mainColor=Actor.AmmoLabel.color;
+            // Re-read the outline copies when some were replaced (a legacy outline hands over to OutlinedText when its
+            // cube is first shown, destroying the old copies).
+            if(labels==null || System.Array.Exists(labels,l=>!l))labels=Actor.AmmoLabel.GetComponentsInChildren<TextMesh>(true);
+            var outline=Actor.AmmoLabel.GetComponent<OutlinedText>();
+            var ink=outline?outline.Ink:TextOutliner.Ink;
+            foreach(var label in labels)
             {
-                bool main=labels[i]==Actor.AmmoLabel;
+                bool main=label==Actor.AmmoLabel;
                 // Back rows: still white digits with a dark edge (only lightly tinted by the block colour), so the count
                 // stays readable on white, yellow and grey blocks too.
-                var ink=new Color(.17f,.12f,.3f);
-                labels[i].color=highlighted?labelColors[i]:main?Color.Lerp(Color.white,color,.18f)*new Color(.93f,.93f,.93f,1):Color.Lerp(ink,color,.2f);
+                label.color=main?(highlighted?mainColor:Color.Lerp(Color.white,color,.18f)*new Color(.93f,.93f,.93f,1)):highlighted?ink:Color.Lerp(ink,color,.2f);
             }
         }
     }

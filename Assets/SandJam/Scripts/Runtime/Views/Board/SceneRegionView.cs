@@ -110,7 +110,7 @@ namespace SandJamTest.Scene3D
             // Diagonal stripes in the region colour, like the locked areas in the reference gif.
             Color baseColor=ColorPalette.Of(region.Data.ColorType);
             var original=OriginalConfig.Color(region.Data.ColorType);
-            Color pale=original!=null && original.init.a>0?original.init:Color.Lerp(EmptyTint,baseColor,.4f);
+            Color pale=original!=null && original.HasInit?original.init:Color.Lerp(EmptyTint,baseColor,.4f);
             Color32 dark=(Color32)Color.Lerp(baseColor,Color.white,.15f), light=(Color32)pale;
             if(!justDone) for(int i=0;i<region.Data.rows.Length;i++){int x=region.Data.cols[i],y=region.Data.rows[i];Board.SetBase(x,y,((x+y)/3)%2==0?dark:light);}
         }
@@ -146,7 +146,7 @@ namespace SandJamTest.Scene3D
             sand.Request((int)((long)(region.Data.amount-region.Remaining)*region.Data.rows.Length/region.Data.amount));
             // Open regions use the original pale InitColor; locked ones stay neutral.
             var original=OverrideSandColor?null:OriginalConfig.Color(region.Data.ColorType);
-            empty=region.InformationVisible && original!=null && original.init.a>0?(Color32)original.init:(Color32)Color.Lerp(EmptyTint,(Color)solid,region.InformationVisible?OpenTintStrength:0f);
+            empty=region.InformationVisible && original!=null && original.HasInit?(Color32)original.init:(Color32)Color.Lerp(EmptyTint,(Color)solid,region.InformationVisible?OpenTintStrength:0f);
             Counter.gameObject.SetActive(region.InformationVisible);
             if(region.InformationVisible) SortCounter();
             var backing=transform.Find("Amount backing"); if(backing) backing.gameObject.SetActive(region.InformationVisible);
