@@ -28,8 +28,7 @@ namespace SandJamTest.Scene3D
         void Awake()
         {
             if(EditorPreview)EditorPreview.enabled=false;
-            // Region outlines stay lavender in every stage theme (recordings: blue and dark themes alike).
-            SandBoardTextureView.ObstacleTint=new Color(.51f,.50f,.68f);
+            SandBoardTextureView.ObstacleTint=SandBoardTextureView.GameOutline;
             fillScale=LoadingFill.localScale;mascotPosition=Mascot.localPosition;
             // Original "Superb!": the finished, zoomed-in picture stays visible through a translucent dark layer.
             var superbBackdrop=Celebration.transform.Find("Dark backdrop");
@@ -388,7 +387,7 @@ namespace SandJamTest.Scene3D
                 coinWallet=w?w.GetComponentsInChildren<Renderer>(true):new Renderer[0];}
             foreach(var r in coinWallet)if(r)r.sortingOrder=lift?16:0;
         }
-        void OnDestroy(){SandBoardTextureView.ObstacleTint=new Color(.16f,.27f,.34f);}
+        void OnDestroy(){SandBoardTextureView.ObstacleTint=SandBoardTextureView.DefaultObstacleTint;}
         public void Show(Page page)
         {
             if (Boosters && page != Page.Gameplay) Boosters.Cancel();

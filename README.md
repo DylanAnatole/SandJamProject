@@ -98,6 +98,8 @@ badge HUD đỏ có đầu lâu, nền tối (`OriginalLookStyler.Hard*`).
 - **Game Manager** — xem/sửa save, nhảy màn, cộng xu/booster, reset.
 - **Levels → Build campaign from original order** — lọc level chạy được và giải được → `Campaign.json`.
 - **Original data → Import configs and tutorial gifs** — sinh `OriginalConfig` và `OriginalGifs`.
+- **Levels → New level from selected picture** — ảnh PNG pixel-art 84×112 → level mới (xem `Documentation/THIET_KE_LEVEL_VI.md`).
+- **Levels → New level from template / Check custom levels** — tạo level từ template, kiểm tra level tự làm.
 
 ## Cơ chế (suy ra từ ảnh động gốc + dữ liệu level, kiểm chứng bằng solver)
 

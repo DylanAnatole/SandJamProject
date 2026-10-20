@@ -81,3 +81,30 @@ Các thay đổi trong ngày:
 ## 2026-10-20
 
 - Ghi quy tắc code và quy trình làm việc vào đầu file này; tạo nhật ký tiến độ.
+
+### 2026-10-20 — Tự chơi để bắt lỗi, công cụ tạo level từ ảnh
+
+**Đo / lý do**
+
+- Cho máy tự chơi 41 level, từ 2 tới 500, theo lời giải của bộ giải, tốc độ x3–x4.
+- Kết quả: thắng cả 41 level, không có level nào kẹt.
+- Bắt được một lỗi: mỗi level báo 22 lần `MissingReferenceException`. Nguyên nhân là `CharacterDepthStyle` giữ các
+  bản viền chữ đã bị `ReferenceTextOutline` hủy.
+- Chuẩn bị thiết kế level mới: sửa tay hàng nghìn ô trong JSON là không khả thi, nên cần công cụ tạo level từ ảnh.
+
+**Sửa**
+
+- `CharacterDepthStyle`: đọc lại danh sách chữ khi có bản viền bị thay; màu viền lấy từ `OutlinedText.Ink`.
+- Thêm `LevelFromPicture`: ảnh PNG 84×112 thành level mới.
+- `LevelAuthoring.Publish` dùng chung cho cách tạo từ template và tạo từ ảnh.
+- `OriginalConfig.ColorEntry.HasInit`: màu 14–16 không có màu nền gốc (bị đen), nên vùng đang chờ dùng màu nhạt
+  tự tính.
+- Đặt tên cho các màu đường viền `SandBoardTextureView.GameOutline` / `DefaultObstacleTint`, thay cho các số
+  viết lặp ở nhiều chỗ.
+- Thêm tài liệu `THIET_KE_LEVEL_VI.md`.
+
+**Kiểm tra**
+
+- Sau khi sửa, chạy lại không còn lỗi.
+- Level tạo từ `Sunset.png` có 4 vùng và 24 khối, qua bộ giải, chơi tự động thắng.
+- Run all checks qua 8/8.

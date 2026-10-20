@@ -7,7 +7,10 @@ namespace SandJamTest.Scene3D
     public sealed class SandBoardTextureView : MonoBehaviour
     {
         public const float CellSize=.075f;
-        public static Color ObstacleTint = new Color(.16f,.27f,.34f);
+        public static readonly Color DefaultObstacleTint = new Color(.16f,.27f,.34f);
+        public static Color ObstacleTint = DefaultObstacleTint;
+        // Region outlines in the game, in every stage theme (recordings: blue and dark themes alike).
+        public static readonly Color GameOutline = new Color(.51f,.50f,.68f);
         public Texture2D Texture { get; private set; }
         public SpriteRenderer Renderer { get; private set; }
         public int UploadCount { get; private set; }
