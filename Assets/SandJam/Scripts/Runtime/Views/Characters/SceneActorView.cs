@@ -38,9 +38,9 @@ namespace SandJamTest.Scene3D
         float yaw;
         // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
         const float SlideSeconds=.24f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.75f, ExitPause=.12f;
-        // No turning: the body is pitched toward the camera, so any yaw reads as a lopsided diamond. Cubes keep
-        // facing the camera and run sideways on their legs.
-        const float MaxYaw=0f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
+        // The body turns a little toward where it runs (recording 2, ~25 deg); further, the pitched body reads as a
+        // lopsided diamond.
+        const float MaxYaw=25f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
         // The rig is pitched toward the camera, so turning happens around the body's own up axis
         // (rotating the root around world Y would roll the tilted body sideways).
         Transform pose; Quaternion poseBase; bool poseCaptured;
@@ -48,8 +48,10 @@ namespace SandJamTest.Scene3D
         // Only the legs turn toward where the cube runs (the body keeps facing the camera): after the animator has
         // posed the rig, both thighs are swung around the hips' up axis.
         public static float LegTurnSign = 1;
-        const float RunLegYaw = 55f, ExitLegYaw = 85f;
-        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw;
+        // The body itself turns MaxYaw while running, the legs a little further; they also swing down out from under
+        // the block so they show below it (recording 2, 48.8-49.1 s: legs ~60% of the block height below it).
+        const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f;
+        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop;
         void FindRig()
         {
             rigSearched = true;
@@ -68,9 +70,10 @@ namespace SandJamTest.Scene3D
             float dx = destination.x - from.x;
             float target = !running ? 0 : Departing ? ExitLegYaw * Mathf.Sign(dx) : Mathf.Abs(dx) < .05f ? 0 : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
             legYaw = Mathf.MoveTowards(legYaw, target, Time.deltaTime * 600f);
-            if (Mathf.Abs(legYaw) < .01f) return;
-            var axis = (pose ? pose.up : hips.up);
-            var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, axis);
+            legDrop = Mathf.MoveTowards(legDrop, running && !Departing ? RunLegDrop : 0, Time.deltaTime * 400f);
+            if (Mathf.Abs(legYaw) < .01f && Mathf.Abs(legDrop) < .01f) return;
+            var frame = pose ? pose : hips;
+            var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, frame.up) * Quaternion.AngleAxis(legDrop, frame.right);
             foreach (var thigh in new[] { leftThigh, rightThigh })
             {
                 thigh.position = hips.position + turn * (thigh.position - hips.position);

@@ -243,3 +243,24 @@ Các thay đổi trong ngày:
 - Tự chơi thắng level 68 và 120.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Khối xoay theo hướng chạy, chân lộ ra dưới khối
+
+**Đo / lý do** (video 2, giây 48,8–49,1)
+
+- Khi chạy, khối gốc xoay khoảng 25° theo hướng chạy (thấy mặt trên và mặt bên), chân thò xuống dưới khối.
+- Khối của mình quay thẳng mặt về camera (`MaxYaw` = 0), chân bị thân che gần hết.
+
+**Sửa** (`SceneActorView`)
+
+- `MaxYaw` = 25°, xoay quanh trục up của khung khối.
+  - Đã thử 40°: thành hình thoi méo.
+  - Đã thử xoay quanh trục Y thế giới: khối lật nằm nghiêng (khung khối ngả −54° về camera).
+- `RunLegYaw` 55° → 30°, vì thân đã tự xoay.
+- Thêm `RunLegDrop` 35°: đùi xoay quanh trục ngang của khung để chân lộ ra dưới khối.
+  - Đã thử 60°: chân đè lên mặt khối.
+  - Đã thử −40°: chân khuất hẳn.
+
+**Còn khác:** chân bản gốc dài hơn (khoảng 60% chiều cao khối); muốn giống phải kéo dài xương chân.
+
+**Kiểm tra:** tự chơi thắng level 68; Run all checks qua 8/8.
+
