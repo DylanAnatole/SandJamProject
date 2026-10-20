@@ -364,3 +364,28 @@ một phần.
 - Tự chơi thắng level 68 và 268.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Popup Hard Level, Bonus Level và CONGRATS
+
+**Đo / lý do** (ảnh đối chiếu bản gốc: Hard Level của level 260, CONGRATS)
+
+- Hard/Bonus:
+  - nền bản gốc là lớp tím than (bàn chơi còn 32,30,61), giống lớp của Superb!; bản mình đen 68%, bàn chơi còn rõ;
+  - ô xu và biểu tượng đầu lâu / chồng xu trên thanh trên bị làm tối; bản mình vẫn sáng.
+- CONGRATS: nền bản gốc xanh tím than đặc (20,18,37), không thấy bàn chơi; bản mình gần đen (8,9,10), hơi trong.
+
+**Sửa**
+
+- `PopupScreens.DeepDim`: một hằng dùng chung cho Superb! và Hard/Bonus, thay số viết ở `VideoScreen`.
+- `LevelIntroPopups` dùng `DeepDim` và `HideCoinBar`.
+- `CampaignUi`: biểu tượng loại level có cùng sortingOrder với dải Level (nằm trước dải nhờ độ sâu), nên lớp tối
+  của popup phủ được nó.
+- `CongratsPopup`: nền đặc #141225.
+
+**Kiểm tra**
+
+- Hard: nền (31,29,54) so với (32,30,61).
+- CONGRATS: (19,17,35) so với (21,19,39).
+- Thanh trên bình thường khi đóng popup.
+- Tự chơi thắng level 30.
+- Run all checks qua 8/8.
+

@@ -44,8 +44,9 @@ Cập nhật: 20/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 | Hết chỗ (Out of Space) | ✅ | Ảnh chụp ô chờ bên trong nhỏ hơn bản gốc một chút |
 | Level Failed, Hết tim | ✅ | |
 | Màu nền tối của popup | ✅ | |
-| Hard Level / Bonus Level / New Feature / Booster mới | 🟡 | Có đủ, chưa đo pixel lại sau các đợt chỉnh thẻ |
-| CONGRATS (thẻ bộ sưu tập) | 🟡 | Có, chưa đo lại |
+| Hard Level / Bonus Level | ✅ | Nền tím than, biểu tượng thanh trên bị làm tối như bản gốc |
+| New Feature / Booster mới | 🟡 | Có đủ, chưa đo pixel lại |
+| CONGRATS (thẻ bộ sưu tập) | ✅ | Nền xanh tím than đặc như bản gốc |
 
 ## 4. Home và các trang
 

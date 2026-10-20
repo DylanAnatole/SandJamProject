@@ -52,6 +52,8 @@ namespace SandJamTest.Scene3D
             string caption, string action, out TextMesh levelLabel)
         {
             var p = Blank(name, true);
+            p.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>().color = PopupScreens.DeepDim;
+            PopupScreens.HideCoinBar(p); // the HUD counter stays dimmed under the layer, as in the original
             // Measured on the recording (level 260): the frame reaches lower, the mascot and caption are larger and
             // lower, the PLAY button is bigger and sits on the frame's bottom edge, and a glow of rays shines behind
             // the crest (red for hard, gold for bonus).

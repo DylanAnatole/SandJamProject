@@ -203,7 +203,7 @@ namespace SandJamTest.Scene3D
             {
                 var obj = new GameObject("Level kind icon") { layer = levelBadge.gameObject.layer };
                 obj.transform.SetParent(levelBadge.transform.parent, false);
-                skull = obj.AddComponent<SpriteRenderer>(); skull.sortingOrder = levelBadge.sortingOrder + 1;
+                skull = obj.AddComponent<SpriteRenderer>(); skull.sortingOrder = levelBadge.sortingOrder; // in front of the badge by depth, still under popup layers
             }
             if (skull)
             {

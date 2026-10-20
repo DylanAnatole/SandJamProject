@@ -6,6 +6,9 @@ namespace SandJamTest.Scene3D
     // touch area. Popup modules reach them through PopupModule.
     public sealed partial class PopupScreens
     {
+        // Deep purple layer of the original's Superb! screen and Hard / Bonus level cards (#1E1936 at ~94%,
+        // recording 2 228 s; hard card of level 260: the board reads #201E3D under it).
+        internal static readonly Color32 DeepDim = new Color32(30, 25, 54, 241);
         // The coin bar copied from the result page into every card (with its gold rim).
         static readonly string[] CoinBar = { "bg-currency", "button-plus_0", "icon-coin", "2040", "Coin bar gold rim" };
         // The result card with only the backdrop, coin bar (without the rim) and button group left (optionally its
