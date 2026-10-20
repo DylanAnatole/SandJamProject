@@ -320,3 +320,22 @@ một phần.
 - Tự chơi thắng level 68.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Khối đầu làn bật đi ngay, hàng khối trượt lên sau
+
+**Đo / lý do** (video 2, giây 48,45–49,05, nhịp 0,05 giây)
+
+- Bản gốc: khối đầu làn rời chỗ trong dưới 0,1 giây; khối phía sau trượt lên trong khoảng 0,3 giây.
+- Bản mình: đường chạy tăng tốc chậm (hai lớp smoothstep), nên khối phía sau trượt tới chỗ đầu làn trong 0,24
+  giây khi khối đầu vẫn còn đó, và hai khối đè lên nhau.
+
+**Sửa** (`SceneActorView`)
+
+- Đường chạy xuất phát nhanh rồi chậm dần khi tới ô chờ (pha giữa tuyến tính và ease-out).
+- `SlideSeconds` 0,24 → 0,32.
+
+**Kiểm tra**
+
+- Ảnh chụp: không còn chồng hình.
+- Tự chơi thắng level 68.
+- Run all checks qua 8/8.
+
