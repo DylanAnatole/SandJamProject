@@ -108,3 +108,40 @@ Các thay đổi trong ngày:
 - Sau khi sửa, chạy lại không còn lỗi.
 - Level tạo từ `Sunset.png` có 4 vùng và 24 khối, qua bộ giải, chơi tự động thắng.
 - Run all checks qua 8/8.
+
+### 2026-10-20 — Kiểm tra luồng thua / booster; popup Hết chỗ và Level Complete theo bản gốc
+
+**Đo / lý do**
+
+- Chạy tự động luồng thua và booster, không có lỗi: dùng Swap, Flare, Select → Hết chỗ → Chơi tiếp 400 xu (thêm
+  ô thứ 6) → Hết chỗ → Bỏ cuộc → Level Failed → Chơi lại → Bỏ cuộc → Home.
+- Popup Hết chỗ (video 2, giây 74):
+  - khung thẻ to hơn 6.5% và thấp hơn 36 px;
+  - tiêu đề nhỏ hơn 1.4 lần;
+  - nút Play on thấp hơn;
+  - dải Level màu cam thay vì hồng (ảnh dải vàng nhuộm không thể ra hồng);
+  - thiếu vầng sáng;
+  - ô xu không bị làm tối.
+- Level Complete (giây 143): khung kính hẹp, viền vàng hai bên dày 42 px (bản gốc 12 px); hộp phần thưởng thấp,
+  330 px so với 471 px; tiêu đề, "+10", xu và chữ "Your Reward!" nhỏ hơn 8–28%.
+
+**Sửa**
+
+- `ResultFx`:
+  - khung kính và hộp phần thưởng đặt theo số đo (pixel so với khung thẻ); mọi popup dựng từ thẻ này đều được
+    hưởng;
+  - cỡ chữ riêng của Level Complete đặt trong `Start()`, nên không lan sang các popup chép từ thẻ;
+  - vầng sáng xoay tách thành `SpinningLight` dùng chung.
+- `PopupScreens`:
+  - popup Hết chỗ dùng `FitCard`, `HideCoinBar`;
+  - `TintRibbon` dùng ảnh dải gốc `bg-level-red` nếu có trên máy (không đưa lên repo), không có thì nhuộm như cũ.
+- `VideoScreen.Place` / `VideoScreen.Px`: helper dùng chung để thu phóng và dịch theo pixel của video (trước chỉ
+  có `NavPlace` cho Home).
+
+**Kiểm tra**
+
+- Hết chỗ: thẻ, tiêu đề, dải, nút đóng và nút Play on lệch ≤ 4 px so với bản gốc.
+- Level Complete: tiêu đề, "+10" và xu lệch ≤ 4 px.
+- Chụp lại các popup Home và Level Failed: không vỡ.
+- Run all checks qua 8/8.
+

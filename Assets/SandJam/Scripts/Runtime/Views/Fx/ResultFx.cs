@@ -7,16 +7,37 @@ namespace SandJamTest.Scene3D
     // a soft rotating light behind the card, the finished picture faintly visible through the dark backdrop, and
     // the reward coins flying from the reward box up to the coin counter. The buttons stay dimmed while the coins
     // fly; the counter starts rolling as the first coins arrive (CampaignUi waits for CoinsLanded).
+    // Soft golden light turning slowly behind a card's title (original Fx_Rotate_Light).
+    public sealed class SpinningLight : MonoBehaviour
+    {
+        Vector3 baseScale;
+        public static SpinningLight Add(Transform parent, Vector3 position, float width)
+        {
+            var light = Resources.Load<Sprite>("Congrats/light-congrats"); if (!light) return null;
+            var r = new GameObject("Card light") { layer = parent.gameObject.layer }.AddComponent<SpriteRenderer>();
+            r.transform.SetParent(parent, false); r.transform.position = position;
+            r.sprite = light; r.color = new Color(1, .9f, .4f, .75f);
+            float k = width / light.bounds.size.x / Mathf.Max(.0001f, parent.lossyScale.x); r.transform.localScale = new Vector3(k, k, 1);
+            var spin = r.gameObject.AddComponent<SpinningLight>(); spin.baseScale = r.transform.localScale;
+            return spin;
+        }
+        void Update()
+        {
+            float time = Time.unscaledTime;
+            transform.localRotation = Quaternion.Euler(0, 0, time * 14f);
+            transform.localScale = baseScale * (1 + .04f * Mathf.Sin(time * 3));
+        }
+    }
+
     public sealed class ResultFx : MonoBehaviour
     {
         public static bool CoinsLanded { get; private set; } = true;
         const int CoinCount = 10;
-        const float Start = .35f, Spread = .06f, Flight = .55f;
-        Transform from, to, rays;
+        const float CoinStart = .35f, Spread = .06f, Flight = .55f;
+        Transform from, to;
         readonly List<Transform> coins = new List<Transform>();
         readonly List<SpriteRenderer> buttons = new List<SpriteRenderer>();
         readonly List<Color> buttonColors = new List<Color>();
-        Vector3 raysScale;
         float time;
 
         public void Build()
@@ -29,18 +50,8 @@ namespace SandJamTest.Scene3D
             FitRewardBox();
             StyleRewardBand();
             LayoutButtons();
-            RecordLayout();
-            var light = Resources.Load<Sprite>("Congrats/light-congrats");
             var header = transform.Find("Gold header");
-            if (light && header)
-            {
-                var r = new GameObject("Card light") { layer = gameObject.layer }.AddComponent<SpriteRenderer>();
-                r.transform.SetParent(transform, false);
-                r.transform.position = header.position + new Vector3(0, .1f, .5f);
-                r.sprite = light; r.color = new Color(1, .85f, .35f, .5f);
-                float k = 5.2f / light.bounds.size.x; r.transform.localScale = new Vector3(k, k, 1);
-                rays = r.transform; raysScale = rays.localScale;
-            }
+            if (header) SpinningLight.Add(transform, header.position + new Vector3(0, .1f, .5f), 5.2f);
             var coin = Resources.Load<Sprite>("VideoUI/icon-coin");
             if (coin && from && to)
                 for (int i = 0; i < CoinCount; i++)
@@ -82,18 +93,19 @@ namespace SandJamTest.Scene3D
             border.GetComponent<Renderer>().enabled = false;
             if (header) header.GetComponent<Renderer>().enabled = false;
             var g = glass.GetComponent<SpriteRenderer>();
-            // The glass fills the card below the title, inset evenly from the gold frame.
-            float glassTop = header ? header.GetComponent<Renderer>().bounds.min.y + .05f : b.max.y - 1f;
-            float inset = .12f, glassBottom = b.min.y + inset;
+            // Visible glass, measured on recording 2 (Level Complete, 143 s): 12 px inside the gold frame at the sides,
+            // 29 px above its bottom, its top 187 px below the frame's top. The glass art is drawn larger so that its
+            // green rim falls outside the clip.
+            const float ClipX = .94f, ClipY = .95f;
+            float px = VideoScreen.Px, glassTop = b.max.y - 187 * px, glassBottom = b.min.y + 29 * px, glassWidth = b.size.x - 2 * 12 * px;
             var gsz = g.sprite.bounds.size; var tps = transform.lossyScale;
             g.transform.position = new Vector3(b.center.x, (glassTop + glassBottom) * .5f, g.transform.position.z);
-            g.transform.localScale = new Vector3((b.size.x - 2 * inset) / gsz.x / tps.x, (glassTop - glassBottom) / gsz.y / tps.y, 1);
-            var gb = g.bounds;
+            g.transform.localScale = new Vector3(glassWidth / ClipX / gsz.x / tps.x, (glassTop - glassBottom) / ClipY / gsz.y / tps.y, 1);
             var clip = new GameObject(ClipName) { layer = gameObject.layer }.AddComponent<SpriteMask>();
             clip.transform.SetParent(transform, false); clip.sprite = mask;
-            clip.transform.position = gb.center;
-            var cs = mask.bounds.size; var gs = transform.lossyScale;
-            clip.transform.localScale = new Vector3(gb.size.x * .94f / cs.x / gs.x, gb.size.y * .95f / cs.y / gs.y, 1);
+            clip.transform.position = g.bounds.center;
+            var cs = mask.bounds.size;
+            clip.transform.localScale = new Vector3(glassWidth / cs.x / tps.x, (glassTop - glassBottom) / cs.y / tps.y, 1);
             // The project's pixel sprite shader ignores sprite masks; the default sprite shader honours them.
             g.sharedMaterial = SpriteFactory.PlainSprite;
             g.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
@@ -174,19 +186,16 @@ namespace SandJamTest.Scene3D
             return true;
         }
 
-        // The purple reward box sat partly above the visible glass (its top at 1.90, the glass's at 1.69): its top
-        // comes down to leave the same margin as at its sides; the coins and the amount move down with it.
+        // The purple reward box (with its pale rim), measured on recording 2: 54 px inside the visible glass at the
+        // sides, 13 px below its top, 471 px tall. The coins and the amount move with its centre.
         void FitRewardBox()
         {
             Transform slot; Bounds sb, cb; if (!SlotAndGlass(out slot, out sb, out cb)) return;
-            float margin = Mathf.Max(.08f, cb.max.x - sb.max.x), top = cb.max.y - margin;
-            if (sb.max.y <= top) return;
-            float drop = sb.max.y - top, height = top - sb.min.y, k = height / sb.size.y;
-            var ls = slot.localScale; slot.localScale = new Vector3(ls.x, ls.y * k, ls.z);
-            slot.position += new Vector3(0, sb.min.y + height * .5f - slot.GetComponent<Renderer>().bounds.center.y, 0);
-            var coins = transform.Find("icon-coin-reward");
-            if (coins) { coins.localScale *= .9f; coins.position += new Vector3(0, -drop * .6f, 0); }
-            var amount = transform.Find("+ 10"); if (amount) amount.position += new Vector3(0, -drop * .35f, 0);
+            float px = VideoScreen.Px, width = cb.size.x - 2 * 54 * px, height = 471 * px, top = cb.max.y - 13 * px;
+            var ls = slot.localScale; slot.localScale = new Vector3(ls.x * width / sb.size.x, ls.y * height / sb.size.y, ls.z);
+            var shift = new Vector3(cb.center.x, top - height * .5f, 0) - slot.GetComponent<Renderer>().bounds.center; shift.z = 0;
+            slot.position += shift;
+            foreach (var name in new[] { "icon-coin-reward", "+ 10" }) { var t = transform.Find(name); if (t) t.position += shift; }
         }
 
         // The reward box and the two buttons share the same width inside the glass with equal side margins (the
@@ -242,6 +251,16 @@ namespace SandJamTest.Scene3D
                 }
             }
         }
+        // Level Complete only (the popups copied from this card in Awake keep their own text sizes): measured on
+        // recording 2 (143 s), larger title, amount, coins and caption; title, amount and coins higher.
+        void Start()
+        {
+            VideoScreen.Place(transform.Find("Level Complete!"), 1.23f, 0, -18);
+            VideoScreen.Place(transform.Find("+ 10"), 1.21f, 0, -32.5f);
+            VideoScreen.Place(transform.Find("icon-coin-reward"), 1.08f, 16.5f, -20.5f);
+            VideoScreen.Place(transform.Find("Your Reward!"), 1.25f, 0, 0);
+            RecordLayout();
+        }
         void LateUpdate() { KeepCentred(); }
 
         void OnEnable() { time = 0; CoinsLanded = coins.Count == 0; Flatten(); }
@@ -277,13 +296,12 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             time += Time.unscaledDeltaTime;
-            if (rays) { rays.localRotation = Quaternion.Euler(0, 0, time * 14f); rays.localScale = raysScale * (1 + .04f * Mathf.Sin(time * 3)); }
             if (coins.Count == 0 || !from || !to) return;
-            float end = Start + Spread * (coins.Count - 1) + Flight;
+            float end = CoinStart + Spread * (coins.Count - 1) + Flight;
             Dim(time < end ? .65f : Mathf.Clamp01(1 - (time - end) / .2f) * .65f);
             for (int i = 0; i < coins.Count; i++)
             {
-                float t = (time - Start - i * Spread) / Flight;
+                float t = (time - CoinStart - i * Spread) / Flight;
                 var c = coins[i];
                 if (t <= 0 || t >= 1) { c.gameObject.SetActive(false); if (t >= 1 && i == 0) CoinsLanded = true; continue; }
                 c.gameObject.SetActive(true);

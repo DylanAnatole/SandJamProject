@@ -45,7 +45,7 @@ namespace SandJamTest.Scene3D
             // Original "Out of Space": gold frame, red level ribbon, stash picture, "Free Extra 1 Slot",
             // green "Play on 400" and a red close button that gives the level up.
             lose = Build("Out of space popup");
-            TintRibbon(lose, new Color(.93f, .25f, .36f));
+            TintRibbon(lose, "VideoUI/bg-level-red", new Color(.93f, .25f, .36f));
             lose.Title.text = "Out of Space";
             lose.Icon.gameObject.SetActive(false); lose.Big.text = "";
             BuildStashPicture(lose);
@@ -55,6 +55,18 @@ namespace SandJamTest.Scene3D
             PriceTag(lose, PlayOnPrice);
             StylePlayOn(lose);
             AddCloseButton(lose, "give-up");
+            // Measured on recording 2 (74 s): a slightly smaller card set higher, a much larger title, a bigger Play on
+            // button sitting lower, the close button further in; the coin bar stays dimmed under the backdrop.
+            FitCard(lose, .937f, 41);
+            ScaleText(lose.Title, 1.41f);
+            var close = lose.Root.transform.Find("Close button"); if (close) close.position += new Vector3(-15.5f, 16.5f, 0) * VideoScreen.Px;
+            var playOn = lose.RightButton.transform.parent; playOn.localScale *= 1.12f; playOn.position += Vector3.up * 9f * VideoScreen.Px;
+            // The level ribbon keeps its full width, a little higher.
+            var ribbon = lose.Root.transform.Find("bg-level-yellow");
+            if (ribbon) { ribbon.localScale = Vector3.Scale(ribbon.localScale, new Vector3(1.094f, 1.13f, 1)); ribbon.position += Vector3.up * 9f * VideoScreen.Px; }
+            lose.Header.transform.position += Vector3.up * 9f * VideoScreen.Px;
+            if (ribbon) SpinningLight.Add(lose.Root.transform, ribbon.position + new Vector3(0, .1f, .5f), 3.2f);
+            HideCoinBar(lose);
             // Original "Level Failed!": red frame, hearts with the lost one marked -1, refill timer, Try Again.
             failed = Build("Level failed popup");
             failed.Border.color = new Color(.86f, .16f, .2f); failed.Root.transform.Find("Gold header").GetComponent<SpriteRenderer>().color = new Color(.9f, .2f, .24f);
@@ -124,9 +136,16 @@ namespace SandJamTest.Scene3D
 
         static TextMesh Text(GameObject root, string name) { return root.transform.Find(name).GetComponent<TextMesh>(); }
 
-        internal static void TintRibbon(Popup p, Color color)
+        // The level ribbon in another colour: the original's own ribbon art when it is present locally (a tint of the
+        // yellow art cannot reach pink), the tint otherwise.
+        internal static void TintRibbon(Popup p, string art, Color fallback)
         {
-            var ribbon = p.Root.transform.Find("bg-level-yellow"); if (ribbon) ribbon.GetComponent<SpriteRenderer>().color = color;
+            var ribbon = p.Root.transform.Find("bg-level-yellow");
+            if (ribbon)
+            {
+                var r = ribbon.GetComponent<SpriteRenderer>(); var sprite = Resources.Load<Sprite>(art);
+                if (sprite) { r.sprite = sprite; r.color = Color.white; } else r.color = fallback;
+            }
             p.Header.color = Color.white;
         }
         // Hide the yellow button and centre the green one.

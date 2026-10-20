@@ -6,7 +6,10 @@ namespace SandJamTest.Scene3D
     // touch area. Popup modules reach them through PopupModule.
     public sealed partial class PopupScreens
     {
-        // The result card with only the backdrop, coin bar and button group left (optionally its touch areas too).
+        // The coin bar copied from the result page into every card (with its gold rim).
+        static readonly string[] CoinBar = { "bg-currency", "button-plus_0", "icon-coin", "2040", "Coin bar gold rim" };
+        // The result card with only the backdrop, coin bar (without the rim) and button group left (optionally its
+        // touch areas too).
         static readonly string[] BlankKeep = { "Dark backdrop", "bg-currency", "button-plus_0", "icon-coin", "2040", "Next" };
         internal Popup Blank(string name, bool keepHitAreas = false)
         {
@@ -14,6 +17,22 @@ namespace SandJamTest.Scene3D
             foreach (Transform child in p.Root.transform)
                 if (System.Array.IndexOf(BlankKeep, child.name) < 0 && !(keepHitAreas && child.name.StartsWith("Hit area"))) child.gameObject.SetActive(false);
             return p;
+        }
+        // Scales the card (everything but the backdrop and coin bar) about the popup centre and moves it up by dyPx
+        // pixels of the recordings.
+        internal static void FitCard(Popup p, float scale, float dyPx)
+        {
+            foreach (Transform child in p.Root.transform)
+            {
+                if (child.name == "Dark backdrop" || System.Array.IndexOf(CoinBar, child.name) >= 0) continue;
+                child.localPosition = Vector3.Scale(child.localPosition, new Vector3(scale, scale, 1));
+                child.localScale = Vector3.Scale(child.localScale, new Vector3(scale, scale, 1));
+                child.position += Vector3.up * dyPx * VideoScreen.Px;
+            }
+        }
+        internal static void HideCoinBar(Popup p)
+        {
+            foreach (var name in CoinBar) { var t = p.Root.transform.Find(name); if (t) t.gameObject.SetActive(false); }
         }
         internal void GreenButton(Popup p, float y, string action, string text, float scale = 1.05f)
         {

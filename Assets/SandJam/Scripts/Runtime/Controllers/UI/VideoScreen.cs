@@ -7,6 +7,8 @@ namespace SandJamTest.Scene3D
     [DefaultExecutionOrder(-100)]
     public sealed class VideoScreen : MonoBehaviour
     {
+        // UI units per pixel of the 1920 px tall recordings the screens are measured against (ortho size 5.375).
+        public const float Px=10.75f/1920;
         public SandJamSceneController Controller;
         public LevelManager Levels;
         public Camera UiCamera;
@@ -188,18 +190,16 @@ namespace SandJamTest.Scene3D
             var size=cone.sprite.bounds.size;var parent=cone.transform.parent.lossyScale;
             cone.transform.localScale=new Vector3(SpotlightWidth/size.x/parent.x,(top-bottom)/size.y/parent.y,1);
         }
-        // Original Home level sign: the brushed blue panel art (Group 10295), ~86% as wide as the drawn sign, hung
-        // from two thin dark rods; the number and LEVEL in white with only a soft blue edge.
-        // Scales a Home part about its own centre and moves it by (dx, dy) screen pixels of the 1920 px tall recording
+        // Scales a part about its own centre and moves it by (dx, dy) screen pixels of the 1920 px tall recordings
         // (dy downward).
-        void NavPlace(string name,float scale,float dxPx,float dyPx)
+        internal static void Place(Transform t,float scale,float dxPx,float dyPx)
         {
-            var t=Home.transform.Find(name);if(!t)return;
+            if(!t)return;
             var r=t.GetComponentInChildren<Renderer>();var before=r?r.bounds.center:t.position;
             t.localScale*=scale;
-            const float Px=10.75f/1920;
             t.position+=before-(r?r.bounds.center:t.position)+new Vector3(dxPx,-dyPx,0)*Px;
         }
+        void NavPlace(string name,float scale,float dxPx,float dyPx){Place(Home.transform.Find(name),scale,dxPx,dyPx);}
         // A flat strip of the top bar between two heights, just in front of it.
         void BarStrip(SpriteRenderer bar,string name,float bottom,float top,Color32 color)
         {
@@ -225,6 +225,8 @@ namespace SandJamTest.Scene3D
                 child.position=new Vector3(child.position.x,(top+bottom)*.5f,child.position.z);
             }
         }
+        // Original Home level sign: the brushed blue panel art (Group 10295), ~86% as wide as the drawn sign, hung
+        // from two thin dark rods; the number and LEVEL in white with only a soft blue edge.
         void ReplaceLevelSign(SpriteRenderer bar)
         {
             var tex=Resources.Load<Texture2D>("VideoUI/home-level-sign");var rim=Home.transform.Find("Level sign rim");
