@@ -17,10 +17,16 @@ namespace SandJamTest.Scene3D
         SpriteRenderer flash;
         ParticleSystem stars;
         float time;
-        const float LetterDelay = .07f, LetterPop = .28f;
+        const float LetterDelay = .07f, LetterPop = .28f, GlowWidth = 5.6f, GlowAlpha = 1f;
+        // The word reads ~46% of the screen width in the original (recording 2), 12% larger than the label.
+        const float LetterScale = 1.29f;
         // Original: after about two seconds the word shrinks away just before the Level Complete card.
         public const float OutroStart = 2.1f, OutroTime = .4f, Duration = OutroStart + OutroTime + .05f;
         readonly List<SpriteRenderer> cornerGlows = new List<SpriteRenderer>();
+        // Corner lights of the original (recording 2, 226-228 s), in diagonal pairs: bottom-right with top-left, then
+        // bottom-left with top-right; the bottom ones are brighter. x, y = viewport position, z = peak time, w = alpha.
+        static readonly Vector4[] Corners = { new Vector4(.96f, .1f, .5f, 1), new Vector4(.04f, .88f, .7f, .55f), new Vector4(.96f, .88f, 1.3f, .55f), new Vector4(.04f, .1f, 1.5f, 1) };
+        const float CornerLife = 1f;
         bool cornersPlaced;
 
         public void Build(TextMesh title)
@@ -40,7 +46,7 @@ namespace SandJamTest.Scene3D
             // Original: white letters with a pale lavender rim, not a dark outline.
             var outlineColor = new Color(.8f, .8f, .9f);
             // Same glyph size as the original label (letters are children of this page, whose scale may differ).
-            float size = title.characterSize * title.transform.lossyScale.x / Mathf.Max(.0001f, transform.lossyScale.x) * 1.15f;
+            float size = title.characterSize * title.transform.lossyScale.x / Mathf.Max(.0001f, transform.lossyScale.x) * LetterScale;
             var faces = new List<MeshRenderer>();
             for (int i = 0; i < text.Length; i++)
             {
@@ -66,12 +72,13 @@ namespace SandJamTest.Scene3D
             wordCentreX = centre.x;
             foreach (var t in title.GetComponentsInChildren<MeshRenderer>(true)) t.enabled = false;
             stars = Stars(centre);
-            // Warm light in both bottom corners (original win screen), placed on screen once a camera is known.
+            // Warm corner lights, placed on screen once a camera is known.
             var soft = SpriteFactory.SoftDot;
-            for (int i = 0; i < 2; i++) cornerGlows.Add(Sprite("Corner glow " + i, soft, centre + new Vector3(0, 0, .4f), 3.4f, new Color(1, .78f, .25f, 0)));
+            for (int i = 0; i < Corners.Length; i++) cornerGlows.Add(Sprite("Corner glow " + i, soft, centre + new Vector3(0, 0, .4f), 3.4f, new Color(1, .78f, .25f, 0)));
             // Original (recording, level 267 win): no light rays, only a soft warm glow behind the word.
             if (rays) { rays.gameObject.SetActive(false); rays = null; }
-            if (glow) { var g = glow.GetComponent<SpriteRenderer>(); g.sprite = soft; float k = 4.2f / soft.bounds.size.x; glow.localScale = new Vector3(k, k, 1); }
+            // Measured on recording 2 (226-227 s): the glow stays near full brightness ~620 px wide behind the word.
+            if (glow) { var g = glow.GetComponent<SpriteRenderer>(); g.sprite = soft; float k = GlowWidth / soft.bounds.size.x; glow.localScale = new Vector3(k, k, 1); }
             // Bigger, bolder confetti pieces like the original's.
             var confetti = transform.Find("Confetti");
             if (confetti)
@@ -88,11 +95,11 @@ namespace SandJamTest.Scene3D
         void PlaceCorners()
         {
             var cam = SpriteFactory.CameraForLayer(gameObject.layer);
-            if (!cam || cornerGlows.Count < 2) return;
+            if (!cam || cornerGlows.Count < Corners.Length) return;
             float depth = Vector3.Dot(cornerGlows[0].transform.position - cam.transform.position, cam.transform.forward);
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < Corners.Length; i++)
             {
-                var p = cam.ViewportToWorldPoint(new Vector3(i == 0 ? .04f : .96f, .1f, depth));
+                var p = cam.ViewportToWorldPoint(new Vector3(Corners[i].x, Corners[i].y, depth));
                 cornerGlows[i].transform.position = new Vector3(p.x, p.y, cornerGlows[i].transform.position.z);
             }
             cornersPlaced = true;
@@ -157,7 +164,8 @@ namespace SandJamTest.Scene3D
             float keep = 1 - outro * outro * (3 - 2 * outro);
             for (int i = 0; i < cornerGlows.Count; i++)
             {
-                float a = Mathf.Clamp01(time * 3) * (.75f + .15f * Mathf.Sin(time * 4 + i * 1.7f)) * keep;
+                float t = (time - Corners[i].z) / CornerLife + .5f; // 0..1 across the light's life, peak in the middle
+                float a = t <= 0 || t >= 1 ? 0 : Mathf.Sin(t * Mathf.PI) * Corners[i].w * keep;
                 cornerGlows[i].color = new Color(1, .78f, .25f, a);
             }
             for (int i = 0; i < letters.Count; i++)
@@ -171,7 +179,7 @@ namespace SandJamTest.Scene3D
                 var p = letters[i].position; letters[i].position = new Vector3(wordCentreX + (letterX[i] - wordCentreX) * keep, letterBase[i] + wave, p.z);
             }
             if (rays) { rays.localRotation = Quaternion.Euler(0, 0, time * 25f); rays.localScale = raysScale * Mathf.Min(1, .3f + time * 2.5f); }
-            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.GetComponent<SpriteRenderer>().color = new Color(1, .6f, .25f, .55f * g * keep); }
+            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.GetComponent<SpriteRenderer>().color = new Color(1, .82f, .45f, GlowAlpha * g * keep); }
             if (rays) rays.localScale *= Mathf.Max(.01f, keep);
             if (flash) { var c = flash.color; c.a = Mathf.Clamp01(.55f - time * 2.2f); flash.color = c; }
         }

@@ -168,3 +168,25 @@ Các thay đổi trong ngày:
 - Hết chỗ: nền làn (36,44,54) so với (38,49,62).
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Màn Superb!: quầng sáng, cỡ chữ, đốm sáng góc
+
+**Đo / lý do**
+
+- Cách đo: Unity tự chụp mỗi 0,1 giây kể từ lúc thắng, đặt cạnh video 2 (giây 226–228, nhịp 0,2 giây).
+- Quầng sáng sau chữ bản gốc giữ độ sáng gần tối đa, rộng khoảng 620 px; bản mình khoảng 120, rộng khoảng 400 px.
+- Chữ "Superb!" chiếm 46% bề ngang màn hình; bản mình 41%.
+- Đốm sáng góc của bản gốc chớp theo cặp chéo: dưới-phải với trên-trái (đỉnh 0,5–0,7 giây), rồi dưới-trái với
+  trên-phải (1,3–1,5 giây); bản mình là hai đốm cố định ở hai góc dưới.
+
+**Sửa** (`SuperbFx`)
+
+- Các hằng số `GlowWidth`, `GlowAlpha`, `LetterScale`.
+- Bảng `Corners`: vị trí, thời điểm sáng nhất và độ sáng của từng đốm góc.
+
+**Kiểm tra**
+
+- Quầng sáng rộng khoảng 600 px.
+- Chữ rộng 46% bề ngang.
+- Thứ tự đốm góc: dưới-phải 0,4 giây → trên-trái 0,6 giây → dưới-trái 1,4 giây.
+- Run all checks qua 8/8.
+
