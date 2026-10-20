@@ -37,7 +37,7 @@ namespace SandJamTest.Scene3D
         Gait gait;
         float yaw;
         // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
-        const float SlideSeconds=.24f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.75f, ExitPause=.12f;
+        const float SlideSeconds=.24f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.6f, ExitPause=.12f, ExitHop=.25f;
         // The body turns a little toward where it runs (recording 2, ~25 deg); further, the pitched body reads as a
         // lopsided diamond.
         const float MaxYaw=25f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
@@ -201,6 +201,8 @@ namespace SandJamTest.Scene3D
                     // Running: near-constant speed (short ease at both ends) with a bob on every step.
                     float ease = Mathf.SmoothStep(0, 1, Mathf.Lerp(t, Mathf.SmoothStep(0, 1, t), .35f));
                     float bob = Mathf.Abs(Mathf.Sin(travel * StepsPerSecond * Mathf.PI)) * StepBob;
+                    // An empty box jumps off its pad before running away (recording 2, 60.7 s).
+                    if (Departing) bob += Mathf.Sin(Mathf.PI * Mathf.Clamp01(t * 3)) * ExitHop;
                     transform.position = Vector3.Lerp(from, destination, ease) + Vector3.up * bob;
                     // Turn toward the horizontal direction of travel, settle facing the camera on arrival.
                     var dir = destination - from;

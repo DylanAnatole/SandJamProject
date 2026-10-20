@@ -25,6 +25,8 @@ namespace SandJamTest.Scene3D
         // Region-complete bubbles of the original (recording 2, 50.5-51.3 s): ~1.6x larger than first built, brighter,
         // lasting ~0.8 s; the sand cubes around them are small grains.
         const float BubbleScale = 1.6f, BubbleLife = .8f;
+        // White flash over a box that has just emptied (about the box's size).
+        const float EmptyFlashSize = 1.1f;
 
         public void Bind(SandJamSceneController owner)
         {
@@ -270,11 +272,11 @@ namespace SandJamTest.Scene3D
             }, b => b.Root ? b.Root.gameObject : null, 0, 64);
         }
 
-        void SpawnFlash(Vector3 position)
+        void SpawnFlash(Vector3 position, float size = 2.6f)
         {
             var f = flashPool.Get();
             f.Root.position = position + new Vector3(0, 0, -.02f);
-            f.Age = 0; f.Life = .42f; f.Size = 2.6f;
+            f.Age = 0; f.Life = .42f; f.Size = size;
         }
         void AnimateFlashes(float dt)
         {
@@ -363,10 +365,11 @@ namespace SandJamTest.Scene3D
                         Emit(puff, p, new Vector3(Random.Range(-1.2f, 1.2f), Random.Range(.1f, .6f), 0), new Color(1, 1, 1, .85f), Random.Range(.08f, .16f), Random.Range(.25f, .4f));
                 }
                 state.AtRest = actor.AtRest;
-                // Empty character leaves with a coloured poof.
+                // Empty character leaves: the box flashes white (recording 2, 60.6 s) in a coloured poof.
                 if (actor.Departing && !state.Departing)
                 {
                     var p = actor.AimPoint + new Vector3(0, 0, Front);
+                    SpawnFlash(p, EmptyFlashSize);
                     for (int i = 0; i < 22; i++)
                     {
                         var v = Random.insideUnitCircle.normalized * Random.Range(.8f, 2f);

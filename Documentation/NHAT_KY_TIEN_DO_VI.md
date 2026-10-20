@@ -301,3 +301,22 @@ một phần.
 - Tự chơi thắng level 68.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Khối hết cát rời ô chờ
+
+**Đo / lý do** (video 2, giây 60,3–61,4)
+
+- Bản gốc: khối chớp trắng (60,6), nhảy lên khỏi ô (60,7), rồi chạy ra mép màn hình, mất khoảng 0,5 giây.
+- Bản mình: không chớp, không nhảy, chạy ra trong 0,75 giây.
+
+**Sửa**
+
+- `SandFx`: `SpawnFlash` nhận thêm kích thước; khối rời đi được chớp trắng (`EmptyFlashSize` 1,1), dùng lại pool
+  chớp sáng có sẵn.
+- `SceneActorView`: thêm `ExitHop` 0,25 (nhảy ở đầu đường chạy); `ExitSeconds` 0,75 → 0,6.
+
+**Kiểm tra**
+
+- Ghi hình tự động lúc khối bắt đầu rời đi.
+- Tự chơi thắng level 68.
+- Run all checks qua 8/8.
+
