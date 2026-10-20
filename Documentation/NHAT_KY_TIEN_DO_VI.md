@@ -389,3 +389,27 @@ một phần.
 - Tự chơi thắng level 30.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Lưới thẻ Gallery: đúng cỡ, tranh phủ kín thẻ
+
+**Đo / lý do** (video 2, giây 30, sau khi nhận hết thẻ để cùng trạng thái)
+
+- Kích thước: thẻ bản gốc 223×272 px, cột cách 288 px, hàng cách 305 px; bản mình 254×285 px, hàng cách 349 px.
+- Tranh trong thẻ: bản gốc phủ kín thẻ; bản mình hụt khoảng 20 px ở đáy, lộ dải xanh đậm.
+  - Nguyên nhân: khung thẻ và ảnh tranh có pivot không nằm giữa nên vẽ thấp hơn khoảng 0,1 đơn vị, còn mặt nạ
+    nằm đúng chỗ, nên mặt nạ cắt đáy tranh.
+- Khung vàng của thẻ "?" chưa nhận cũng lệch lên vì cùng lý do.
+
+**Sửa** (`GalleryPopup`)
+
+- Kích thước thẻ, bước hàng và vị trí hàng đầu theo số đo (`cw`, `ch`, `gy`, `firstRow`).
+- `MaskedPicture` căn tranh và phần đặc của mặt nạ theo khung bao thực tế, không theo pivot.
+- Thêm `InnerCardY(slot)`: tâm vùng trong của thẻ lấy từ khung bao khung đã vẽ; dùng chung cho thẻ đã nhận và
+  thẻ "?".
+
+**Kiểm tra**
+
+- Thẻ 223×267 px, hàng đầu ở 971 px (bản gốc 223×272 px, 970 px).
+- Tranh phủ kín, viền đều.
+- Khung vàng bao đều quanh thẻ "?".
+- Run all checks qua 8/8.
+

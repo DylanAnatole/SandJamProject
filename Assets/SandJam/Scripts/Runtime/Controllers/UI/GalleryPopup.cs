@@ -54,20 +54,27 @@ namespace SandJamTest.Scene3D
         SpriteRenderer MaskedPicture(Sprite sprite, float x, float y, float w, float h, float z, Transform parent = null)
         {
             var maskSprite = Resources.Load<Sprite>("GalleryPage/bg-cardSlot-cardCollection_mask");
+            // Everything is centred on (x, y) by its drawn bounds, whatever the sprites' pivots (the slot and render
+            // pivots are not centred; trusting them left the mask ~0.1 above the picture, cutting its bottom off).
+            var target = gallery.Root.transform.TransformPoint(new Vector3(x, y, z));
             var r = Child<SpriteRenderer>(gallery, "Picture", new Vector3(x, y, z)); r.sprite = sprite;
-            if (sprite) { float k = Mathf.Max(w / sprite.bounds.size.x, h / sprite.bounds.size.y); r.transform.localScale = new Vector3(k, k, 1); }
+            if (sprite)
+            {
+                float k = Mathf.Max(w / sprite.bounds.size.x, h / sprite.bounds.size.y); r.transform.localScale = new Vector3(k, k, 1);
+                var c = r.bounds.center; r.transform.position += new Vector3(target.x - c.x, target.y - c.y, 0);
+            }
             if (maskSprite)
             {
                 r.sharedMaterial = SpriteFactory.PlainSprite;
                 r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
                 var m = Child<SpriteMask>(gallery, "Picture mask", new Vector3(x, y, z)); m.sprite = maskSprite;
-                // The mask art's opaque card covers x 12-311, y 66-437 of its 324x450 texture (a transparent strip
-                // at the bottom): scale and shift it so the card itself spans w x h centred on (x, y). Fitting the
-                // whole texture left the picture short and high in its frame.
-                const float fx = 300f / 324f, fy = 372f / 450f, offsetY = (66f + 438f) / 2f / 450f - .5f;
-                var ms = maskSprite.bounds.size; float sx = w / (ms.x * fx), sy = h / (ms.y * fy);
-                m.transform.localScale = new Vector3(sx, sy, 1);
-                m.transform.localPosition = new Vector3(x, y - offsetY * ms.y * sy, z);
+                // The mask art's opaque card covers columns 12-311 and rows 12-383 (top down) of its 324x450 texture
+                // (a shadow strip below): scale it so the card spans w x h and put that card's centre on (x, y).
+                float ppu = maskSprite.pixelsPerUnit;
+                m.transform.localScale = new Vector3(w / (300f / ppu), h / (372f / ppu), 1);
+                var mb = m.bounds;
+                var card = new Vector2(mb.min.x + mb.size.x * (12f + 312f) / 2f / 324f, mb.max.y - mb.size.y * (12f + 384f) / 2f / 450f);
+                m.transform.position += new Vector3(target.x - card.x, target.y - card.y, 0);
                 Track(m, parent);
             }
             return Track(r, parent);
@@ -177,33 +184,44 @@ namespace SandJamTest.Scene3D
             galleryGrid = new GameObject("Gallery grid") { layer = gallery.Root.layer }.transform;
             galleryGrid.SetParent(gallery.Root.transform, false);
             galleryDynamic.Add(galleryGrid.gameObject);
-            const float cw = 1.42f, ch = 1.78f, gx = 1.6f, gy = 1.95f; // original cards nearly fill a third of the width
+            // Measured on recording 2 (30 s): cards 223 x 272 px, columns 288 px and rows 305 px apart, the first row's
+            // top at 970 px.
+            const float cw = 1.247f, ch = 1.70f, gx = 1.6f, gy = 1.708f, firstRow = -.81f;
             for (int i = 0; i < info.Count; i++)
             {
                 int level = info.Start + i; bool done = level <= won;
-                float x = (i % 3 - 1) * gx, y = -.85f - (i / 3) * gy;
+                float x = (i % 3 - 1) * gx, y = firstRow - (i / 3) * gy;
                 bool waiting = done && GalleryCollections.CardWaiting(level);
                 // Inside the slot frame's blue rim: rows 12-383 and columns 12-311 of the 324x450 art (measured top down;
                 // the art has a transparent strip at the bottom, so that area sits above the sprite's centre).
                 float vw = cw * 300f / 324f, vh = ch * 372f / 450f, vy = y + ch * (.5f - (12f + 384f) / 2f / 450f), rim = cw * .025f;
                 if (waiting) { ClaimCard(level, x, y, vy, vw, vh, cw, ch); continue; }
-                GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
+                var slot = GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
                 if (!done) continue;
+                vy = InnerCardY(slot);
                 string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
                 MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
             }
             int rows = (info.Count + 2) / 3;
-            scroll.Max = Mathf.Max(0, .85f + rows * gy - (GridTop - GridBottom));
+            scroll.Max = Mathf.Max(0, -firstRow + rows * gy - (GridTop - GridBottom));
             ClipGrid();
+        }
+
+        // Centre of a card slot's inner card (rows 12-383 of the 450 px art) as drawn: the slot art's pivot is not
+        // centred, so this is taken from its bounds, in gallery-root space.
+        float InnerCardY(SpriteRenderer slot)
+        {
+            var b = slot.bounds;
+            return gallery.Root.transform.InverseTransformPoint(new Vector3(0, b.max.y - b.size.y * (12f + 384f) / 2f / 450f, 0)).y;
         }
 
         // A won level's card still face down (original): the "?" card in a gold frame with a "Claim" strip.
         void ClaimCard(int level, float x, float y, float cardY, float cardW, float cardH, float cw, float ch)
         {
+            cardY = InnerCardY(GalleryArt("bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid));
             var gold = Track(Child<SpriteRenderer>(gallery, "Claim frame", new Vector3(x, cardY, -6.29f)), galleryGrid);
             gold.sprite = SpriteFactory.Rounded(64, 22, 260); gold.drawMode = SpriteDrawMode.Sliced;
             gold.size = new Vector2(cardW + .14f, cardH + .14f); gold.color = new Color(1f, .78f, .22f);
-            GalleryArt("bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
             GalleryArt("GalleryPage/Group 10298", x, cardY - cardH * .36f, cardW * .9f, .3f, -6.36f, galleryGrid);
             GalleryText("Claim", x, cardY - cardH * .36f, .032f, -6.4f, galleryGrid);
             GalleryHit(x, y, cw, ch, "gallery-card:" + level, galleryGrid);
