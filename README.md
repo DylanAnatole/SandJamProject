@@ -115,3 +115,4 @@ Xem cấu trúc một level: scene `Assets/SandJam/Scenes/LevelStructure.unity`.
 
 - Muốn reset tiến độ: Game Manager → *Reset save* (không còn dùng PlayerPrefs).
 - Đường dẫn trong code Editor dùng `Assets/SandJam/...`; đường dẫn `Resources.Load` không có tiền tố thư mục.
+- Quy tắc code, quy trình mỗi thay đổi và nhật ký tiến độ: `Documentation/NHAT_KY_TIEN_DO_VI.md` (mỗi commit ghi một mục).
