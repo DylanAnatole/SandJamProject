@@ -45,7 +45,7 @@ Cập nhật: 20/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 | Level Failed, Hết tim | ✅ | |
 | Màu nền tối của popup | ✅ | |
 | Hard Level / Bonus Level | ✅ | Nền tím than, biểu tượng thanh trên bị làm tối như bản gốc |
-| New Feature / Booster mới | 🟡 | Có đủ, chưa đo pixel lại |
+| New Feature / Booster mới | 🟡 | Có đủ, không vỡ; video gốc (level 200+) không có cảnh này để đo |
 | CONGRATS (thẻ bộ sưu tập) | ✅ | Nền xanh tím than đặc như bản gốc |
 
 ## 4. Home và các trang

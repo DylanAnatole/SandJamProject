@@ -22,6 +22,7 @@ namespace SandJamTest.Scene3D
         public override void Build()
         {
             intro = Build("Feature intro popup");
+            PopupScreens.HideCoinBar(intro); // dimmed with the HUD, as on every original card over the board
             intro.Big.text = "";
             intro.LeftButton.transform.parent.gameObject.SetActive(false);
             foreach (Transform child in intro.RightButton.transform.parent)

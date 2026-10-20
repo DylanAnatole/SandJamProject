@@ -490,3 +490,24 @@ một phần.
 - Nút gạt chạy đúng.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Popup New Feature / Booster mới, huy hiệu booster
+
+**Đo / lý do**
+
+- Hai video gốc quay ở level 200+, không có cảnh popup New Feature (level 15/45/75/107) hay Booster mới
+  (12/22/32), nên chưa đo pixel được.
+- Theo quy tắc đã đo ở mọi popup khác trên bàn chơi: ô xu và huy hiệu bị làm tối dưới lớp phủ.
+- Popup này vẫn mang ô xu sáng.
+- Huy hiệu số lượng booster (sortingOrder nút + 2) nổi trên lớp tối.
+
+**Sửa**
+
+- `LevelIntroPopups`: `HideCoinBar(intro)`.
+- `BoosterController`: huy hiệu và số cùng sortingOrder với nút, nằm trước nhờ độ sâu.
+
+**Kiểm tra**
+
+- Chụp level 12 và 15: popup không vỡ, huy hiệu bị làm tối.
+- Đóng popup thì huy hiệu vẫn hiện trên nút.
+- Run all checks qua 8/8.
+

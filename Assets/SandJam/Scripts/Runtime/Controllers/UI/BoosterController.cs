@@ -114,7 +114,7 @@ namespace SandJamTest.Scene3D
             var lossy = image.transform.lossyScale;
             float worldHeight = .24f; // original badge: small, on the button's left edge
             badge.transform.localScale = new Vector3(worldHeight / (sprite.bounds.size.y * lossy.x), worldHeight / (sprite.bounds.size.y * lossy.y), 1);
-            var r = badge.AddComponent<SpriteRenderer>(); r.sprite = sprite; r.sortingOrder = image.sortingOrder + 2;
+            var r = badge.AddComponent<SpriteRenderer>(); r.sprite = sprite; r.sortingOrder = image.sortingOrder; // in front of the button by depth, under popup layers
             var text = new GameObject("Quantity") { layer = badge.layer };
             text.transform.SetParent(badge.transform, false); text.transform.localPosition = new Vector3(0, 0, -.05f);
             var label = text.AddComponent<TextMesh>();
@@ -122,7 +122,7 @@ namespace SandJamTest.Scene3D
             label.fontStyle = FontStyle.Bold; label.color = new Color(.33f, .2f, .05f);
             label.characterSize = sprite.bounds.size.y * .11f;
             if (controller.InterfaceFont) { label.font = controller.InterfaceFont; text.GetComponent<MeshRenderer>().sharedMaterial = controller.InterfaceFont.material; }
-            text.GetComponent<MeshRenderer>().sortingOrder = r.sortingOrder + 1;
+            text.GetComponent<MeshRenderer>().sortingOrder = r.sortingOrder;
             badges[action] = badge; badgeLabels[action] = label;
         }
         void RefreshBadges()
