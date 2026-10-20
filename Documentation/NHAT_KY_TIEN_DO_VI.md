@@ -264,3 +264,21 @@ Các thay đổi trong ngày:
 
 **Kiểm tra:** tự chơi thắng level 68; Run all checks qua 8/8.
 
+### 2026-10-20 — Chân dài hơn khi chạy
+
+**Đo / lý do:** chân bản gốc thò ra khoảng 60% chiều cao khối khi chạy; sau lần sửa trước chân của mình mới lộ
+một phần.
+
+**Sửa** (`SceneActorView`)
+
+- Thêm `RunLegStretch` 1,6: xương đùi kéo dài theo trục Y khi chạy, tăng giảm cùng `legDrop`.
+- Khi chân về tư thế nghỉ thì trả đùi về độ dài cũ. Lần chạy đầu bắt được lỗi: một khối đứng yên vẫn giữ đùi dài
+  1,2 lần, vì hàm thoát sớm trước khi đặt lại.
+
+**Kiểm tra**
+
+- Ảnh chụp lúc chạy: chân lộ rõ dưới khối.
+- Mọi khối đứng yên có đùi bình thường.
+- Tự chơi thắng level 68.
+- Run all checks qua 8/8.
+

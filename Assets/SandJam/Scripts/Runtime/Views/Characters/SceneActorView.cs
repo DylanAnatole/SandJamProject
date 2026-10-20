@@ -50,8 +50,8 @@ namespace SandJamTest.Scene3D
         public static float LegTurnSign = 1;
         // The body itself turns MaxYaw while running, the legs a little further; they also swing down out from under
         // the block so they show below it (recording 2, 48.8-49.1 s: legs ~60% of the block height below it).
-        const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f;
-        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop;
+        const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.6f;
+        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
         void FindRig()
         {
             rigSearched = true;
@@ -61,6 +61,7 @@ namespace SandJamTest.Scene3D
                 else if (t.name.EndsWith("LeftUpLeg")) leftThigh = t;
                 else if (t.name.EndsWith("RightUpLeg")) rightThigh = t;
             }
+            if (leftThigh) thighScale = leftThigh.localScale;
         }
         void LateUpdate()
         {
@@ -71,11 +72,18 @@ namespace SandJamTest.Scene3D
             float target = !running ? 0 : Departing ? ExitLegYaw * Mathf.Sign(dx) : Mathf.Abs(dx) < .05f ? 0 : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
             legYaw = Mathf.MoveTowards(legYaw, target, Time.deltaTime * 600f);
             legDrop = Mathf.MoveTowards(legDrop, running && !Departing ? RunLegDrop : 0, Time.deltaTime * 400f);
-            if (Mathf.Abs(legYaw) < .01f && Mathf.Abs(legDrop) < .01f) return;
+            if (Mathf.Abs(legYaw) < .01f && Mathf.Abs(legDrop) < .01f)
+            {
+                if (leftThigh.localScale != thighScale) leftThigh.localScale = rightThigh.localScale = thighScale; // back to rest
+                return;
+            }
             var frame = pose ? pose : hips;
             var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, frame.up) * Quaternion.AngleAxis(legDrop, frame.right);
+            // Longer legs while running (the bones' length axis is their local Y).
+            var stretch = new Vector3(1, 1 + (RunLegStretch - 1) * legDrop / RunLegDrop, 1);
             foreach (var thigh in new[] { leftThigh, rightThigh })
             {
+                thigh.localScale = Vector3.Scale(thighScale, stretch);
                 thigh.position = hips.position + turn * (thigh.position - hips.position);
                 thigh.rotation = turn * thigh.rotation;
             }
