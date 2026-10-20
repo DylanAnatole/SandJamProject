@@ -190,3 +190,25 @@ Các thay đổi trong ngày:
 - Thứ tự đốm góc: dưới-phải 0,4 giây → trên-trái 0,6 giây → dưới-trái 1,4 giây.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Bong bóng khi đầy vùng
+
+**Đo / lý do** (video 2, giây 50,0–52,3, cắt vùng tranh, nhịp 0,1 giây)
+
+- Bong bóng bản gốc đường kính khoảng 136 px, lõi sáng trắng, có quầng xanh mềm tỏa ra ngoài, tồn tại khoảng
+  0,8 giây.
+- Bong bóng bản mình khoảng 80 px, chỉ là vòng tròn viền sắc, tồn tại 0,55 giây.
+- Các khối cát bắn ra của bản mình to hơn bản gốc.
+
+**Sửa** (`SandFx`)
+
+- Hằng `BubbleScale` = 1,6 và `BubbleLife` = 0,8; lõi bong bóng sáng hơn.
+- Quầng sáng dùng trường `Bubble.Glow`, vốn là trường `Rim` khai báo sẵn nhưng chưa dùng.
+- Thuộc tính `SoftSprite` dùng chung cho chớp sáng và quầng sáng.
+- Hạt cát nhỏ lại (0,03–0,065).
+
+**Kiểm tra**
+
+- So từng khung hình ở level 267.
+- Tự chơi thắng level 267, không có lỗi.
+- Run all checks qua 8/8.
+

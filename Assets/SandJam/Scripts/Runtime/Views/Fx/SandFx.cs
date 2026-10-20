@@ -21,7 +21,10 @@ namespace SandJamTest.Scene3D
         static Texture2D softDot, ring, voxel;
 
         sealed class ActorState { public int Ammo; public bool Departing, AtRest, Hidden; public float Pulse; public Vector3 BaseScale; public SceneActorView Partner; }
-        sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Rim; public float Age, Life, Size; }
+        sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Glow; public float Age, Life, Size; }
+        // Region-complete bubbles of the original (recording 2, 50.5-51.3 s): ~1.6x larger than first built, brighter,
+        // lasting ~0.8 s; the sand cubes around them are small grains.
+        const float BubbleScale = 1.6f, BubbleLife = .8f;
 
         public void Bind(SandJamSceneController owner)
         {
@@ -66,7 +69,7 @@ namespace SandJamTest.Scene3D
                 var p = new Vector2(x + .5f, y + .5f) / (m / 2f) - Vector2.one;
                 float d = p.magnitude;
                 // Translucent bubble: faint body, bright rim and a highlight in the upper left.
-                float body = d < 1 ? .18f + .25f * d * d : 0;
+                float body = d < 1 ? .3f + .35f * d * d : 0;
                 float rim = Mathf.Clamp01(1 - Mathf.Abs(d - .93f) / .07f);
                 float shine = Mathf.Clamp01(1 - Vector2.Distance(p, new Vector2(-.4f, .45f)) / .22f);
                 ring.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(body + rim * .9f + shine * .8f)));
@@ -227,11 +230,11 @@ namespace SandJamTest.Scene3D
                     float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad, speed = Random.Range(.3f, 1.6f);
                     var vel = new Vector3(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed + .9f, 0);
                     Color vc = palette.Count > 0 && v % 4 != 0 ? palette[Random.Range(0, palette.Count)] : (v % 8 == 0 ? Color.white : color);
-                    Emit(voxels, center + (Vector3)(Random.insideUnitCircle * .55f), vel, vc, Random.Range(.05f, .1f), Random.Range(.6f, 1f));
+                    Emit(voxels, center + (Vector3)(Random.insideUnitCircle * .55f), vel, vc, Random.Range(.03f, .065f), Random.Range(.6f, 1f));
                 }
                 // Original: a few translucent bubbles pop over the finished region with coloured sparkles.
                 for (int b = 0; b < 5; b++)
-                    SpawnBubble(center + (Vector3)(Random.insideUnitCircle * .55f), Random.Range(.5f, .85f), b * .07f);
+                    SpawnBubble(center + (Vector3)(Random.insideUnitCircle * .55f), Random.Range(.5f, .85f) * BubbleScale, b * .07f);
                 for (int s = 0; s < 46; s++)
                 {
                     var dir = Random.insideUnitCircle.normalized * Random.Range(.6f, 2.2f);
@@ -245,16 +248,25 @@ namespace SandJamTest.Scene3D
         // created and destroyed each time. Both pools share one sprite each.
         Sprite flashSprite, bubbleSprite;
         Pool<Bubble> flashPoolValue, bubblePoolValue;
-        Pool<Bubble> flashPool { get { return flashPoolValue ?? (flashPoolValue = MakePool("Completion flash", 30, () => flashSprite ? flashSprite : (flashSprite = Sprite.Create(softDot, new Rect(0, 0, softDot.width, softDot.height), new Vector2(.5f, .5f), softDot.width)))); } }
-        Pool<Bubble> bubblePool { get { return bubblePoolValue ?? (bubblePoolValue = MakePool("Completion bubble", 29, () => bubbleSprite ? bubbleSprite : (bubbleSprite = Sprite.Create(ring, new Rect(0, 0, ring.width, ring.height), new Vector2(.5f, .5f), ring.width)))); } }
-        Pool<Bubble> MakePool(string name, int order, System.Func<Sprite> sprite)
+        Sprite SoftSprite { get { return flashSprite ? flashSprite : (flashSprite = Sprite.Create(softDot, new Rect(0, 0, softDot.width, softDot.height), new Vector2(.5f, .5f), softDot.width)); } }
+        Pool<Bubble> flashPool { get { return flashPoolValue ?? (flashPoolValue = MakePool("Completion flash", 30, () => SoftSprite)); } }
+        Pool<Bubble> bubblePool { get { return bubblePoolValue ?? (bubblePoolValue = MakePool("Completion bubble", 29, () => bubbleSprite ? bubbleSprite : (bubbleSprite = Sprite.Create(ring, new Rect(0, 0, ring.width, ring.height), new Vector2(.5f, .5f), ring.width)), true)); } }
+        Pool<Bubble> MakePool(string name, int order, System.Func<Sprite> sprite, bool glow = false)
         {
             return new Pool<Bubble>(() =>
             {
                 var root = new GameObject(name).transform; root.SetParent(transform, false);
                 var disc = root.gameObject.AddComponent<SpriteRenderer>();
                 disc.sprite = sprite(); disc.sharedMaterial = bubbleMaterial; disc.sortingOrder = order;
-                return new Bubble { Root = root, Disc = disc };
+                var bubble = new Bubble { Root = root, Disc = disc };
+                if (glow)
+                {
+                    // Soft white-cyan halo around the bubble (the original's bubbles glow beyond their rim).
+                    bubble.Glow = new GameObject("Glow").AddComponent<SpriteRenderer>();
+                    bubble.Glow.transform.SetParent(root, false); bubble.Glow.transform.localScale = Vector3.one * 1.7f;
+                    bubble.Glow.sprite = SoftSprite; bubble.Glow.sharedMaterial = bubbleMaterial; bubble.Glow.sortingOrder = order - 1;
+                }
+                return bubble;
             }, b => b.Root ? b.Root.gameObject : null, 0, 64);
         }
 
@@ -282,7 +294,7 @@ namespace SandJamTest.Scene3D
             var b = bubblePool.Get();
             b.Root.position = position; b.Root.localScale = Vector3.zero;
             b.Disc.color = new Color(.75f, .95f, 1f, 0);
-            b.Age = -delay; b.Life = .55f; b.Size = size;
+            b.Age = -delay; b.Life = BubbleLife; b.Size = size;
         }
 
         void AnimateBubbles(float dt)
@@ -306,7 +318,9 @@ namespace SandJamTest.Scene3D
                 }
                 float grow = 1 - Mathf.Pow(1 - Mathf.Clamp01(t * 1.6f), 3);
                 b.Root.localScale = Vector3.one * b.Size * (.3f + .7f * grow + .08f * Mathf.Sin(t * 20));
-                b.Disc.color = new Color(.55f, .9f, 1f, Mathf.Clamp01(t * 6) * (1 - t * .3f));
+                float alpha = Mathf.Clamp01(t * 6) * (1 - t * .3f);
+                b.Disc.color = new Color(.55f, .9f, 1f, alpha);
+                if (b.Glow) b.Glow.color = new Color(.8f, .97f, 1f, alpha * .75f);
             }
         }
 
