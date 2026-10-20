@@ -32,9 +32,10 @@ namespace SandJamTest.Scene3D
             if(EditorPreview)EditorPreview.enabled=false;
             SandBoardTextureView.ObstacleTint=SandBoardTextureView.GameOutline;
             fillScale=LoadingFill.localScale;mascotPosition=Mascot.localPosition;
-            // Original "Superb!": the finished, zoomed-in picture stays visible through a translucent dark layer.
+            // Original "Superb!" (recording 2, 228 s): the finished picture only faintly shows through a deep purple layer
+            // (#1E1936 at ~94%, solved from the picture and background colours under it); the gear and level pill vanish.
             var superbBackdrop=Celebration.transform.Find("Dark backdrop");
-            if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){var c=r.color;c.a=.8f;r.color=c;r.sortingOrder=14;}} // above the gameplay HUD (booster badges), below the Superb! effects
+            if(superbBackdrop){var r=superbBackdrop.GetComponent<SpriteRenderer>();if(r){r.color=new Color32(30,25,54,241);r.sortingOrder=14;}} // above the gameplay HUD (booster badges), below the Superb! effects
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
             if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=UiFont.Font?UiFont.Font:Controller.InterfaceFont;fx.Build(superbTitle);}
             StyleHome();

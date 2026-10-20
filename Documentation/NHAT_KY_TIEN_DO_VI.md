@@ -145,3 +145,26 @@ Các thay đổi trong ngày:
 - Chụp lại các popup Home và Level Failed: không vỡ.
 - Run all checks qua 8/8.
 
+### 2026-10-20 — Màu nền tối của Superb, Level Complete và popup theo bản gốc
+
+**Đo / lý do**
+
+- Màu được giải ngược từ màu tranh và màu nền dưới lớp tối, trên video 2.
+- Superb! (giây 228): lớp tím than #1E1936 che khoảng 94% (bản mình: nâu sẫm, 80%), nên tranh chỉ còn hiện mờ,
+  nút cài đặt và ô Level gần như biến mất.
+- Level Complete (giây 143 và 229): nền đều #06030F, không thấy tranh (bản mình: 29,30,49).
+- Popup trên màn chơi (Hết chỗ, giây 74): đen khoảng 68%; màu bàn chơi còn khoảng 0,32 độ sáng.
+
+**Sửa**
+
+- `VideoScreen` (lớp tối của Superb).
+- `ResultFx` (nền Level Complete).
+- `PopupScreens.Build` (lớp tối chung của popup).
+
+**Kiểm tra**
+
+- Superb: tranh (33,28,57) so với bản gốc (31,24,62).
+- Level Complete: nền (5,3,14) so với (6,3,16).
+- Hết chỗ: nền làn (36,44,54) so với (38,49,62).
+- Run all checks qua 8/8.
+

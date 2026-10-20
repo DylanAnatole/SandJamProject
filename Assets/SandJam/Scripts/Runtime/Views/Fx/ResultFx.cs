@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SandJamTest.Scene3D
 {
     // Level Complete page like the original (Game scene: coinSpawn, Fx_Rotate_Light; recording of level 256):
-    // a soft rotating light behind the card, the finished picture faintly visible through the dark backdrop, and
+    // a soft rotating light behind the card, an almost black backdrop over the board, and
     // the reward coins flying from the reward box up to the coin counter. The buttons stay dimmed while the coins
     // fly; the counter starts rolling as the first coins arrive (CampaignUi waits for CoinsLanded).
     // Soft golden light turning slowly behind a card's title (original Fx_Rotate_Light).
@@ -45,7 +45,8 @@ namespace SandJamTest.Scene3D
             from = transform.Find("icon-coin-reward");
             to = transform.Find("icon-coin");
             var backdrop = transform.Find("Dark backdrop");
-            if (backdrop) { var r = backdrop.GetComponent<SpriteRenderer>(); if (r) { var c = r.color; c.a = .86f; r.color = c; } }
+            // Measured on recording 2 (143 s, 229 s): an even, almost black navy (#06030F) hides the board.
+            if (backdrop) { var r = backdrop.GetComponent<SpriteRenderer>(); if (r) r.color = new Color32(6, 3, 16, 255); }
             BuildCardFrame();
             FitRewardBox();
             StyleRewardBand();

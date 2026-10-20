@@ -116,9 +116,9 @@ namespace SandJamTest.Scene3D
             bool shapedFrame = root.transform.Find(ResultFx.FrameName);
             if (!shapedFrame) foreach (var n in new[] { "Gold outer border", "Gold header" }) { var t = root.transform.Find(n); if (t) t.GetComponent<Renderer>().enabled = true; }
             var placeholder = root.GetComponentInChildren<ReferenceUiPlaceholder>(true); if (placeholder) Destroy(placeholder);
-            // Let the paused board show through, unlike the full-screen result page.
-            var backdrop = root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>();
-            var dim = backdrop.color; dim.a = .78f; backdrop.color = dim;
+            // Let the paused board show through, unlike the full-screen result page: plain black at ~68% (recording 2,
+            // Out of Space: the board's colours read at ~0.32 of their brightness).
+            root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, .68f);
             var p = new Popup { Root = root };
             p.Header = Text(root, "Level title");
             p.Title = Text(root, "Level Complete!");
