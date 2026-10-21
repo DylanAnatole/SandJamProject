@@ -554,3 +554,28 @@ một phần.
 - Run all checks qua 8/8.
 - `git add --dry-run`: chỉ file của dự án.
 
+### Độ khó cho công cụ tạo level từ ảnh
+
+**Lý do:** chuẩn bị thiết kế level mới tuần sau. Trước đây công cụ chỉ ra level dễ: khối xếp đúng thứ tự vùng mở,
+không có khối đặc biệt, không khóa ô chờ.
+
+**Sửa** (`LevelFromPicture`)
+
+- Lớp `Style` với 3 preset Easy / Normal / Hard. Mỗi preset gồm: tỉ lệ trộn khối trong làn, tỉ lệ khối "?", số cặp
+  xích cùng làn, số khối đóng băng, ngưỡng mở 5 ô chờ.
+- `ApplyStyle`: ngẫu nhiên có seed, nên tái tạo được.
+- `BuildWinnable`: thử tối đa 12 seed cho tới khi `LevelAuthoring.Check` (bộ giải) qua; không được thì hạ mức.
+- Menu chia thành 3 mục con.
+- Dùng lại luật xích (`ChainPairing`) và bộ giải có sẵn, không viết thêm luật.
+
+**Kiểm tra**
+
+- Sunset.png:
+  - Easy: 24 khối thường.
+  - Normal: 3 khối "?", 1 cặp xích, khóa ô 5.
+  - Hard: 6 khối "?", 2 cặp xích, 2 khối đóng băng, khóa ô 4–5.
+  - Cả 3 mức đều qua ngay seed 1.
+- Level Hard chơi trong game: hiện ổ khóa 150/300 và khối "?"; tự chơi thắng.
+- Run all checks qua 8/8.
+- Level thử đã xóa, không đưa lên repo.
+

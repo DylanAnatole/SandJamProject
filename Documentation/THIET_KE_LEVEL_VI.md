@@ -10,7 +10,19 @@ màu và các làn khối, nên thêm level mới không cần tạo scene hay p
    - Mỗi mảng liền nhau cùng một màu sẽ thành một vùng. Màu trong ảnh được quy về màu gần nhất của game.
    - Pixel trong suốt, pixel đen hoặc pixel màu tím nhạt giống đường viền của game sẽ thành tường.
    - Mảng nhỏ hơn 20 ô được coi là pixel lạc và chuyển thành tường.
-2. Chọn ảnh trong cửa sổ Project, rồi vào menu **Sand Jam → Levels → New level from selected picture**.
+2. Chọn ảnh trong cửa sổ Project, rồi vào menu **Sand Jam → Levels → New level from selected picture**, chọn một
+   mức độ khó:
+
+   | Mức | Trộn khối | Khối "?" | Cặp xích (cùng làn) | Khối đóng băng | Ô chờ khóa |
+   |---|---|---|---|---|---|
+   | Easy | không | 0 | 0 | 0 | không |
+   | Normal | 25% | 15% | 1 | 0 | ô 5: 200 cát |
+   | Hard | 50% | 30% | 2 | 2 (tan sau 3 lần) | ô 4: 150, ô 5: 300 |
+
+   - Khối đặc biệt chỉ đặt ở phía sau hàng đầu, mỗi khối một loại.
+   - Công cụ thử tối đa 12 cách xếp ngẫu nhiên cho tới khi bộ giải thắng được. Nếu không được thì tự hạ một mức
+     (Hard → Normal → Easy). Console ghi mức và seed đã dùng.
+   - Muốn chỉnh mức: sửa các preset `Easy` / `Normal` / `Hard` trong `LevelFromPicture.cs`.
 3. Công cụ tự làm các việc sau:
    - Vùng chạm đáy tranh mở sẵn. Các vùng còn lại mở khi một vùng kề bên được đổ đầy, nên tranh được tô từ dưới
      lên.
@@ -90,5 +102,4 @@ Code liên quan:
 
 ## Việc tiếp theo (chuẩn bị cho level tự thiết kế)
 
-- Công cụ đã chia khối theo thứ tự vùng mở. Bước tiếp theo là thêm tùy chọn độ khó, ví dụ trộn khối giữa các vùng
-  hoặc tự đặt khối bí ẩn, khối nối, khối đóng băng.
+- Thêm cặp xích ngang (hai làn cạnh nhau), nửa khối, chìa khóa / ổ khóa vào các preset.

@@ -71,7 +71,7 @@ Cập nhật: 21/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 | Tài liệu thiết kế level | ✅ | `THIET_KE_LEVEL_VI.md` |
 | Nhật ký tiến độ, quy tắc code | ✅ | `NHAT_KY_TIEN_DO_VI.md` |
 | Thư mục level tự thiết kế được đưa lên repo | ✅ | `Resources/CustomLevels/`, nạp qua `Campaign.LoadLevel` |
-| Tùy chọn độ khó cho công cụ tạo level | ⬜ | Trộn khối, đặt khối đặc biệt, khóa ô chờ |
+| Tùy chọn độ khó cho công cụ tạo level | ✅ | Easy / Normal / Hard, luôn qua bộ giải |
 
 ## 6. Tuần sau
 
