@@ -944,3 +944,24 @@ không có khối đặc biệt, không khóa ô chờ.
   - `CongratsPopup` gọi `DimCoinBar` với độ sáng 0,38.
 - **Kiểm tra:** Run all checks qua 8/8.
 
+### Thẻ CONGRATS theo bản gốc
+
+**Đo** (video 2, giây 145)
+
+- Thẻ bản gốc ngắn hơn: mép dưới cao hơn khoảng 116 px.
+- Dải ruy băng hẹp hơn 4% và thấp hơn 15 px; tên bộ sưu tập thấp hơn một chút.
+- Chữ % và "Tap To Continue" của bản gốc cao hơn 10–28 px.
+- Tia sáng của bản gốc vàng sáng, tỏa từ ruy băng lên; bản mình cam tối, tâm cao.
+
+**Sửa** (`CongratsPopup`)
+
+- `CardShortenPx` 116: co ảnh thẻ, giữ mép trên.
+- Đặt lại vị trí và cỡ ruy băng, chữ CONGRATS, tên bộ sưu tập, chữ % và "Tap To Continue".
+- Tia sáng hiện đủ màu của ảnh (`RaysColor`), tâm đặt tại ruy băng.
+
+**Kiểm tra**
+
+- Ruy băng, chữ % và "Tap To Continue" lệch ≤ 12 px so với bản gốc.
+- Ảnh ghép cạnh bản gốc khớp khung.
+- Run all checks qua 8/8.
+

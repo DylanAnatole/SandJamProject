@@ -11,6 +11,8 @@ namespace SandJamTest.Scene3D
         Popup congrats;
         SpriteRenderer cardBw, cardColor; Transform congratsRays; TextMesh[] cardName, cardPercent;
         const float CoverWidth = 2.5f, CoverHeight = 3.15f, CoverY = .17f;
+        const float CardShortenPx = 116;
+        static readonly Color RaysColor = Color.white; // the art at full strength (its own yellow)
         public override void Build()
         {
             congrats = Blank("Congrats popup");
@@ -18,15 +20,22 @@ namespace SandJamTest.Scene3D
             // The original card sits on an even, opaque dark navy (#141225): nothing of the board shows.
             congrats.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>().color = new Color32(20, 18, 37, 255);
             PopupScreens.DimCoinBar(congrats, .38f); // greyed like the rest of the HUD under it (recording 2, 145 s)
-            congratsRays = Art(congrats, "Congrats/light-congrats", new Vector3(0, 3.1f, -6.1f), 4.2f).transform;
-            Art(congrats, "Congrats/bg-popUp-congrats-v2", new Vector3(0, .06f, -6.2f), 3.86f);
+            // Recording 2 (145 s): bright yellow rays (median #DDC52D), reaching higher above the ribbon.
+            var rays = Art(congrats, "Congrats/light-congrats", new Vector3(0, 2.8f, -6.1f), 4.4f); // centred on the ribbon, rays reaching high above it
+            rays.color = RaysColor; congratsRays = rays.transform;
+            // The original card is shorter: its bottom edge ends ~116 px higher, the top staying under the ribbon.
+            var card = Art(congrats, "Congrats/bg-popUp-congrats-v2", new Vector3(0, .06f, -6.2f), 3.86f);
+            float cut = CardShortenPx * VideoScreen.Px, cardHeight = card.bounds.size.y;
+            card.transform.localScale = Vector3.Scale(card.transform.localScale, new Vector3(1, (cardHeight - cut) / cardHeight, 1));
+            card.transform.position += Vector3.up * cut * .5f;
             cardBw = Child<SpriteRenderer>(congrats, "Cover grey", new Vector3(0, CoverY, -6.4f));
             cardColor = Child<SpriteRenderer>(congrats, "Cover colour", new Vector3(0, CoverY, -6.45f));
-            Art(congrats, "Congrats/ribbon-yellow-v2", new Vector3(0, 2.74f, -6.6f), 4.95f);
-            Art(congrats, "Congrats/text-congrats-v2", new Vector3(0, 2.8f, -6.7f), 3.3f);
-            cardName = OutlinedLabel(congrats, "Collection name", new Vector3(0, 2.04f, -6.8f), .042f);
-            cardPercent = OutlinedLabel(congrats, "Collection percent", new Vector3(0, -1.63f, -6.8f), .038f);
-            SetText(OutlinedLabel(congrats, "Tap to continue", new Vector3(0, -3.48f, -6.8f), .042f), "Tap To Continue");
+            // Ribbon, title and captions placed as measured on recording 2 (145 s).
+            Art(congrats, "Congrats/ribbon-yellow-v2", new Vector3(0, 2.59f, -6.6f), 4.74f);
+            Art(congrats, "Congrats/text-congrats-v2", new Vector3(0, 2.65f, -6.7f), 3.17f);
+            cardName = OutlinedLabel(congrats, "Collection name", new Vector3(0, 1.98f, -6.8f), .042f);
+            cardPercent = OutlinedLabel(congrats, "Collection percent", new Vector3(0, -1.574f, -6.8f), .037f);
+            SetText(OutlinedLabel(congrats, "Tap to continue", new Vector3(0, -3.32f, -6.8f), .044f), "Tap To Continue");
             // The whole screen continues, in front of everything else in the popup.
             var hit = Child<BoxCollider>(congrats, "Hit area - congrats-continue", new Vector3(0, 0, -9.5f));
             hit.gameObject.layer = 9; hit.size = new Vector3(30, 40, .2f);
