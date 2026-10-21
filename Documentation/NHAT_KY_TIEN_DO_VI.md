@@ -511,3 +511,22 @@ một phần.
 - Đóng popup thì huy hiệu vẫn hiện trên nút.
 - Run all checks qua 8/8.
 
+## 2026-10-21
+
+### Khối chạy: cỡ khi chạy khớp bản gốc
+
+**Đo / lý do** (video 2, giây 48,8–49,1, cùng 4 khung hình)
+
+- Tổng chiều cao khối + chân đã khớp: bản mình 74/116/152/170 px, bản gốc 84/122/150/168 px. Tức là chân đã đủ dài.
+- Bề ngang lúc chạy: bản mình 146–150 px, bản gốc 123–133 px. Khối vừa xoay 25° vừa phồng 1,25 lần
+  (`RunBulge`) nên quá to.
+
+**Sửa:** `SceneActorView.RunBulge` 0,25 → 0,08.
+
+**Kiểm tra**
+
+- Bề ngang 118/122/126 px, bản gốc 123/126/128 px.
+- Chiều cao 91/136/160 px, bản gốc 84/122/150 px.
+- Tự chơi thắng level 68.
+- Run all checks qua 8/8.
+

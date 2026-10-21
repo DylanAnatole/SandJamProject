@@ -103,8 +103,9 @@ namespace SandJamTest.Scene3D
 
         public const float CubeScale = .9f;
         // Original (recording 2, 48.6-52 s): a cube on its waiting pad reads ~0.96 of its size in the lanes, and on
-        // the way there it hops toward the camera, ~1.25x mid-run. Full size again in the lanes.
-        const float StashSize = .96f, RunBulge = .25f;
+        // the way there it hops toward the camera a little (with its 25 deg turn it reads ~126 px wide mid-run, as in
+        // the original). Full size again in the lanes.
+        const float StashSize = .96f, RunBulge = .08f;
         float size = 1, sizeTarget = 1;
         public void Bind(Shooter shooter, Vector3 position, float rowSize = 1)
         {

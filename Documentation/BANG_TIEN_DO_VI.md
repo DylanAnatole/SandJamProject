@@ -1,6 +1,6 @@
 # Bảng tiến độ — Sand Jam clone
 
-Cập nhật: 20/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.md`.
+Cập nhật: 21/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.md`.
 
 **Ký hiệu**
 
@@ -27,7 +27,7 @@ Cập nhật: 20/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 | Tranh, khung tranh, chân đế | ✅ | Hai đầu chân đế bản gốc bo tròn (nhỏ) |
 | Ô chờ (pad), bờ làn, nút booster | ✅ | |
 | Khối trong làn: cỡ, hàng to dần theo phối cảnh | ✅ | |
-| Khối chạy lên ô chờ: tốc độ, xoay, chân | 🟡 | Chân bản gốc vẫn dài hơn một chút |
+| Khối chạy lên ô chờ: tốc độ, xoay, chân | ✅ | Bề ngang và chiều cao (khối + chân) lệch ≤ 10 px |
 | Khối trên ô chờ: kính, cỡ, xoay khi đổ, lắc | ✅ | |
 | Khối hết cát: chớp trắng, nhảy, chạy ra | ✅ | |
 | Hàng khối dồn lên | ✅ | |
