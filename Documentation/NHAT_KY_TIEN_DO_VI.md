@@ -918,3 +918,21 @@ không có khối đặc biệt, không khóa ô chờ.
 - **Sửa:** `GalleryPopup`, màu nhuộm của nút.
 - **Kiểm tra:** (59,102,161) so với (57,99,161); Run all checks qua 8/8.
 
+### Băng chuyền ảnh bìa trong Gallery theo bản gốc
+
+**Đo** (video 2, giây 30, cùng bộ MUSICIAN)
+
+- Thẻ chính bản gốc: khung xanh 340×384 px, tâm ở 500 px.
+- Bản mình: 284×374 px, tâm ở 523 px.
+- Thẻ bên cạnh của bản gốc nằm xa hơn; mũi tên nằm sát ngoài mép thẻ.
+
+**Sửa** (`GalleryPopup`)
+
+- Các hằng `CardGrowX` 1,2, `CardGrowY` 1,03, `CarouselY` 2,7, `SideX` 2,72, áp dụng cho cả thẻ chính và thẻ bên.
+- Mũi tên ra x 1,28, thấp hơn 0,1.
+
+**Kiểm tra**
+
+- Ảnh ghép cạnh bản gốc: thẻ chính cùng cỡ và vị trí.
+- Run all checks qua 8/8.
+

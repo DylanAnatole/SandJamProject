@@ -107,6 +107,9 @@ namespace SandJamTest.Scene3D
             AddPageChrome(gallery, "icon-cards");
         }
 
+        // Cover carousel measured on recording 2 (30 s): the selected card's blue frame 340 x 384 px centred at 500 px
+        // (ours read 284 x 374 at 523), the neighbours further out.
+        const float CardGrowX = 1.2f, CardGrowY = 1.03f, CarouselY = 2.7f, SideX = 2.72f;
         public void OpenGallery()
         {
             if (Open) return;
@@ -130,15 +133,15 @@ namespace SandJamTest.Scene3D
             for (int side = -1; side <= 1; side += 2)
             {
                 int n = galleryIndex + side; if (n < 0 || n >= galleryList.Count) continue;
-                var sideFrame = GalleryArt("bg-cards-top-carCollection", side * 2.25f, 2.57f, 1.45f, 1.8f, -6.25f);
-                float sy = FrameCentreY(sideFrame); var ss = FrameInner(sideFrame, 1.33f, 1.67f);
+                var sideFrame = GalleryArt("bg-cards-top-carCollection", side * SideX, CarouselY, 1.45f * CardGrowX, 1.8f * CardGrowY, -6.25f);
+                float sy = FrameCentreY(sideFrame); var ss = FrameInner(sideFrame, 1.33f * CardGrowX, 1.67f * CardGrowY);
                 Sprite c, g; StyleCover(galleryList[n], out c, out g);
-                MaskedPicture(c, side * 2.25f, sy, ss.x, ss.y, -6.27f);
+                MaskedPicture(c, side * SideX, sy, ss.x, ss.y, -6.27f);
             }
             // The card art does not pivot on its centre: pictures are centred on the frame as drawn (they used to sit
             // high, overflowing the top edge with a gap at the bottom).
-            var mainFrame = GalleryArt("bg-cards-top-carCollection", 0, 2.57f, 1.72f, 2.13f, -6.3f);
-            float cy = FrameCentreY(mainFrame); var cs = FrameInner(mainFrame, 1.58f, 1.98f);
+            var mainFrame = GalleryArt("bg-cards-top-carCollection", 0, CarouselY, 1.72f * CardGrowX, 2.13f * CardGrowY, -6.3f);
+            float cy = FrameCentreY(mainFrame); var cs = FrameInner(mainFrame, 1.58f * CardGrowX, 1.98f * CardGrowY);
             Sprite colour, grey; StyleCover(info, out colour, out grey);
             float fraction = (float)info.Completed(won) / info.Count;
             if (fraction >= 1 || !grey) MaskedPicture(colour, 0, cy, cs.x, cs.y, -6.35f);
@@ -229,11 +232,11 @@ namespace SandJamTest.Scene3D
 
         void GalleryArrow(int direction)
         {
-            float x = 1.18f * direction;
-            GalleryArt("bg-arrow-cardCollection", x, 2.57f, .46f, .46f, -6.5f);
-            var arrow = GalleryArt("icon-arrow-left-cardCollection", x - .02f * direction, 2.58f, .22f, .33f, -6.55f);
+            float x = 1.28f * direction; // just clear of the larger card (recording 2)
+            GalleryArt("bg-arrow-cardCollection", x, CarouselY - .1f, .46f, .46f, -6.5f);
+            var arrow = GalleryArt("icon-arrow-left-cardCollection", x - .02f * direction, CarouselY - .09f, .22f, .33f, -6.55f);
             if (direction > 0) arrow.flipX = true;
-            GalleryHit(x, 2.57f, .65f, .65f, direction < 0 ? "gallery-prev" : "gallery-next");
+            GalleryHit(x, CarouselY - .1f, .65f, .65f, direction < 0 ? "gallery-prev" : "gallery-next");
         }
 
         void StyleCover(GalleryCollections.Info info, out Sprite colour, out Sprite grey)
