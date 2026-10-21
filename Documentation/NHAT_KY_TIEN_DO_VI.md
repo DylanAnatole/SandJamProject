@@ -716,3 +716,26 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 68 và 267.
 - Run all checks qua 8/8.
 
+### Chuyển trang không mờ dần, như bản gốc
+
+**Đo / lý do**
+
+- Video 2, giây 44,5–48,6 và 143,5–150, nhịp 0,25 giây: bản gốc chuyển thẳng ở mọi chỗ (Home → màn chơi,
+  Level Complete → CONGRATS → Home). Popup Sand Quest có hiệu ứng phóng to riêng.
+- Bản mình phủ lớp tím than rồi mờ dần (0,3 giây) mỗi lần đổi trang.
+- Viên cát bay lên tranh: đã so phóng to, khớp, không đổi.
+
+**Sửa** (`VideoScreen`)
+
+- Bỏ `StartFade` / `UpdateFade` và đối tượng "Page fade" (khoảng 30 dòng).
+- Chớp sáng của Superb! thuộc `SuperbFx`, không bị ảnh hưởng.
+
+**Kiểm tra**
+
+- Ghi hình lúc bấm PLAY.
+  - Khung đầu trong ảnh trông như chưa dựng xong là do công cụ chụp chạy ngay trong khung lệnh PLAY, trước bước
+    cập nhật.
+  - `Restart` chỉ tốn 6–17 ms.
+- Tự chơi thắng level 267; luồng thua chạy đúng.
+- Run all checks qua 8/8.
+
