@@ -62,6 +62,8 @@ namespace SandJamTest
 
         // Set before reloading the scene so the next level opens straight into gameplay.
         public static bool SkipIntro;
+        // Set by Try Again: the level starts after the SAND JAM splash with a tip (original, recording 1, 718 s).
+        public static bool RetrySplash;
         // Set when a scene reload should land on the Home screen directly (no loading splash).
         public static bool OpenHome;
         // Original flow (recordings of levels 200-267): after a win the game goes back to the Home screen and the

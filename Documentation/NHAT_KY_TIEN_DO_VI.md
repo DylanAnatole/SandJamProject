@@ -814,3 +814,27 @@ không có khối đặc biệt, không khóa ô chờ.
 - Luồng thua đúng.
 - Run all checks qua 8/8.
 
+### Màn SAND JAM có câu mẹo sau Try Again
+
+**Đo** (video 1, giây 714–722)
+
+- Bấm Try Again: bản gốc hiện màn SAND JAM có câu mẹo hai dòng ở khoảng 73% chiều cao, không có thanh loading, trong
+  khoảng 1,5 giây, rồi vào màn chơi.
+- Bản mình vào thẳng màn chơi.
+
+**Sửa**
+
+- Thêm cờ `Campaign.RetrySplash`, đặt khi người chơi bấm `LevelManager.Retry`.
+- `GameplayFeedbackController.Retry` gọi `Levels.Retry()` thay cho `Reload(true)`.
+- `VideoScreen.RetrySplash()`:
+  - dùng lại `QuickSplash`, ẩn thanh loading;
+  - câu mẹo phóng 2,5, căn giữa, ngắt 36 ký tự mỗi dòng;
+  - chờ 1,3 giây rồi gọi `Play`.
+- Cờ `playAfterSplash` trong vòng Loading có sẵn.
+
+**Kiểm tra**
+
+- Ghi hình: Level Failed → SAND JAM + câu mẹo trong khoảng 1,2 giây → màn chơi.
+- Luồng thua đúng.
+- Run all checks qua 8/8.
+
