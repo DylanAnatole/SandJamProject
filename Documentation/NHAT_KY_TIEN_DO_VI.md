@@ -1033,3 +1033,21 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 68.
 - Run all checks qua 8/8.
 
+### Thanh trên của màn chơi
+
+**Đo** (video 2, giây 153)
+
+- Nút cài đặt, ô Level và ô xu của bản gốc cao hơn khoảng 20 px.
+- Nút cài đặt nhỏ hơn, lệch trái; ô Level rộng hơn 5%; ô xu lệch phải.
+
+**Sửa**
+
+- `VideoScreen.FitGameplayHud`, dùng lại helper `Place` có sẵn (thu phóng quanh tâm, dịch theo pixel video).
+
+**Kiểm tra**
+
+- Ô Level ở (336,104,206×49), bản gốc (337,104,206×50).
+- Nút cài đặt ở (45,97,64×62), bản gốc (47,97,59×62).
+- Ô xu lệch ≤ 5 px.
+- Run all checks qua 8/8.
+

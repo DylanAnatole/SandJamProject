@@ -39,6 +39,7 @@ namespace SandJamTest.Scene3D
             var superbTitle=Celebration.GetComponentsInChildren<TextMesh>(true).FirstOrDefault(t=>t.text=="Superb!" && t.name!="Text outline");
             if(superbTitle){var fx=Celebration.AddComponent<SuperbFx>();fx.Font=UiFont.Font?UiFont.Font:Controller.InterfaceFont;fx.Build(superbTitle);}
             StyleHome();
+            FitGameplayHud();
             var devLabel=Loading.transform.Find("UI reconstruction");if(devLabel)devLabel.gameObject.SetActive(false);
             Result.AddComponent<ResultFx>().Build();
             gameObject.AddComponent<TextOutliner>();
@@ -396,6 +397,15 @@ namespace SandJamTest.Scene3D
             t.SetPixels32(px);t.Apply();
             walkwaySprite=Sprite.Create(t,new Rect(0,0,w,h),new Vector2(.5f,.5f),w/width);
             return walkwaySprite;
+        }
+        // Gameplay top bar measured on recording 2 (153 s): the gear, level pill and coin wallet sit ~20 px higher; the
+        // gear a little smaller and further left, the pill a little wider, the wallet further right.
+        void FitGameplayHud()
+        {
+            var hud=Gameplay.transform.Find("HUD - visual controls only");if(!hud)return;
+            Place(hud.Find("Settings - UI only"),.95f,-6,-19);
+            foreach(Transform t in hud)if(t.name=="Level badge"||t.name.StartsWith("Level ")){t.localScale=Vector3.Scale(t.localScale,new Vector3(1.05f,1,1));t.position+=Vector3.up*23*Px;}
+            Place(hud.Find("Coin wallet - UI only"),.95f,10,-21);
         }
         // Original Superb! screen: the coin counter stays bright above the dark veil (the rest of the HUD dims).
         Renderer[] coinWallet;
