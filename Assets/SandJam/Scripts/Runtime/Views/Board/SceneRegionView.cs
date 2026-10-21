@@ -200,11 +200,14 @@ namespace SandJamTest.Scene3D
             float k=roll<22?.78f:roll<38?.89f:roll<88?1f:1.14f;
             Color c=(Color)baseColor*k;c.a=1;return c;
         }
-        Vector3 counterScale; bool counterScaleKnown;
+        // Board counters in the original (recording 2, 158 s, zoomed): digits ~25 px tall with a thin dark edge.
+        const float CounterScale=.77f, CounterOutlineThickness=.045f;
+        Vector3 counterScale; bool counterScaleKnown; OutlinedText counterOutline;
         void LateUpdate()
         {
             if(!Counter) return;
-            if(!counterScaleKnown){counterScale=Counter.transform.localScale*.8f;Counter.transform.localScale=counterScale;counterScaleKnown=true;} // original counters are ~20% smaller
+            if(!counterScaleKnown){counterScale=Counter.transform.localScale*CounterScale;Counter.transform.localScale=counterScale;counterScaleKnown=true;}
+            if(!counterOutline){counterOutline=Counter.GetComponent<OutlinedText>();if(counterOutline)counterOutline.Thickness=CounterOutlineThickness;}
             if(counterPunch<=0) return;
             counterPunch=Mathf.Max(0,counterPunch-Time.deltaTime/.18f);
             Counter.transform.localScale=counterScale*(1f+.28f*Mathf.Sin(counterPunch*Mathf.PI));

@@ -996,3 +996,15 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 267; luồng thua đúng.
 - Run all checks qua 8/8.
 
+### Số đếm trên tranh: cỡ và viền mảnh như bản gốc
+
+- **Đo** (video 2, giây 158, phóng to số "6"): chữ số bản gốc 16×25 px, viền tối mảnh. Sau khi đổi màu viền chung,
+  viền của bản mình dày và đen đậm.
+- **Sửa** (`SceneRegionView`):
+  - `CounterScale` 0,77 (trước 0,8);
+  - `CounterOutlineThickness` 0,045, gán một lần cho `OutlinedText` của số đếm.
+- **Kiểm tra:**
+  - số "6" đo được 16×25 px, bằng bản gốc; viền mảnh;
+  - tự chơi thắng level 68;
+  - Run all checks qua 8/8.
+
