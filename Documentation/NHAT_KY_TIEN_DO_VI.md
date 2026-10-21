@@ -965,3 +965,10 @@ không có khối đặc biệt, không khóa ô chờ.
 - Ảnh ghép cạnh bản gốc khớp khung.
 - Run all checks qua 8/8.
 
+### Viền chữ trên CONGRATS gần đen
+
+- **Đo** (video 2, giây 145): viền chữ "Makeup", "% Completed" và "Tap To Continue" của bản gốc gần đen
+  (12,9,13); bản mình tím (59,41,107).
+- **Sửa:** `CongratsPopup.TextInk`, gán qua `OutlinedText.Add` có sẵn.
+- **Kiểm tra:** viền đo được (12–25, 9–22, 13–18); Run all checks qua 8/8.
+

@@ -12,6 +12,7 @@ namespace SandJamTest.Scene3D
         SpriteRenderer cardBw, cardColor; Transform congratsRays; TextMesh[] cardName, cardPercent;
         const float CoverWidth = 2.5f, CoverHeight = 3.15f, CoverY = .17f;
         const float CardShortenPx = 116;
+        static readonly Color TextInk = new Color32(12, 9, 13, 255);
         static readonly Color RaysColor = Color.white; // the art at full strength (its own yellow)
         public override void Build()
         {
@@ -35,7 +36,10 @@ namespace SandJamTest.Scene3D
             Art(congrats, "Congrats/text-congrats-v2", new Vector3(0, 2.65f, -6.7f), 3.17f);
             cardName = OutlinedLabel(congrats, "Collection name", new Vector3(0, 1.98f, -6.8f), .042f);
             cardPercent = OutlinedLabel(congrats, "Collection percent", new Vector3(0, -1.574f, -6.8f), .037f);
-            SetText(OutlinedLabel(congrats, "Tap to continue", new Vector3(0, -3.32f, -6.8f), .044f), "Tap To Continue");
+            var tap = OutlinedLabel(congrats, "Tap to continue", new Vector3(0, -3.32f, -6.8f), .044f);
+            SetText(tap, "Tap To Continue");
+            // White captions with an almost black outline (recording 2, 145 s: #0C090D), not the UI's purple.
+            foreach (var label in new[] { cardName, cardPercent, tap }) OutlinedText.Add(label[0], TextInk);
             // The whole screen continues, in front of everything else in the popup.
             var hit = Child<BoxCollider>(congrats, "Hit area - congrats-continue", new Vector3(0, 0, -9.5f));
             hit.gameObject.layer = 9; hit.size = new Vector3(30, 40, .2f);
