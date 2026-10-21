@@ -86,7 +86,6 @@ namespace SandJamTest.Scene3D
             SingleButton(failed);
             AddCloseButton(failed, "home");
             BuildNoLivesButtons();
-            BuildOutOfSpaceBanner();
             sandQuest = Add(new SandQuestPopup());
             shop = Add(new ShopPopup());
             lives = Add(new LivesPopup());
@@ -559,47 +558,14 @@ namespace SandJamTest.Scene3D
         // Home PLAY with no hearts left: the big NO MORE LIVES popup (original canvas_nolives).
         public void ShowNoLives() { lives.ShowPopup(); }
 
-        // Original "OUT OF SPACE!" banner: a red band across the board for about a second before the popup.
-        GameObject banner; float bannerShownAt = -1;
-        const float BannerTime = 1.1f;
-        void BuildOutOfSpaceBanner()
+        // Out of space: the popup follows after a short pause, with no banner or caption over the board (original).
+        float outOfSpaceAt = -1;
+        const float LosePause = .6f;
+        void UpdateOutOfSpace()
         {
-            banner = new GameObject("Out of space banner") { layer = screen.Result.layer };
-            banner.transform.SetParent(screen.Result.transform.parent, false);
-            banner.transform.localPosition = screen.Result.transform.localPosition;
-            var p = new Popup { Root = banner };
-            var sprite = SpriteFactory.White;
-            // Measured on the original (level 261): a see-through pink-red band (~76% opaque) a little below the
-            // board's middle, two solid red lines just inside its edges and a thin dark rim; white caption.
-            const float y = 1.08f;
-            var pink = new Color(.886f, .267f, .38f, .76f); var red = new Color(.875f, .204f, .29f, 1f); var rim = new Color(.3f, .12f, .22f, .55f);
-            foreach (var part in new[] { new { y = y, h = 1.25f, z = -6.2f, c = pink },
-                                         new { y = y + .475f, h = .1f, z = -6.25f, c = red },
-                                         new { y = y - .48f, h = .1f, z = -6.25f, c = red },
-                                         new { y = y + .63f, h = .03f, z = -6.25f, c = rim },
-                                         new { y = y - .63f, h = .03f, z = -6.25f, c = rim } })
-            {
-                var r = Child<SpriteRenderer>(p, "Band", new Vector3(0, part.y, part.z));
-                r.sprite = sprite; r.color = part.c; r.transform.localScale = new Vector3(8f, part.h, 1);
-            }
-            var caption = OutlinedLabel(p, "Out of space text", new Vector3(0, y, -6.4f), .062f);
-            SetText(caption, "OUT OF SPACE!");
-            OutlinedText.Add(caption[0], new Color(.32f, .07f, .14f));
-            banner.SetActive(false);
-        }
-        void UpdateOutOfSpaceBanner()
-        {
-            if (!screen.Feedback.FailureVisible || gaveUp)
-            {
-                if (bannerShownAt >= 0 && !screen.Feedback.FailureVisible) bannerShownAt = -1;
-                banner.SetActive(false); return;
-            }
-            if (bannerShownAt < 0) bannerShownAt = Time.unscaledTime;
-            float t = Time.unscaledTime - bannerShownAt;
-            if (t >= BannerTime) { banner.SetActive(false); CaptureStash(); Show(lose); return; }
-            banner.SetActive(true);
-            // Slides open horizontally, then holds.
-            banner.transform.localScale = new Vector3(Mathf.SmoothStep(0, 1, t / .18f), 1, 1);
+            if (!screen.Feedback.FailureVisible || gaveUp) { if (!screen.Feedback.FailureVisible) outOfSpaceAt = -1; return; }
+            if (outOfSpaceAt < 0) outOfSpaceAt = Time.unscaledTime;
+            if (Time.unscaledTime - outOfSpaceAt >= LosePause) { CaptureStash(); Show(lose); }
         }
 
         // White caption with a dark purple outline (OutlinedText). Returned as an array so callers can treat any label
@@ -713,9 +679,8 @@ namespace SandJamTest.Scene3D
                     Close(); screen.Feedback.Retry(); return true;
                 case "home": Close(); gaveUp = false; screen.Feedback.GoHome(); return true;
                 case "play-on":
-                    if (!EconomyManager.TrySpend(PlayOnPrice, "play-on")) { Configure(null, lose.Caption, null, "Not enough coins · need " + PlayOnPrice, 18f); return true; }
+                    if (!EconomyManager.TrySpend(PlayOnPrice, "play-on")) return true; // not enough coins: nothing happens
                     if (!screen.Controller.AddExtraSlot()) { EconomyManager.Add(PlayOnPrice, "refund"); return true; }
-                    lose.Caption.text = "Free Extra 1 Slot";
                     Close(); return true;
                 case "give-up":
                     // Giving up the level costs a heart (original: Out of Space ✕ → Level Failed with -1).
@@ -733,12 +698,7 @@ namespace SandJamTest.Scene3D
                     if (!failedIsNoLives) { gaveUp = false; screen.Feedback.GoHome(); }
                     return true;
                 case "refill-lives":
-                    if (!EconomyManager.TrySpend(EconomyManager.RefillLivesPrice, "refill-lives"))
-                    {
-                        string need = "Not enough coins · need " + EconomyManager.RefillLivesPrice;
-                        if (lives.Visible) lives.ShowInfo(need); else Configure(null, failed.Caption, null, need, 18f);
-                        return true;
-                    }
+                    if (!EconomyManager.TrySpend(EconomyManager.RefillLivesPrice, "refill-lives")) return true; // not enough coins: nothing happens
                     LivesManager.Refill();
                     Close();
                     if (screen.Current == VideoScreen.Page.Gameplay) { gaveUp = false; screen.Feedback.Retry(); }
@@ -750,7 +710,7 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             if (!screen.Feedback.FailureVisible) gaveUp = false;
-            if (!Open) { UpdateOutOfSpaceBanner(); return; }
+            if (!Open) { UpdateOutOfSpace(); return; }
             if (Open == failed.Root && Time.frameCount % 15 == 0) { failed.Big.text = TimerText; LayoutTimerRow(); }
             // Pop-in: the original popups zoom in from about half size with a small overshoot; the HARD / BONUS
             // level cards grow more slowly (recording of level 260).

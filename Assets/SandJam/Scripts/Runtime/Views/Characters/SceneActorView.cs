@@ -51,11 +51,11 @@ namespace SandJamTest.Scene3D
         // The body itself turns MaxYaw while running, the legs a little further; they also swing down out from under
         // the block so they show below it (recording 2, 48.8-49.1 s: legs ~60% of the block height below it).
         // Where the sand from this box is going (set on every shot) and how it turns and rocks while pouring.
-        // Recording 2 (49.35-49.45 s, 58.4-60.35 s, zoomed): a pouring box keeps facing the camera and leans on
-        // screen toward the region it fills, more the further sideways that region is (~15-25 deg), rising a little
-        // off its pad; it turns back upright between regions.
-        Vector3 pourTarget; float roll; Camera viewCamera;
-        const float MaxPourTilt = 22f, PourTiltPerDegree = .5f, PourLift = .06f;
+        // Recording 2 (58.30-59.26 s, every 0.04 s, zoomed): a pouring box turns ~30 deg about the vertical through
+        // its centre, its front toward the side away from the region it fills (its other side and top show), and
+        // holds that turn while it pours, tipping only very slightly; it turns back when it stops.
+        Vector3 pourTarget; float roll, aimYaw; Camera viewCamera;
+        const float PourYaw = 30f, PourTilt = 3f;
         static readonly Vector3 PourPivot = new Vector3(0, .42f, 0); // block centre in Visual space
         public void Pour(Vector3 target) { pourTarget = target; }
         const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.6f;
@@ -102,15 +102,16 @@ namespace SandJamTest.Scene3D
             {
                 pose.localRotation = poseBase * Quaternion.Euler(0, yaw, 0);
                 pose.localPosition = posePosition;
-                // Pouring: tipped on screen about the block's centre (about its feet it swung off the pad), lifted a little.
-                if (roll != 0)
+                // Pouring: turned about the true vertical through the block's centre (the rig is pitched toward the
+                // camera, so its own up axis would read as a tilt; about its feet it swung off the pad), then the slight
+                // tip about the camera's view axis (it looks down at the board, so world Z would tip the box over).
+                if (aimYaw != 0 || roll != 0)
                 {
                     var centre = Visual.TransformPoint(PourPivot);
                     if (!viewCamera) viewCamera = SpriteFactory.CameraForLayer(gameObject.layer);
-                    // About the camera's own view axis: it looks down at the board, so world Z would tip the box over.
                     var axis = viewCamera ? (centre - viewCamera.transform.position).normalized : Vector3.forward;
+                    pose.RotateAround(centre, Vector3.up, aimYaw);
                     pose.RotateAround(centre, axis, roll);
-                    pose.position += Vector3.up * PourLift * Mathf.Abs(roll) / MaxPourTilt;
                 }
                 transform.localRotation = Quaternion.identity;
             }
@@ -244,10 +245,10 @@ namespace SandJamTest.Scene3D
                 transform.position = destination;
                 // Pouring from its pad: tipped toward the region it fills (positive = counter-clockwise on screen).
                 bool pouring = firing && !Departing;
-                var toTarget = pourTarget - transform.position;
-                float direction = Mathf.Atan2(toTarget.x, Mathf.Max(.01f, toTarget.y)) * Mathf.Rad2Deg; // + = to the right
+                float side = pourTarget.x >= transform.position.x ? 1 : -1; // region to the right / left
                 yaw = Mathf.MoveTowards(yaw, 0, delta * 420);
-                roll = Mathf.MoveTowards(roll, pouring ? -Mathf.Clamp(direction * PourTiltPerDegree, -MaxPourTilt, MaxPourTilt) : 0, delta * 150);
+                aimYaw = Mathf.MoveTowards(aimYaw, pouring ? side * PourYaw : 0, delta * 300);
+                roll = Mathf.MoveTowards(roll, pouring ? -side * PourTilt : 0, delta * 60);
                 ApplyYaw();
                 ShowLegs(false);
                 if(!Motion)Visual.localRotation = Quaternion.Euler(firing ? Mathf.Sin(Time.time * 25) * 3 : 0, 0, 0);

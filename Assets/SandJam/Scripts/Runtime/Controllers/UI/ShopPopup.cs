@@ -10,8 +10,6 @@ namespace SandJamTest.Scene3D
     {
         Popup shop;
         Transform shopContent;
-        TextMesh[] shopToast;
-        float shopToastUntil;
         readonly DragScroller scroll = new DragScroller();
         const float ShopUnit = 5.2f / 342f;      // mockup pixels → popup units
         const float ShopTop = 2.75f;             // where mockup row 185 (first card) sits when not scrolled (under the header)
@@ -79,7 +77,6 @@ namespace SandJamTest.Scene3D
             var foot = Child<SpriteRenderer>(shop, "Footer bar", new Vector3(0, -5.1f, -7.3f)); foot.sprite = bar.sprite;
             foot.color = bar.color; foot.transform.localScale = new Vector3(8, 1.8f, 1);
             AddPageChrome(shop, "icon-shop");
-            shopToast = OutlinedLabel(shop, "Shop toast", new Vector3(0, -3.75f, -8.2f), .034f);
             foreach (var name in new[] { "bg-currency", "button-plus_0", "icon-coin", "2040" })
             { var t = shop.Root.transform.Find(name); if (t) t.gameObject.SetActive(false); }
         }
@@ -200,30 +197,27 @@ namespace SandJamTest.Scene3D
             // The original opens on the BOOSTERS section at the end of the list (recording 2, 6 s and 11 s); the
             // real-money packs are above it.
             scroll.Reset(); scroll.Value = scroll.Max; shopContent.localPosition = new Vector3(0, scroll.Value, 0);
-            SetText(shopToast, "");
             Show(shop); RefreshPageLives(shop);
         }
         void RefreshShopCoins() { RefreshPopupCoins(); }
-        void ShopToast(string text) { SetText(shopToast, text); shopToastUntil = Time.unscaledTime + 2.2f; }
 
         // Shop buttons fire on release without a drag, so scrolling never buys anything by accident.
         public override bool Handles(string action) { return action.StartsWith("shop-"); }
         public override bool Handle(string action) { scroll.Hold(action); return true; }
         void RunShopAction(string action)
         {
-            if (action == "shop-iap") { ShopToast("Purchases are not available"); return; }
+            // No messages on screen (original): real-money packs do nothing here, a booster bought shows in the counters.
+            if (action == "shop-iap") return;
             var parts = action.Split(':'); // shop-buy:<booster|all>:<count>:<price>
             int count = int.Parse(parts[2]), price = int.Parse(parts[3]);
-            if (!EconomyManager.TrySpend(price, "shop:" + parts[1])) { ShopToast("Not enough coins · need " + price); return; }
+            if (!EconomyManager.TrySpend(price, "shop:" + parts[1])) return;
             foreach (var booster in parts[1] == "all" ? BoosterActions : new[] { parts[1] }) EconomyManager.AddBooster(booster, count, "shop");
-            ShopToast(parts[1] == "all" ? "+" + count + " of each booster" : "+" + count + " booster");
             RefreshShopCoins();
         }
 
         public override void Tick()
         {
             if (Open != shop.Root) return;
-            if (shopToastUntil > 0 && Time.unscaledTime > shopToastUntil) { SetText(shopToast, ""); shopToastUntil = 0; }
             scroll.Tick(screen.UiCamera, RunShopAction);
             shopContent.localPosition = new Vector3(0, scroll.Value, 0);
         }

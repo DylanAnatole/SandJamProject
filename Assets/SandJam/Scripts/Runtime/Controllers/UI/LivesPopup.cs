@@ -9,7 +9,7 @@ namespace SandJamTest.Scene3D
     public sealed class LivesPopup : PopupModule
     {
         Popup noLives;
-        TextMesh[] noLivesCount, noLivesTimer, noLivesInfo;
+        TextMesh[] noLivesCount, noLivesTimer;
         Transform noLivesShine;
         const float LivesUnit = SettingsPopup.CanvasUnit * .9f;               // the 1142 px frame is wider than the canvas
         static readonly Vector2 LivesCentre = new Vector2(0, 366);
@@ -24,7 +24,6 @@ namespace SandJamTest.Scene3D
         Vector3 LivesPos(float x, float y, float z) { return new Vector3((LivesCentre.x + x) * LivesUnit, (LivesCentre.y + y) * LivesUnit, z); }
 
         public bool Visible { get { return IsOpen(noLives); } }
-        public void ShowInfo(string text) { SetText(noLivesInfo, text); }
 
         public override void Build()
         {
@@ -44,7 +43,6 @@ namespace SandJamTest.Scene3D
             Ui(noLives, "Shop/icon-coin_1", LivesCentre, LivesUnit, -190, -446, 90, 90, -6.5f);
             SetText(OutlinedLabel(noLives, "Refill label", LivesPos(30, -446, -6.6f), .048f), EconomyManager.RefillLivesPrice + " Refill");
             Hit(noLives, LivesPos(5, -455, -8.5f), new Vector2(596.3f * LivesUnit, 213.3f * LivesUnit), "refill-lives");
-            noLivesInfo = OutlinedLabel(noLives, "Refill info", LivesPos(0, -600, -6.6f), .034f);
             // Red exit button anchored to the frame's top-right corner.
             // (pulled slightly inside the frame: on narrow screens the corner would sit on the coin counter)
             Ui(noLives, "Lives/button-exit", LivesCentre, LivesUnit, 480, 600, 100, 116, -6.6f);
@@ -54,7 +52,6 @@ namespace SandJamTest.Scene3D
         public void ShowPopup()
         {
             Host.failedIsNoLives = true;
-            SetText(noLivesInfo, "");
             RefreshNoLives();
             Show(noLives);
         }

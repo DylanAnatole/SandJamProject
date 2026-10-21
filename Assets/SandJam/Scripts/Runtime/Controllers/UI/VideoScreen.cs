@@ -42,6 +42,7 @@ namespace SandJamTest.Scene3D
             var devLabel=Loading.transform.Find("UI reconstruction");if(devLabel)devLabel.gameObject.SetActive(false);
             Result.AddComponent<ResultFx>().Build();
             gameObject.AddComponent<TextOutliner>();
+            if(Status)Status.gameObject.SetActive(false); // the original shows no status text under the board
             Show(Page.Loading);
             Boosters = gameObject.AddComponent<BoosterController>(); Boosters.Initialize(this);
             Feedback=gameObject.AddComponent<GameplayFeedbackController>();Feedback.Initialize(this);
@@ -494,7 +495,6 @@ namespace SandJamTest.Scene3D
             if(Current==Page.Celebration && elapsed>SuperbFx.Duration)Show(Page.Result);
             if(Current==Page.Gameplay && Controller.Game!=null)
             {
-                Status.text=Controller.Game.State==GameState.Lost?"":Controller.SelectionFeedback;
                 if(Controller.Game.State==GameState.Won)
                 {
                     Levels.RecordCompletion();

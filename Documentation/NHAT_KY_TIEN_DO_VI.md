@@ -660,3 +660,37 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 68 và 267.
 - Run all checks qua 8/8.
 
+### Bỏ chữ thông báo không có trong game gốc; khối bắn cát xoay ổn định quanh tâm (người dùng chỉnh lại)
+
+**Lý do**
+
+- Người dùng: game gốc không có các dòng chữ kiểu "HẾT CHỖ".
+- Người dùng: độ nghiêng vẫn chưa đúng.
+- Xem lại video 2 dày hơn (58,30–59,26 giây, mỗi 0,04 giây, phóng to):
+  - khối xoay khoảng 30° quanh trục đứng, mặt trước quay sang trái, lộ mặt bên phải và mặt trên;
+  - giữ nguyên góc đó suốt lúc bắn;
+  - thân đứng thẳng, số chỉ nghiêng do phối cảnh.
+- Lần trước nghiêng trên màn hình 20° là sai. Lần trước nữa xoay đúng trục nhưng góc đổi theo từng vùng bắn và
+  xoay quanh chân.
+
+**Bỏ chữ**
+
+- Dải đỏ "OUT OF SPACE!": popup Hết chỗ hiện sau 0,6 giây (`LosePause`), không chữ.
+- `Status` / `SelectionFeedback` dưới bàn chơi: khối không đi được thì chỉ rung.
+- Các dòng thông báo trong Shop: "Purchases are not available", "Not enough coins", "+3 booster".
+- "Not enough coins" ở popup Hết chỗ và popup Hồi tim: không đủ xu thì không có gì xảy ra.
+- Giữ chữ nằm trong popup của chính game gốc (Sand Quest, Daily Rewards…).
+
+**Khối bắn cát** (`SceneActorView`)
+
+- `aimYaw` 30° (`PourYaw`) quanh trục đứng qua tâm khối (`PourPivot`), chiều theo bên của vùng bắn.
+- `PourTilt` 3° quanh trục nhìn camera.
+- Bỏ phần nhấc lên.
+
+**Kiểm tra**
+
+- Ảnh ghép phóng to: khớp dáng khối gốc.
+- Luồng thua / chơi tiếp / bỏ cuộc / chơi lại: popup hiện đúng, không lỗi.
+- Tự chơi thắng level 267.
+- Run all checks qua 8/8.
+

@@ -43,9 +43,6 @@ namespace SandJamTest.Scene3D
             if (paused || Game == null || !Game.SelectPriority(shooter)) return false;
             Synchronize(0); Play(SelectSound, .25f); return true;
         }
-        public string SelectionFeedback { get { return Time.unscaledTime < selectionFeedbackUntil ? selectionFeedback : ""; } }
-        string selectionFeedback;
-        float selectionFeedbackUntil;
         CharacterQueueController characterQueue;
         bool[] regionReported;
         ProjectileManager projectiles;
@@ -148,7 +145,6 @@ namespace SandJamTest.Scene3D
             characterQueue.Bind(Game, level);
             projectiles.Reset();
             accumulator = 0; paused = false;
-            selectionFeedback = ""; selectionFeedbackUntil = 0;
             sound.Stop();
         }
 
@@ -219,17 +215,11 @@ namespace SandJamTest.Scene3D
             int pickedColor = lane >= 0 && lane < Game.Lanes.Length && Game.Lanes[lane].Count > 0 ? Game.Lanes[lane].Peek().Color : 0;
             if (!Game.SelectLane(lane))
             {
+                // Original: a cube that cannot go only shakes; no message on screen.
                 var first = lane >= 0 && lane < Game.Lanes.Length && Game.Lanes[lane].Count > 0 ? Game.Lanes[lane].Peek() : null;
-                var frozen = first != null && first.IsFrozen ? first : first != null && first.Partner != null && first.Partner.IsFrozen ? first.Partner : null;
-                bool linked = lane >= 0 && lane < Game.Lanes.Length && Game.Lanes[lane].Count > 0 && Game.Lanes[lane].Peek().Partner != null;
-                selectionFeedback = frozen != null ? "" + frozen.FreezeRemaining + " ice layers left · send other cubes first" : linked ? "Not enough space, or the pair is not at the front" : "The stash is full";
-                selectionFeedbackUntil = Time.unscaledTime + 3;
                 if (first != null) characterQueue.ViewFor(first).Shake();
-                // Original: a full stash only shakes the cube, no message.
-                if (frozen == null && !linked) { selectionFeedback = ""; return false; }
                 return false;
             }
-            selectionFeedback = "";
             Play(SelectSound, .25f);
             GameEvents.RaiseCharacterSelected(pickedColor);
             Synchronize(0);
