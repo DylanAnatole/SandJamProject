@@ -786,3 +786,31 @@ không có khối đặc biệt, không khóa ô chờ.
 - Luồng thua / chơi tiếp / bỏ cuộc: đúng.
 - Run all checks qua 8/8.
 
+### Popup Level Failed theo video 1
+
+**Đo** (video 1, giây 1187, level 266)
+
+- Thẻ đỏ bản gốc 758×880 px, cạnh trên ở 414 px; bản mình 782×914 px, cạnh trên ở 434 px.
+- Chữ tiêu đề bản gốc cao 61 px; bản mình 56 px.
+- Nút Try Again bản mình thấp hơn 60 px.
+- Bản gốc **không có nút ✕**.
+- Ô xu bị làm tối.
+- "Keep Going!" màu trắng; bản mình xám tím.
+
+**Sửa** (`PopupScreens`)
+
+- `FitCard(failed, .965, 37)`.
+- Tiêu đề phóng 1,12 và hạ 10 px.
+- Nút Try Again nâng 17 px.
+- Chữ mô tả màu trắng.
+- `HideCoinBar`.
+- Ẩn nút ✕ khi còn tim; bản hết tim vẫn giữ nút ✕ và nút Home.
+
+**Kiểm tra**
+
+- Thẻ 754×883 px ở 415 px.
+- Tiêu đề và nút ở đúng 493 / 1084 px.
+- Chụp bản hết tim: không vỡ.
+- Luồng thua đúng.
+- Run all checks qua 8/8.
+

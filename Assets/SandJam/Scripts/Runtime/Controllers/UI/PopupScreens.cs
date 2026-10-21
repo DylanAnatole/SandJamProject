@@ -86,6 +86,12 @@ namespace SandJamTest.Scene3D
             StyleFailedSlot();
             SingleButton(failed);
             AddCloseButton(failed, "home");
+            // Measured on recording 1 (1187 s): a slightly smaller card set higher, a larger title, the coin bar dimmed.
+            FitCard(failed, .965f, 37);
+            VideoScreen.Place(failed.Title.transform, 1.12f, 0, 10);
+            failed.RightButton.transform.parent.position += Vector3.up * 17 * VideoScreen.Px;
+            failed.Caption.color = Color.white; // "Keep Going!" in white (the reward band's lavender is for Level Complete)
+            HideCoinBar(failed);
             BuildNoLivesButtons();
             sandQuest = Add(new SandQuestPopup());
             shop = Add(new ShopPopup());
@@ -480,6 +486,8 @@ namespace SandJamTest.Scene3D
                 Configure(failed.RightButton, failed.Right, "refill-lives", "Refill", 5f);
             }
             else Configure(failed.RightButton, failed.Right, !noLives ? "retry" : "close-failed", !noLives ? "Try Again" : "Close", 9f);
+            // The original's Level Failed card has no close button: Try Again only (the no-lives card keeps it).
+            var close = failed.Root.transform.Find("Close button"); if (close) close.gameObject.SetActive(!canPlay);
             Show(failed);
         }
 
