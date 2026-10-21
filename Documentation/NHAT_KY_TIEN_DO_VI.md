@@ -766,3 +766,23 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 30 (có popup Hard).
 - Run all checks qua 8/8.
 
+### Khôi phục dải "OUT OF SPACE!" (người dùng chọn theo game gốc)
+
+**Đo** (video 1, giây 1181,3–1183,6, đọc tuần tự từng khung hình)
+
+- Game gốc có dải hồng "OUT OF SPACE!" ngang bàn chơi: hiện ngay, đứng yên khoảng 1,75 giây, tắt; bàn chơi trống
+  khoảng 0,5 giây; rồi mới hiện popup Hết chỗ.
+- Lần quét đầu tưởng dải nhấp nháy, nhưng đó là do tua video không khớp khung.
+
+**Sửa** (`PopupScreens`)
+
+- Lấy lại `BuildOutOfSpaceBanner` từ commit trước (màu, viền, chữ đã đo ở level 261).
+- `BannerTime` 1,75, `LosePause` 2,3.
+- Bỏ hiệu ứng trượt mở cũ.
+
+**Kiểm tra**
+
+- Dải ở 658–875 px, bản gốc 666–862 px; màu (200,86,116) so với (200,87,117).
+- Luồng thua / chơi tiếp / bỏ cuộc: đúng.
+- Run all checks qua 8/8.
+

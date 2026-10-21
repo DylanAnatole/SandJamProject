@@ -55,6 +55,7 @@ namespace SandJamTest.Scene3D
             PriceTag(lose, PlayOnPrice);
             StylePlayOn(lose);
             AddCloseButton(lose, "give-up");
+            BuildOutOfSpaceBanner();
             // Measured on recording 2 (74 s): a slightly smaller card set higher, a much larger title, a bigger Play on
             // button sitting lower, the close button further in; the coin bar stays dimmed under the backdrop.
             FitCard(lose, .937f, 41);
@@ -558,14 +559,42 @@ namespace SandJamTest.Scene3D
         // Home PLAY with no hearts left: the big NO MORE LIVES popup (original canvas_nolives).
         public void ShowNoLives() { lives.ShowPopup(); }
 
-        // Out of space: the popup follows after a short pause, with no banner or caption over the board (original).
-        float outOfSpaceAt = -1;
-        const float LosePause = .6f;
+        // Original "OUT OF SPACE!" (recording 1, 1181.3-1183.6 s, frame by frame): a red band across the board appears
+        // at once and holds ~1.75 s, then the board shows bare for ~0.5 s before the popup.
+        GameObject banner; float outOfSpaceAt = -1;
+        const float BannerTime = 1.75f, LosePause = 2.3f;
+        void BuildOutOfSpaceBanner()
+        {
+            banner = new GameObject("Out of space banner") { layer = screen.Result.layer };
+            banner.transform.SetParent(screen.Result.transform.parent, false);
+            banner.transform.localPosition = screen.Result.transform.localPosition;
+            var p = new Popup { Root = banner };
+            var sprite = SpriteFactory.White;
+            // Measured on the original (level 261): a see-through pink-red band (~76% opaque) a little below the
+            // board's middle, two solid red lines just inside its edges and a thin dark rim; white caption.
+            const float y = 1.08f;
+            var pink = new Color(.886f, .267f, .38f, .76f); var red = new Color(.875f, .204f, .29f, 1f); var rim = new Color(.3f, .12f, .22f, .55f);
+            foreach (var part in new[] { new { y = y, h = 1.25f, z = -6.2f, c = pink },
+                                         new { y = y + .475f, h = .1f, z = -6.25f, c = red },
+                                         new { y = y - .48f, h = .1f, z = -6.25f, c = red },
+                                         new { y = y + .63f, h = .03f, z = -6.25f, c = rim },
+                                         new { y = y - .63f, h = .03f, z = -6.25f, c = rim } })
+            {
+                var r = Child<SpriteRenderer>(p, "Band", new Vector3(0, part.y, part.z));
+                r.sprite = sprite; r.color = part.c; r.transform.localScale = new Vector3(8f, part.h, 1);
+            }
+            var caption = OutlinedLabel(p, "Out of space text", new Vector3(0, y, -6.4f), .062f);
+            SetText(caption, "OUT OF SPACE!");
+            OutlinedText.Add(caption[0], new Color(.32f, .07f, .14f));
+            banner.SetActive(false);
+        }
         void UpdateOutOfSpace()
         {
-            if (!screen.Feedback.FailureVisible || gaveUp) { if (!screen.Feedback.FailureVisible) outOfSpaceAt = -1; return; }
+            if (!screen.Feedback.FailureVisible || gaveUp) { if (!screen.Feedback.FailureVisible) outOfSpaceAt = -1; banner.SetActive(false); return; }
             if (outOfSpaceAt < 0) outOfSpaceAt = Time.unscaledTime;
-            if (Time.unscaledTime - outOfSpaceAt >= LosePause) { CaptureStash(); Show(lose); }
+            float t = Time.unscaledTime - outOfSpaceAt;
+            banner.SetActive(t < BannerTime);
+            if (t >= LosePause) { CaptureStash(); Show(lose); }
         }
 
         // White caption with a dark purple outline (OutlinedText). Returned as an array so callers can treat any label
