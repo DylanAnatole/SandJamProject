@@ -530,3 +530,27 @@ một phần.
 - Tự chơi thắng level 68.
 - Run all checks qua 8/8.
 
+### Level tự thiết kế được đưa lên repo
+
+**Lý do**
+
+- Level tự làm (`Custom_NNN`) được lưu chung với 556 level gốc trong `Resources/Levels/Data`. Thư mục này bị
+  `.gitignore` bỏ qua, nên level tự làm không lên được GitHub.
+- Ba chỗ code (`Campaign`, `CampaignBuilder`, `LevelStructureViewer`) viết lặp đường dẫn nạp level.
+
+**Sửa**
+
+- Thêm `Campaign.LoadLevel(id)`: tìm level gốc trước, không có thì tìm trong `Resources/CustomLevels/`. Cả ba
+  chỗ dùng chung hàm này.
+- `LevelAuthoring` lưu level mới vào `CustomLevels`.
+- `.gitignore` cho phép đưa riêng thư mục `CustomLevels` lên repo.
+- Chuyển `Custom_001` sang thư mục mới; đã kiểm tra đó là level từ template Sunset của dự án, không phải level
+  gốc.
+
+**Kiểm tra**
+
+- Tự chơi thắng `Custom_001` (level 916) và level gốc 2.
+- "Check custom levels": OK.
+- Run all checks qua 8/8.
+- `git add --dry-run`: chỉ file của dự án.
+

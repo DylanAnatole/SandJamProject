@@ -26,7 +26,7 @@ Code: `Editor/Tools/LevelFromPicture.cs`.
 
 1. Vào menu **Sand Jam → Levels → New level from template**.
    - Lệnh này chép template đầu tiên trong `Assets/SandJam/Levels/Templates/` thành
-     `Resources/Levels/Data/Custom_NNN.json`.
+     `Resources/CustomLevels/Custom_NNN.json`.
    - Level mới được thêm vào cuối `Campaign.json` và đặt làm level sẽ chơi tiếp theo.
 2. Sửa file JSON vừa tạo, rồi bấm Play để chơi thử.
 3. Vào menu **Sand Jam → Levels → Check custom levels** để kiểm tra mọi `Custom_*` và template theo 3 luật:
@@ -40,8 +40,8 @@ Code liên quan:
 - `Scripts/Runtime/Core/Data/LevelData.cs`: định dạng file.
 - `Core/Domain/SandGame.cs`: luật chơi.
 
-> Level gốc (`Resources/Levels/Data`, 556 file) chỉ nằm trên máy, không có trong repo. Level tự thiết kế nên đặt
-> tên `Custom_*` và lưu vào thư mục level riêng sẽ được đưa lên repo (xem mục "Việc tiếp theo").
+> Level gốc (`Resources/Levels/Data`, 556 file) chỉ nằm trên máy, không có trong repo. Level tự thiết kế nằm ở
+> `Resources/CustomLevels/` và được đưa lên repo; game tìm level gốc trước rồi tới thư mục này (`Campaign.LoadLevel`).
 
 ## Định dạng `LevelData`
 
@@ -92,4 +92,3 @@ Code liên quan:
 
 - Công cụ đã chia khối theo thứ tự vùng mở. Bước tiếp theo là thêm tùy chọn độ khó, ví dụ trộn khối giữa các vùng
   hoặc tự đặt khối bí ẩn, khối nối, khối đóng băng.
-- Thư mục level tự thiết kế được đưa lên repo (tách khỏi `Resources/Levels/Data` vốn bị bỏ qua vì chứa level gốc).

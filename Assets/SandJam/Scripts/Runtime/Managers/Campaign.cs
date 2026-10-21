@@ -34,9 +34,17 @@ namespace SandJamTest
         public static string CurrentId { get { return Levels[(LevelNumber - 1) % Levels.Length]; } }
         public static TextAsset LoadCurrent()
         {
-            var asset = Resources.Load<TextAsset>("Levels/Data/" + CurrentId);
+            var asset = LoadLevel(CurrentId);
             if (!asset) throw new InvalidOperationException("Missing level data: " + CurrentId);
             return asset;
+        }
+        // Original levels (local only) live in Resources/Levels/Data; levels designed for this project in
+        // Resources/CustomLevels, which is kept in the repository.
+        public const string CustomFolder = "CustomLevels";
+        public static TextAsset LoadLevel(string id)
+        {
+            var asset = Resources.Load<TextAsset>("Levels/Data/" + id);
+            return asset ? asset : Resources.Load<TextAsset>(CustomFolder + "/" + id);
         }
 
         public static int Coins

@@ -54,7 +54,7 @@ namespace SandJamTest.Editor
 
         public static string Check(string id)
         {
-            var asset = Resources.Load<TextAsset>("Levels/Data/" + id);
+            var asset = Campaign.LoadLevel(id);
             if (!asset) return "missing file";
             try
             {

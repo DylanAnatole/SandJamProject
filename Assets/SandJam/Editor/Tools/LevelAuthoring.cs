@@ -6,14 +6,14 @@ using UnityEngine;
 
 namespace SandJamTest.Editor
 {
-    // Building new levels. A level is one JSON file (LevelData) in Resources/Levels/Data plus its id in
+    // Building new levels. A level is one JSON file (LevelData) in Resources/CustomLevels plus its id in
     // Resources/Levels/Campaign.json; the gameplay prefab builds the picture, regions and cube lanes from it at
     // runtime. Templates live in Assets/SandJam/Levels/Templates; the format and workflow are described in
     // Documentation/THIET_KE_LEVEL_VI.md.
     public static class LevelAuthoring
     {
         const string TemplateFolder = "Assets/SandJam/Levels/Templates";
-        const string DataFolder = "Assets/SandJam/Resources/Levels/Data";
+        const string DataFolder = "Assets/SandJam/Resources/" + Campaign.CustomFolder; // in the repository (see .gitignore)
         const string CampaignPath = "Assets/SandJam/Resources/Levels/Campaign.json";
         [Serializable] sealed class CampaignFile { public string[] levels; }
 

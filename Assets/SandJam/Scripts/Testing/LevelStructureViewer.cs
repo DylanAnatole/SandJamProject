@@ -36,7 +36,7 @@ namespace SandJamTest.Scene3D
             {
                 if (LevelJson) return LevelJson;
                 var levels = Campaign.Levels;
-                return Resources.Load<TextAsset>("Levels/Data/" + levels[(LevelNumber - 1) % levels.Length]);
+                return Campaign.LoadLevel(levels[(LevelNumber - 1) % levels.Length]);
             }
         }
 
