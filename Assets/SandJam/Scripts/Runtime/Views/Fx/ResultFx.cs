@@ -97,7 +97,7 @@ namespace SandJamTest.Scene3D
             // Visible glass, measured on recording 2 (Level Complete, 143 s): 12 px inside the gold frame at the sides,
             // 29 px above its bottom, its top 187 px below the frame's top. The glass art is drawn larger so that its
             // green rim falls outside the clip.
-            const float ClipX = .94f, ClipY = .95f;
+            const float ClipX = .9f, ClipY = .92f; // the art's green rim stays well outside the clip, corners included
             float px = VideoScreen.Px, glassTop = b.max.y - 187 * px, glassBottom = b.min.y + 29 * px, glassWidth = b.size.x - 2 * 12 * px;
             var gsz = g.sprite.bounds.size; var tps = transform.lossyScale;
             g.transform.position = new Vector3(b.center.x, (glassTop + glassBottom) * .5f, g.transform.position.z);

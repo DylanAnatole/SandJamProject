@@ -853,3 +853,31 @@ không có khối đặc biệt, không khóa ô chờ.
 - Luồng bỏ cuộc → Try Again chạy đúng.
 - Run all checks qua 8/8.
 
+### Hộp tim / thời gian / "Keep Going!" nằm gọn trong khung kính (người dùng chỉnh lại)
+
+**Lý do**
+
+- Người dùng: ý là hộp tim / thời gian / Keep Going phải nằm gọn trong khung xanh, không lộ phần nào. Không phải
+  nút Try Again, nên lần sửa nút trước được hoàn tác.
+
+**Đo** (video 1, giây 1187)
+
+- Hộp bản gốc cách mép trên khung kính khoảng 22 px, cao 413 px.
+- Hộp bản mình (dựng từ hộp thưởng của Level Complete) cao 441 px, mép trên sát khung kính.
+- Ở góc khung kính còn lộ viền xanh lá của ảnh kính.
+
+**Sửa**
+
+- `PopupScreens.FitFailedBox`: mép trên hạ `FailedBoxTopPx` 8 px, mép dưới cùng dải "Keep Going!" nâng
+  `FailedBoxBottomPx` 22 px. Chỉ áp dụng cho popup Level Failed.
+- `ResultFx`: ảnh kính vẽ to hơn vùng cắt (`ClipX` 0,9, `ClipY` 0,92), nên viền xanh lá luôn nằm ngoài vùng cắt, kể
+  cả ở góc.
+- Hoàn tác thay đổi nút Try Again.
+
+**Kiểm tra**
+
+- Ảnh ghép cạnh bản gốc: hộp nằm trong khung với lề đều.
+- Bản hết tim và Level Complete: không vỡ.
+- Luồng thua đúng.
+- Run all checks qua 8/8.
+

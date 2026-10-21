@@ -89,9 +89,8 @@ namespace SandJamTest.Scene3D
             // Measured on recording 1 (1187 s): a slightly smaller card set higher, a larger title, the coin bar dimmed.
             FitCard(failed, .965f, 37);
             VideoScreen.Place(failed.Title.transform, 1.12f, 0, 10);
-            // Try Again sits well inside the glass, clear of its lower edge (user request: tidily inside the frame).
-            var tryAgain = failed.RightButton.transform.parent;
-            tryAgain.localScale *= TryAgainScale; tryAgain.position += Vector3.up * TryAgainLiftPx * VideoScreen.Px;
+            failed.RightButton.transform.parent.position += Vector3.up * 17 * VideoScreen.Px;
+            FitFailedBox();
             failed.Caption.color = Color.white; // "Keep Going!" in white (the reward band's lavender is for Level Complete)
             HideCoinBar(failed);
             BuildNoLivesButtons();
@@ -180,6 +179,20 @@ namespace SandJamTest.Scene3D
             return label;
         }
         // Red square "X" in the top-right corner of the frame.
+        // The hearts / timer / "Keep Going!" box sits well inside the glass (recording 1, 1187 s: 22 px below the glass
+        // top, 413 px tall); built from the Level Complete reward box it was taller and touched the glass top.
+        // Its top comes down by FailedBoxTopPx and its bottom (with the caption band) up by FailedBoxBottomPx.
+        const float FailedBoxTopPx = 8, FailedBoxBottomPx = 22;
+        void FitFailedBox()
+        {
+            var slot = failed.Root.transform.Find(ResultFx.SlotName); if (!slot) return;
+            var r = slot.GetComponent<Renderer>(); var b = r.bounds;
+            float top = b.max.y - FailedBoxTopPx * VideoScreen.Px, bottom = b.min.y + FailedBoxBottomPx * VideoScreen.Px;
+            var ls = slot.localScale; slot.localScale = new Vector3(ls.x, ls.y * (top - bottom) / b.size.y, ls.z);
+            slot.position += Vector3.up * ((top + bottom) * .5f - r.bounds.center.y);
+            foreach (var name in new[] { ResultFx.BandName, ResultFx.BandTopName, "Reward band mask", "Your Reward!" })
+            { var t = failed.Root.transform.Find(name); if (t) t.position += Vector3.up * FailedBoxBottomPx * VideoScreen.Px; }
+        }
         void AddCloseButton(Popup p, string action)
         {
             var border = p.Border;
@@ -572,7 +585,7 @@ namespace SandJamTest.Scene3D
         // Original "OUT OF SPACE!" (recording 1, 1181.3-1183.6 s, frame by frame): a red band across the board appears
         // at once and holds ~1.75 s, then the board shows bare for ~0.5 s before the popup.
         GameObject banner; float outOfSpaceAt = -1;
-        const float TryAgainScale = .9f, TryAgainLiftPx = 32;
+
         const float BannerTime = 1.75f, LosePause = 2.3f;
         void BuildOutOfSpaceBanner()
         {
