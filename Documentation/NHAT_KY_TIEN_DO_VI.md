@@ -972,3 +972,27 @@ không có khối đặc biệt, không khóa ô chờ.
 - **Sửa:** `CongratsPopup.TextInk`, gán qua `OutlinedText.Add` có sẵn.
 - **Kiểm tra:** viền đo được (12–25, 9–22, 13–18); Run all checks qua 8/8.
 
+### Viền chữ toàn game gần đen, như bản gốc
+
+**Đo** (video 1 và 2)
+
+- Viền chữ của bản gốc ở mọi chỗ đều gần đen (#0B080C–#0D0A0D): thanh điều hướng, số Level, SAND SHOP, tiêu đề
+  popup (Out of Space, Sand Quest, Level Failed), dải "OUT OF SPACE!", Level Complete, CONGRATS.
+- Bản mình dùng tím (43,31,77), tím đậm hơn (59,41,107) trong `OutlinedLabel`, đỏ sẫm cho tiêu đề Level Failed
+  và dải Hết chỗ.
+
+**Sửa** (một chỗ dùng chung)
+
+- `TextOutliner.Ink` = #0C090D.
+- `PopupScreens.OutlinedLabel` dùng `TextOutliner.Ink` thay số riêng.
+- Bỏ màu đỏ của tiêu đề Level Failed và dải "OUT OF SPACE!".
+- `ReferenceTextOutline` chỉ giữ màu viền cũ trong scene khi đó là màu sáng / rõ màu; viền tím tối cũ đổi theo
+  `Ink`.
+- Bỏ `CongratsPopup.TextInk` vừa thêm, vì giờ trùng với màu mặc định.
+
+**Kiểm tra**
+
+- Viền đo được trên Home, Level Failed, CONGRATS: gần đen.
+- Tự chơi thắng level 267; luồng thua đúng.
+- Run all checks qua 8/8.
+

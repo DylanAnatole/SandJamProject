@@ -8,7 +8,9 @@ namespace SandJamTest.Scene3D
     // eight dark copies behind it, kept in sync with the label's text, size and fade.
     public sealed class TextOutliner : MonoBehaviour
     {
-        public static readonly Color Ink = new Color(.17f, .12f, .3f);
+        // Measured on recordings 1 and 2 (Home, Shop, popups, CONGRATS, Level Complete): an almost black outline,
+        // #0B080C to #0D0A0D, not purple.
+        public static readonly Color Ink = new Color32(12, 9, 13, 255);
         const float Rescan = .4f;
         float nextScan;
         readonly HashSet<TextMesh> seen = new HashSet<TextMesh>();

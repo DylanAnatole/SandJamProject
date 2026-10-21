@@ -510,9 +510,8 @@ namespace SandJamTest.Scene3D
             failed.Title.text = noLives ? "Level Failed!" : "Level Failed!";
             Configure(null, failed.Caption, null, noLives || !LivesManager.CanPlay ? "You Have No Lives!" : "Keep Going!", 18f);
             failed.Big.text = TimerText; LayoutTimerRow();
-            // White title with a dark red outline (the outline component is added after the popup is built).
-            var title = failed.Title.GetComponent<OutlinedText>(); if (!title) title = failed.Title.gameObject.AddComponent<OutlinedText>();
-            title.SetInk(new Color(.5f, .04f, .08f));
+            // White title with the same near-black outline as every other caption (recording 1, 1187 s).
+            OutlinedText.Add(failed.Title, TextOutliner.Ink);
             RefreshHearts(justLost);
             bool canPlay = LivesManager.CanPlay;
             LayoutNoLives(!canPlay);
@@ -631,7 +630,6 @@ namespace SandJamTest.Scene3D
             }
             var caption = OutlinedLabel(p, "Out of space text", new Vector3(0, y, -6.4f), .062f);
             SetText(caption, "OUT OF SPACE!");
-            OutlinedText.Add(caption[0], new Color(.32f, .07f, .14f));
             banner.SetActive(false);
         }
         void UpdateOutOfSpace()
@@ -648,7 +646,7 @@ namespace SandJamTest.Scene3D
         internal TextMesh[] OutlinedLabel(Popup p, string name, Vector3 local, float size)
         {
             var main = Label(p, name, local, "", size, Color.white);
-            OutlinedText.Add(main, new Color(.23f, .16f, .42f));
+            OutlinedText.Add(main, TextOutliner.Ink);
             return new[] { main };
         }
         internal static void SetText(TextMesh[] labels, string text) { foreach (var t in labels) if (t) t.text = text; }

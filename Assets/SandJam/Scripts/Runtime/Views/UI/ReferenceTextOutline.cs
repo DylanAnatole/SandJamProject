@@ -13,7 +13,8 @@ namespace SandJamTest.Scene3D
             foreach (Transform child in transform)
             {
                 var copy = child.GetComponent<TextMesh>(); if (!copy || child.name != "Text outline") continue;
-                if (!found) { ink = copy.color; found = true; }
+                // The scene's dark outlines were drawn purple; only a clearly coloured one (a light or bright ink) is kept.
+                if (!found) { if (copy.color.grayscale > .35f) ink = copy.color; found = true; }
                 Destroy(child.gameObject);
             }
             if (label) OutlinedText.Add(label, ink);
