@@ -607,3 +607,25 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 68 và 267.
 - Run all checks qua 8/8.
 
+### Khối bắn cát: chỉ xoay trái/phải, nghiêng rất nhẹ (người dùng chỉnh lại)
+
+**Lý do**
+
+- Người dùng xác nhận bản gốc chỉ xoay trái/phải về phía vùng bắn, nghiêng rất nhẹ, rồi bắn; không giật.
+- Lần sửa trước nghiêng 8°, giật 6° mỗi phát, và xoay quanh trục của khung xương. Khung xương ngả −54° về camera,
+  nên trên màn hình phép xoay đó vẫn trông như nghiêng.
+
+**Sửa** (`SceneActorView`)
+
+- Bỏ cú giật.
+- Thêm `aimYaw`: xoay quanh trục đứng thật (Y thế giới). Góc theo hướng tới vùng đích (atan2), tối đa
+  `MaxPourYaw` 40°.
+- `PourTilt` 3° quanh trục nhìn.
+- Khi chạy vẫn dùng `yaw` như cũ.
+
+**Kiểm tra**
+
+- Ảnh chụp: khối đứng thẳng, lộ mặt bên phía vùng bắn.
+- Tự chơi thắng level 68.
+- Run all checks qua 8/8.
+

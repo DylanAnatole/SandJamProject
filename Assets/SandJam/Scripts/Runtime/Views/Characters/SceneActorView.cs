@@ -51,11 +51,11 @@ namespace SandJamTest.Scene3D
         // The body itself turns MaxYaw while running, the legs a little further; they also swing down out from under
         // the block so they show below it (recording 2, 48.8-49.1 s: legs ~60% of the block height below it).
         // Where the sand from this box is going (set on every shot) and how it turns and rocks while pouring.
-        // Recording 2 (49.3-49.5 s, 58.6-60.3 s): a pouring box faces the region it fills: it turns toward it (its
-        // side shows, the clear box reading as a hexagon), tips its top that way and jerks on every shot.
-        Vector3 pourTarget; float roll, kick;
-        const float PourYaw = 30f, PourTilt = 8f, PourKick = 6f, KickDecay = 9f;
-        public void Pour(Vector3 target) { pourTarget = target; kick = 1; }
+        // Recording 2 (49.3-49.5 s, 58.6-60.3 s): a pouring box only turns left / right toward the region it fills
+        // (by the direction of that region, up to MaxPourYaw) and tips very slightly that way, then shoots.
+        Vector3 pourTarget; float roll, aimYaw;
+        const float MaxPourYaw = 40f, PourTilt = 3f;
+        public void Pour(Vector3 target) { pourTarget = target; }
         const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.6f;
         Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
         void FindRig()
@@ -99,7 +99,9 @@ namespace SandJamTest.Scene3D
             if (pose)
             {
                 pose.localRotation = poseBase * Quaternion.Euler(0, yaw, 0);
-                pose.rotation = Quaternion.AngleAxis(roll, Vector3.forward) * pose.rotation; // about the view axis
+                // Pouring turn about the true vertical (the rig is pitched toward the camera, so its own up axis would
+                // read as a tilt on screen), then the slight tip about the view axis.
+                pose.rotation = Quaternion.AngleAxis(roll, Vector3.forward) * Quaternion.AngleAxis(aimYaw, Vector3.up) * pose.rotation;
                 transform.localRotation = Quaternion.identity;
             }
             else transform.localRotation = Quaternion.Euler(0, yaw, 0);
@@ -231,11 +233,12 @@ namespace SandJamTest.Scene3D
             {
                 transform.position = destination;
                 // Pouring from its pad: tipped toward the region it fills (positive = counter-clockwise on screen).
-                kick = Mathf.MoveTowards(kick, 0, delta * KickDecay);
                 bool pouring = firing && !Departing;
-                float side = -Mathf.Sign(pourTarget.x - transform.position.x);
-                yaw = Mathf.MoveTowards(yaw, pouring ? side * PourYaw : 0, delta * 420);
-                roll = Mathf.MoveTowards(roll, pouring ? side * (PourTilt + PourKick * kick) : 0, delta * 240);
+                var toTarget = pourTarget - transform.position;
+                float aim = -Mathf.Clamp(Mathf.Atan2(toTarget.x, Mathf.Max(.01f, toTarget.y)) * Mathf.Rad2Deg, -MaxPourYaw, MaxPourYaw);
+                yaw = Mathf.MoveTowards(yaw, 0, delta * 420);
+                aimYaw = Mathf.MoveTowards(aimYaw, pouring ? aim : 0, delta * 300);
+                roll = Mathf.MoveTowards(roll, pouring ? Mathf.Sign(aim) * PourTilt : 0, delta * 120);
                 ApplyYaw();
                 ShowLegs(false);
                 if(!Motion)Visual.localRotation = Quaternion.Euler(firing ? Mathf.Sin(Time.time * 25) * 3 : 0, 0, 0);
