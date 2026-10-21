@@ -694,3 +694,25 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 267.
 - Run all checks qua 8/8.
 
+### Tia cát bắn lên từ miệng khối (theo yêu cầu người dùng)
+
+**Đo** (video 2, giây 58,5–59,1, phóng to)
+
+- Mỗi phát bắn có 1–3 tia mảnh như kim, phóng thẳng lên từ mặt cát trong khối, hơi xòe sang hai bên.
+- Mỗi tia dài khoảng 1/4 bề rộng khối, màu cát đậm hơn một chút, tồn tại khoảng 0,1 giây.
+
+**Sửa** (`SandFx`)
+
+- Thêm hệ hạt `spray`, kiểu kéo dài theo hướng bay (stretched), không trọng lực, dựng bằng `MakeSystem` có sẵn.
+- `Spray()` được gọi trong vòng lặp từng khối khi số cát của khối trên ô chờ giảm (tức vừa bắn).
+- Hằng `SprayMin` / `SprayMax` / `SpraySpeed` / `SprayLife` / `SprayWidth` / `SprayShade`.
+- Miệng khối lấy từ khung bao thực tế đang vẽ (`CombinedBounds`, danh sách renderer lưu sẵn trong `ActorState`).
+  - Đã thử `AimPoint`: điểm "trên" của khối chỉ về phía camera, nên tia hiện dưới đáy khối.
+- Lúc hủy, giải phóng thêm material của `voxels` (trước bị sót) và `spray`.
+
+**Kiểm tra**
+
+- Ảnh phóng to đặt cạnh bản gốc.
+- Tự chơi thắng level 68 và 267.
+- Run all checks qua 8/8.
+

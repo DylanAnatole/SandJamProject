@@ -11,7 +11,7 @@ namespace SandJamTest.Scene3D
     {
         const float Front = -.45f; // towards the camera so effects draw over the board
         SandJamSceneController controller;
-        ParticleSystem dust, sparkle, puff, voxels;
+        ParticleSystem dust, sparkle, puff, voxels, spray;
         readonly List<Color> palette = new List<Color>();
         readonly Dictionary<SceneActorView, ActorState> actors = new Dictionary<SceneActorView, ActorState>();
         bool[] regionDone;
@@ -20,13 +20,16 @@ namespace SandJamTest.Scene3D
         Material bubbleMaterial;
         static Texture2D softDot, ring, voxel;
 
-        sealed class ActorState { public int Ammo; public bool Departing, AtRest, Hidden; public float Pulse; public Vector3 BaseScale; public SceneActorView Partner; }
+        sealed class ActorState { public int Ammo; public bool Departing, AtRest, Hidden; public float Pulse; public Vector3 BaseScale; public SceneActorView Partner; public Renderer[] Box; }
         sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Glow; public float Age, Life, Size; }
         // Region-complete bubbles of the original (recording 2, 50.5-51.3 s): ~1.6x larger than first built, brighter,
         // lasting ~0.8 s; the sand cubes around them are small grains.
         const float BubbleScale = 1.6f, BubbleLife = .8f;
         // White flash over a box that has just emptied (about the box's size).
         const float EmptyFlashSize = 1.1f;
+        // Sand needles out of a pouring box (count range per shot, speed, life, width; colour a little darker).
+        const int SprayMin = 1, SprayMax = 3;
+        const float SpraySpeed = 3.6f, SprayLife = .12f, SprayWidth = .034f, SprayShade = .82f;
 
         public void Bind(SandJamSceneController owner)
         {
@@ -37,6 +40,11 @@ namespace SandJamTest.Scene3D
             puff = MakeSystem("Character puffs", softDot, 300, .5f, .12f, .28f);
             // Original region-complete shower: hundreds of tiny sand cubes in the level's colours pop up and fall.
             voxels = MakeSystem("Region voxels", voxel, 1500, 1.3f, .05f, .1f);
+            // Original (recording 2, 58.5-59.1 s): every shot flings a few thin needles of sand up out of the box's
+            // mouth: stretched along their flight, no gravity, gone in ~0.1 s.
+            spray = MakeSystem("Pour spray", Texture2D.whiteTexture, 300, SprayLife, SprayWidth, SprayWidth);
+            var sm = spray.main; sm.gravityModifier = 0;
+            var sr = spray.GetComponent<ParticleSystemRenderer>(); sr.renderMode = ParticleSystemRenderMode.Stretch; sr.velocityScale = .07f; sr.lengthScale = 1;
             var vm = voxels.main; vm.gravityModifier = .9f; vm.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
             var vrot = voxels.rotationOverLifetime; vrot.enabled = true; vrot.z = new ParticleSystem.MinMaxCurve(-6, 6);
             var vsize = voxels.sizeOverLifetime; vsize.size = new ParticleSystem.MinMaxCurve(1, AnimationCurve.Linear(0, 1, 1, .7f));
@@ -150,6 +158,22 @@ namespace SandJamTest.Scene3D
             {
                 var v = Random.insideUnitCircle.normalized * Random.Range(3f, 4.5f);
                 Emit(sparkle, p, v, Color.white, Random.Range(.09f, .14f), Random.Range(.16f, .26f));
+            }
+        }
+        // A shot: a few needles of the box's sand fly up from its sand surface, fanning out a little.
+        void Spray(SceneActorView actor, ActorState state, Color color)
+        {
+            if (state.Box == null) state.Box = actor.Visual.GetComponentsInChildren<MeshRenderer>();
+            // The mouth from the box as drawn (its rig is pitched toward the camera, so its own "up" points at the
+            // camera); the sand surface sinks with the fill. Sorting order draws the needles over the box.
+            var box = state.Box.CombinedBounds();
+            var mouth = new Vector3(box.center.x, box.max.y - box.size.y * (1 - actor.DisplayedFill) * .6f, box.center.z);
+            Color shade = color * SprayShade; shade.a = 1;
+            int n = Random.Range(SprayMin, SprayMax + 1);
+            for (int i = 0; i < n; i++)
+            {
+                var v = new Vector3(Random.Range(-.35f, .35f), 1, 0).normalized * SpraySpeed * Random.Range(.7f, 1.15f);
+                Emit(spray, mouth + new Vector3(Random.Range(-.15f, .15f), 0, 0), v, shade, SprayWidth, SprayLife * Random.Range(.7f, 1.2f));
             }
         }
         static void Emit(ParticleSystem ps, Vector3 position, Vector3 velocity, Color color, float size, float life)
@@ -355,9 +379,10 @@ namespace SandJamTest.Scene3D
                 if (!actor.gameObject.activeInHierarchy) continue;
                 Color color = ColorPalette.Of(actor.Shooter.Color);
                 // Recoil / landing squash now live in SceneActorView (Punch); only particles here.
+                bool inSlot = System.Array.IndexOf(game.Slots, actor.Shooter) >= 0;
+                if (inSlot && !actor.Departing && actor.Shooter.Ammo < state.Ammo) Spray(actor, state, color);
                 state.Ammo = actor.Shooter.Ammo;
                 // Landing puff when a character reaches its waiting slot.
-                bool inSlot = System.Array.IndexOf(game.Slots, actor.Shooter) >= 0;
                 if (actor.AtRest && !state.AtRest && inSlot && !actor.Departing)
                 {
                     var p = actor.transform.position + new Vector3(0, -.05f, Front);
@@ -385,7 +410,7 @@ namespace SandJamTest.Scene3D
             if (bubbleMaterial) Destroy(bubbleMaterial);
             if (flashSprite) Destroy(flashSprite); if (bubbleSprite) Destroy(bubbleSprite);
             flashPoolValue?.Dispose(); bubblePoolValue?.Dispose();
-            foreach (var ps in new[] { dust, sparkle, puff }) if (ps) Destroy(ps.GetComponent<ParticleSystemRenderer>().material);
+            foreach (var ps in new[] { dust, sparkle, puff, voxels, spray }) if (ps) Destroy(ps.GetComponent<ParticleSystemRenderer>().material);
         }
     }
 }
