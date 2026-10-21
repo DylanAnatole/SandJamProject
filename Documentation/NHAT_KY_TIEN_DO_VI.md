@@ -881,3 +881,25 @@ không có khối đặc biệt, không khóa ô chờ.
 - Luồng thua đúng.
 - Run all checks qua 8/8.
 
+### Ảnh ô chờ trong popup Hết chỗ: nền tối như bản gốc
+
+**Đo** (video 1, giây 1184, level 266)
+
+- Trong ảnh chụp ô chờ của bản gốc, khối giữ màu tươi, còn tranh, làn, sàn chuyển xám tối: tranh 192 → khoảng 155,
+  sàn 140 → khoảng 61.
+- Ảnh bản mình giữ nguyên màu sáng của bàn chơi.
+- Chữ "Free Extra 1 Slot" của bản gốc màu trắng.
+
+**Sửa** (`PopupScreens`)
+
+- `MuteBackground`: pixel ít bão hòa (nền) chuyển xám và tối theo độ sáng^`MuteGamma` 1,7. Pixel tươi (khối) giữ
+  nguyên màu; từ `VividFrom` 0,45 có chuyển tiếp mềm.
+- Áp dụng ngay sau khi chụp trong `CaptureStash`.
+- Chữ mô tả màu trắng.
+
+**Kiểm tra**
+
+- Ảnh ghép cạnh bản gốc: tông màu tương tự.
+- Luồng chơi tiếp chạy đúng: ô thứ 6 có, trạng thái Playing.
+- Run all checks qua 8/8.
+

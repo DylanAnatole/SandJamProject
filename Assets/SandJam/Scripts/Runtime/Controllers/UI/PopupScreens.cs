@@ -68,6 +68,7 @@ namespace SandJamTest.Scene3D
             lose.Header.transform.position += Vector3.up * 9f * VideoScreen.Px;
             if (ribbon) SpinningLight.Add(lose.Root.transform, ribbon.position + new Vector3(0, .1f, .5f), 3.2f);
             HideCoinBar(lose);
+            lose.Caption.color = Color.white; // "Free Extra 1 Slot" in white, as in the original
             // Original "Level Failed!": red frame, hearts with the lost one marked -1, refill timer, Try Again.
             failed = Build("Level failed popup");
             failed.Border.color = new Color(.86f, .16f, .2f); failed.Root.transform.Find("Gold header").GetComponent<SpriteRenderer>().color = new Color(.9f, .2f, .24f);
@@ -313,6 +314,22 @@ namespace SandJamTest.Scene3D
         // Original Out of Space shows the player's own stash: the gameplay camera is rendered once when the popup
         // opens and the strip around the waiting slots is shown inside the panel.
         Texture2D stashShot; SpriteRenderer stashPicture;
+        // Original picture (recording 1, 1184 s): the cubes keep their colours while the board, lanes and floor turn
+        // dark grey (lavender board 192 -> ~155, light floor 140 -> ~61): pastel pixels are greyed and darkened.
+        const float MuteGamma = 1.7f, VividFrom = .45f, VividRange = .25f;
+        static void MuteBackground(Texture2D t)
+        {
+            var px = t.GetPixels32();
+            for (int i = 0; i < px.Length; i++)
+            {
+                var c = px[i]; int max = Mathf.Max(c.r, Mathf.Max(c.g, c.b)), min = Mathf.Min(c.r, Mathf.Min(c.g, c.b));
+                float sat = max == 0 ? 0 : (max - min) / (float)max, keep = Mathf.Clamp01((sat - VividFrom) / VividRange);
+                if (keep >= 1) continue;
+                float lum = (.3f * c.r + .59f * c.g + .11f * c.b) / 255f, g = Mathf.Pow(lum, MuteGamma) * 255f;
+                px[i] = new Color32((byte)Mathf.Lerp(g, c.r, keep), (byte)Mathf.Lerp(g, c.g, keep), (byte)Mathf.Lerp(g, c.b, keep), 255);
+            }
+            t.SetPixels32(px);
+        }
         void CaptureStash()
         {
             var cam = screen.Controller.GameCamera;
@@ -347,7 +364,8 @@ namespace SandJamTest.Scene3D
                 stashShot = new Texture2D(cw, ch, TextureFormat.RGB24, false) { name = "Out of space stash" };
             }
             var active = RenderTexture.active; RenderTexture.active = rt;
-            stashShot.ReadPixels(new Rect(Mathf.RoundToInt(x0 * w), y0, cw, ch), 0, 0); stashShot.Apply();
+            stashShot.ReadPixels(new Rect(Mathf.RoundToInt(x0 * w), y0, cw, ch), 0, 0);
+            MuteBackground(stashShot); stashShot.Apply();
             RenderTexture.active = active; RenderTexture.ReleaseTemporary(rt);
             if (!stashPicture)
             {
