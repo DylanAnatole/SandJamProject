@@ -107,9 +107,10 @@ namespace SandJamTest.Scene3D
             }
             if(glass)
             {
-                // Sand inside the glass: shrink the solid block to the cage interior and drain it from the top.
-                sand.localPosition=new Vector3(0,.285f,0);
-                sand.localScale=new Vector3(GlassInner.x/BlockSize.x,GlassInner.y*Mathf.Max(.001f,amount)/BlockSize.y,GlassInner.z/BlockSize.z);
+                // Sand inside the glass: the block stays a solid block of sand whose top sinks, the glass showing only
+                // above it (recording 2, 58.6-59.1 s: at 15/20 the box still reads as a full block).
+                sand.localPosition=new Vector3(0,.235f,0);
+                sand.localScale=new Vector3(1,Mathf.Max(.001f,amount),1);
                 // Glass edges in the block's own colour (recording 2, 60 s: a yellow box has yellow edges ~#FAD719, a grey
                 // one grey ~#9B9B9D), as bright as its sand.
                 frameBlock.SetColor("_Color",lit);

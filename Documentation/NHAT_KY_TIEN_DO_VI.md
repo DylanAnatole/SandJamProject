@@ -579,3 +579,31 @@ không có khối đặc biệt, không khóa ô chờ.
 - Run all checks qua 8/8.
 - Level thử đã xóa, không đưa lên repo.
 
+### Khối bắn cát: hướng nghiêng, giật, khối cát đặc (theo góp ý của người dùng)
+
+**Đo / lý do** (video 2, giây 49,3–49,85 và 58,6–60,3, nhịp 0,05–0,1 giây)
+
+- Bản gốc:
+  - khối xoay về phía vùng đang bắn (thấy mặt bên; khung kính trong suốt hiện thành hình lục giác);
+  - phần trên nghiêng về phía đó;
+  - giật thêm một chút mỗi phát bắn.
+- Bản mình trước đó: chỉ xoay ngang 25° và lắc hình sin liên tục, không theo nhịp bắn.
+- Khối cát: bản gốc vẫn là khối cát đặc khi bắt đầu bắn (15/20 vẫn nhìn như khối đầy); mặt cát hạ dần, viền kính
+  chỉ lộ phía trên. Bản mình biến ngay thành lồng kính với một khối cát nhỏ bên trong (`GlassInner`).
+
+**Sửa**
+
+- `SceneActorView`:
+  - `Pour(target)`: mỗi phát bắn ghi vùng đích và tạo cú giật;
+  - `PourYaw` 30°, `PourTilt` 8°, `PourKick` 6°, `KickDecay`;
+  - nghiêng quanh trục nhìn camera trong `ApplyYaw`;
+  - bỏ lắc hình sin.
+- `SandJamSceneController` gọi `Pour` mỗi phát bắn.
+- `CharacterSandVessel`: cát trong kính giữ đúng cỡ khối, chỉ hạ chiều cao.
+
+**Kiểm tra**
+
+- So từng khung hình.
+- Tự chơi thắng level 68 và 267.
+- Run all checks qua 8/8.
+

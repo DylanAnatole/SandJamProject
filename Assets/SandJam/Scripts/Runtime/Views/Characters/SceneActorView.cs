@@ -51,9 +51,11 @@ namespace SandJamTest.Scene3D
         // The body itself turns MaxYaw while running, the legs a little further; they also swing down out from under
         // the block so they show below it (recording 2, 48.8-49.1 s: legs ~60% of the block height below it).
         // Where the sand from this box is going (set on every shot) and how it turns and rocks while pouring.
-        public Vector3 PourTarget;
-        const float PourYaw = 25f, PourWobble = 4f, PourWobbleSpeed = 18f;
-        float roll;
+        // Recording 2 (49.3-49.5 s, 58.6-60.3 s): a pouring box faces the region it fills: it turns toward it (its
+        // side shows, the clear box reading as a hexagon), tips its top that way and jerks on every shot.
+        Vector3 pourTarget; float roll, kick;
+        const float PourYaw = 30f, PourTilt = 8f, PourKick = 6f, KickDecay = 9f;
+        public void Pour(Vector3 target) { pourTarget = target; kick = 1; }
         const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.6f;
         Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
         void FindRig()
@@ -94,7 +96,12 @@ namespace SandJamTest.Scene3D
         }
         void ApplyYaw()
         {
-            if (pose) { pose.localRotation = poseBase * Quaternion.Euler(0, yaw, roll); transform.localRotation = Quaternion.identity; }
+            if (pose)
+            {
+                pose.localRotation = poseBase * Quaternion.Euler(0, yaw, 0);
+                pose.rotation = Quaternion.AngleAxis(roll, Vector3.forward) * pose.rotation; // about the view axis
+                transform.localRotation = Quaternion.identity;
+            }
             else transform.localRotation = Quaternion.Euler(0, yaw, 0);
         }
         // Legs only exist while running; sitting in the lane or on a waiting slot the block rests on its base.
@@ -223,11 +230,12 @@ namespace SandJamTest.Scene3D
             else
             {
                 transform.position = destination;
-                // Pouring from its pad: the original box turns toward the region it fills and rocks a little
-                // (recording 2, 59-60.4 s).
-                float pourTarget = firing && !Departing ? -Mathf.Sign(PourTarget.x - transform.position.x) * PourYaw : 0;
-                yaw = Mathf.MoveTowards(yaw, pourTarget, delta * 420);
-                roll = firing && !Departing ? Mathf.Sin(Time.time * PourWobbleSpeed) * PourWobble : Mathf.MoveTowards(roll, 0, delta * 60);
+                // Pouring from its pad: tipped toward the region it fills (positive = counter-clockwise on screen).
+                kick = Mathf.MoveTowards(kick, 0, delta * KickDecay);
+                bool pouring = firing && !Departing;
+                float side = -Mathf.Sign(pourTarget.x - transform.position.x);
+                yaw = Mathf.MoveTowards(yaw, pouring ? side * PourYaw : 0, delta * 420);
+                roll = Mathf.MoveTowards(roll, pouring ? side * (PourTilt + PourKick * kick) : 0, delta * 240);
                 ApplyYaw();
                 ShowLegs(false);
                 if(!Motion)Visual.localRotation = Quaternion.Euler(firing ? Mathf.Sin(Time.time * 25) * 3 : 0, 0, 0);
