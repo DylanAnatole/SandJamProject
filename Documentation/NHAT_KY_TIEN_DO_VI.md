@@ -910,3 +910,11 @@ không có khối đặc biệt, không khóa ô chờ.
 - **Sửa** (`PopupScreens`): nhuộm ảnh khung của popup Hết chỗ bằng `PictureFrameTint`. Chỉ áp dụng cho popup này.
 - **Kiểm tra:** ảnh ghép cạnh bản gốc; Run all checks qua 8/8.
 
+### Nút "Claim All Cards" màu xanh thép như bản gốc
+
+- **Đo** (video 2, giây 30): nút bản gốc màu (57,99,161); bản mình (40,81,179), xanh tím.
+- Trước đây ghi là không nhuộm ra được. Thực ra ảnh nút có màu gốc (93,158,248), nên nhân với
+  (0,61; 0,63; 0,65) là ra đúng màu.
+- **Sửa:** `GalleryPopup`, màu nhuộm của nút.
+- **Kiểm tra:** (59,102,161) so với (57,99,161); Run all checks qua 8/8.
+

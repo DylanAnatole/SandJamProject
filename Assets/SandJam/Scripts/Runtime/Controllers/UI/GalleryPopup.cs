@@ -177,7 +177,7 @@ namespace SandJamTest.Scene3D
                     GalleryHit(mx[m], 1.24f, .55f, .62f, "gallery-claim:" + m);
                 }
             }
-            GalleryArt("Group 10298", 0, .34f, 1.9f, .48f, -6.3f).color = new Color(.42f, .5f, .72f); // original: a dark navy pill
+            GalleryArt("Group 10298", 0, .34f, 1.9f, .48f, -6.3f).color = new Color(.61f, .63f, .65f); // original: a steel-blue pill (#39639F, recording 2, 30 s)
             GalleryText("Claim All Cards", 0, .35f, .036f, -6.4f);
             GalleryHit(0, .34f, 1.9f, .5f, "gallery-claim-all");
             // Picture grid (3 columns), scrolled inside the band between the button and the navbar.
