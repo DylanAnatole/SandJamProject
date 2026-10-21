@@ -739,3 +739,30 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 267; luồng thua chạy đúng.
 - Run all checks qua 8/8.
 
+### Popup mở / đóng như bản gốc
+
+**Đo** (video 2, bề ngang popup theo từng khung)
+
+- Mở Sand Quest (21,17–21,57 giây): từ khoảng 1/10 cỡ lên đủ cỡ trong khoảng 0,4 giây, gần đều, không vượt cỡ.
+- Đóng Settings (20,22–20,55 giây): co về 0 trong khoảng 0,33 giây, nhanh lúc đầu rồi chậm dần. Lớp tối giữ tới
+  khi co xong.
+- Bản mình: mở từ 1/2 cỡ, 0,3 giây, có vượt cỡ (back-ease); đóng tắt ngay.
+- Thêm: sau khi thắng, bản gốc về Home rồi tự mời Sand Quest. Bản mình chỉ mời mỗi 8 giờ; chưa đủ dữ liệu để
+  biết luật của bản gốc, nên giữ nguyên.
+
+**Sửa** (`PopupScreens`)
+
+- `PopStart` 0,1, `PopTime` 0,4 (tuyến tính), `SlowPopTime` 0,5 cho Hard/Bonus.
+- Đóng: popup chuyển sang `closing` và co theo (1 − t)^1,6 trong `CloseTime` 0,33.
+  - `Open` được xóa ngay, nên logic cũ không đổi.
+  - Vùng chạm của popup đang co bị tắt rồi bật lại.
+  - `Show` / `Close` mới kết thúc ngay popup đang co dở.
+- Trang toàn màn hình (Shop, Gallery) vẫn tắt ngay.
+
+**Kiểm tra**
+
+- Ghi tỉ lệ theo thời gian: mở 0,1 → 1 trong 0,4 giây; đóng 1 → 0 trong khoảng 0,33 giây.
+- Luồng thua / chơi tiếp / bỏ cuộc / về Home: đúng.
+- Tự chơi thắng level 30 (có popup Hard).
+- Run all checks qua 8/8.
+

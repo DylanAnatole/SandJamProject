@@ -625,7 +625,11 @@ namespace SandJamTest.Scene3D
                 t.text = text; t.characterSize = size * factor;
             }
         }
-        const float PopStart = .5f;
+        // Recording 2 (21.17-21.57 s open, 20.22-20.55 s close): cards grow from ~1/10 of their size to full in
+        // ~0.4 s, about evenly and without overshoot, and shrink away in ~0.33 s (fast at first, easing out) before
+        // the dim layer goes.
+        const float PopStart = .1f, PopTime = .4f, SlowPopTime = .5f, CloseTime = .33f;
+        GameObject closing; float closedAt; Collider[] closingHits;
         // The dimmed backdrop always covers the whole screen; only the card zooms.
         void FitBackdrop(GameObject root, float scale)
         {
@@ -641,6 +645,7 @@ namespace SandJamTest.Scene3D
         internal void Show(Popup p)
         {
             if (Open) Open.SetActive(false);
+            if (closing) FinishClosing();
             Open = p.Root; shownAt = Time.unscaledTime;
             p.Header.text = "Level " + LevelShown;
             foreach (var label in p.Root.GetComponentsInChildren<TextMesh>(true))
@@ -658,9 +663,33 @@ namespace SandJamTest.Scene3D
         public void Close()
         {
             if (!Open) return;
-            Open.SetActive(false); Open = null;
+            if (closing) FinishClosing();
+            // The card shrinks away (pages go at once); its touch areas are off meanwhile. Open is cleared now, so
+            // the game carries on as before.
+            if (IsPage(Open)) Open.SetActive(false);
+            else
+            {
+                closing = Open; closedAt = Time.unscaledTime;
+                closingHits = closing.GetComponentsInChildren<Collider>();
+                foreach (var c in closingHits) c.enabled = false;
+            }
+            Open = null;
             if (screen.Controller) { screen.Controller.BoosterInputBlocked = false; screen.Controller.SuppressInputThisFrame(); }
             intros.ShowNextQueued();
+        }
+        void FinishClosing()
+        {
+            foreach (var c in closingHits) if (c) c.enabled = true;
+            closing.SetActive(false); closing = null;
+        }
+        void TickClosing()
+        {
+            if (!closing) return;
+            float t = Mathf.Clamp01((Time.unscaledTime - closedAt) / CloseTime);
+            float s = Mathf.Max(.001f, Mathf.Pow(1 - t, 1.6f));
+            closing.transform.localScale = Vector3.one * s;
+            FitBackdrop(closing, s);
+            if (t >= 1) FinishClosing();
         }
         public bool Owns(VideoUiButton button) { return Open && button && button.transform.IsChildOf(Open.transform); }
 
@@ -710,14 +739,13 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             if (!screen.Feedback.FailureVisible) gaveUp = false;
+            TickClosing();
             if (!Open) { UpdateOutOfSpace(); return; }
             if (Open == failed.Root && Time.frameCount % 15 == 0) { failed.Big.text = TimerText; LayoutTimerRow(); }
-            // Pop-in: the original popups zoom in from about half size with a small overshoot; the HARD / BONUS
-            // level cards grow more slowly (recording of level 260).
-            bool slow = intros.SlowPopIn;
+            // Pop-in (see PopStart); the HARD / BONUS level cards grow a little more slowly (recording of level 260).
             bool page = IsPage(Open);
-            float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / (slow ? .5f : .3f));
-            float s = page ? 1 : PopStart + (1 - PopStart) * (1 + 2.70158f * Mathf.Pow(t - 1, 3) + 1.70158f * Mathf.Pow(t - 1, 2));
+            float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / (intros.SlowPopIn ? SlowPopTime : PopTime));
+            float s = page ? 1 : PopStart + (1 - PopStart) * t;
             Open.transform.localScale = Vector3.one * s;
             FitBackdrop(Open, s);
             if ((Open == lose.Root || (Open == failed.Root && !failedIsNoLives)) && !screen.Feedback.FailureVisible) Close();
