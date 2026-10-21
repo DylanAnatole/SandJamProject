@@ -1008,3 +1008,28 @@ không có khối đặc biệt, không khóa ô chờ.
   - tự chơi thắng level 68;
   - Run all checks qua 8/8.
 
+### Số trên khối trong làn
+
+**Đo** (video 2, giây 150)
+
+- Số ở các hàng sau của bản gốc: chữ nhạt pha màu khối, viền là màu khối đậm hơn (vàng đậm, xanh lá đậm), không
+  đen.
+- Số của bản gốc rộng hơn khoảng 15%.
+
+**Sửa**
+
+- `CharacterDepthStyle`:
+  - hàng sau: chữ pha 30% màu khối (`BackTint`), viền = màu khối × 0,5 (`BackInkShade`);
+  - viền mảnh `LabelOutline` 0,055.
+- `CharacterSandVessel.LabelSize` 1,07.
+- `OutlinedText.SetThickness`: đổi độ dày viền thì tự sắp lại viền ở khung sau. Dùng cho số trên khối và số đếm
+  trên tranh.
+
+**Còn khác:** phông chữ bản gốc tròn, giãn chữ hơn (font khác).
+
+**Kiểm tra**
+
+- Ảnh ghép cạnh bản gốc.
+- Tự chơi thắng level 68.
+- Run all checks qua 8/8.
+

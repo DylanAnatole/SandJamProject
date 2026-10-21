@@ -26,7 +26,7 @@ namespace SandJamTest.Scene3D
             if(!legsMesh)throw new System.InvalidOperationException("Generated CharacterLegs resource is missing");
             skin.sharedMesh=legsMesh;
             // Reference: the count is printed on the lower front face, large, not below the block.
-            if(actor.AmmoLabel){actor.AmmoLabel.transform.localPosition+=new Vector3(0,.2f,0);actor.AmmoLabel.transform.localScale*=.95f;labelScale=actor.AmmoLabel.transform.localScale;}
+            if(actor.AmmoLabel){actor.AmmoLabel.transform.localPosition+=new Vector3(0,.2f,0);actor.AmmoLabel.transform.localScale*=LabelSize;labelScale=actor.AmmoLabel.transform.localScale;}
             var frame=Part("Rounded vessel frame",frameMesh,material,actor.Visual);frameRenderer=frame;
             frameBlock=new MaterialPropertyBlock();frameBlock.SetFloat("_GrainStrength",0);frameBlock.SetFloat("_OutlineWidth",.007f);frame.SetPropertyBlock(frameBlock);
             fillRenderer=Part("Contained sand volume",sandMesh,material,actor.Visual);sand=fillRenderer.transform;
@@ -199,6 +199,8 @@ namespace SandJamTest.Scene3D
         const float BevelRadius=.11f; // original blocks have softer, rounder edges
         public const float BlockPitch=20f; // less stood up than before: more of the top face shows (original)
         const float DockedPitch=16f;
+        // Count digits ~15% wider than first built (recording 2, 150 s: "20" spans ~75 px on a front block).
+        const float LabelSize=1.07f;
         const float BlocksPerUnit=13.5f; // ~10 sand pixels across a face, as in the reference renders
         static Texture2D pixelSand;
 

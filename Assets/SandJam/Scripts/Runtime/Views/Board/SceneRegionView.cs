@@ -207,7 +207,7 @@ namespace SandJamTest.Scene3D
         {
             if(!Counter) return;
             if(!counterScaleKnown){counterScale=Counter.transform.localScale*CounterScale;Counter.transform.localScale=counterScale;counterScaleKnown=true;}
-            if(!counterOutline){counterOutline=Counter.GetComponent<OutlinedText>();if(counterOutline)counterOutline.Thickness=CounterOutlineThickness;}
+            if(!counterOutline){counterOutline=Counter.GetComponent<OutlinedText>();if(counterOutline)counterOutline.SetThickness(CounterOutlineThickness);}
             if(counterPunch<=0) return;
             counterPunch=Mathf.Max(0,counterPunch-Time.deltaTime/.18f);
             Counter.transform.localScale=counterScale*(1f+.28f*Mathf.Sin(counterPunch*Mathf.PI));

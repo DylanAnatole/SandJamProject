@@ -100,6 +100,8 @@ namespace SandJamTest.Scene3D
 
         // Outline colour change after creation: the copies are recoloured on the next frame.
         public void SetInk(Color ink) { Ink = ink; Recolour(); }
+        // Outline radius change after creation: the copies are re-laid out on the next frame.
+        public void SetThickness(float thickness) { if (Thickness == thickness) return; Thickness = thickness; size = -1; }
 
         void LateUpdate()
         {

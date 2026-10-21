@@ -54,6 +54,7 @@ namespace SandJamTest.Scene3D
             animator.enabled=!idle;
             if(!idle)motion.SetWalking(motion.Walking);
         }
+        const float LabelOutline=.055f, BackTint=.3f, BackInkShade=.5f; // thin edge as in the original
         void StyleLabel(bool highlighted,Color color)
         {
             int state=highlighted?1:0;
@@ -64,13 +65,15 @@ namespace SandJamTest.Scene3D
             // cube is first shown, destroying the old copies).
             if(labels==null || System.Array.Exists(labels,l=>!l))labels=Actor.AmmoLabel.GetComponentsInChildren<TextMesh>(true);
             var outline=Actor.AmmoLabel.GetComponent<OutlinedText>();
+            if(outline)outline.SetThickness(LabelOutline);
             var ink=outline?outline.Ink:TextOutliner.Ink;
+            Color backInk=color*BackInkShade;backInk.a=1;
             foreach(var label in labels)
             {
                 bool main=label==Actor.AmmoLabel;
-                // Back rows: still white digits with a dark edge (only lightly tinted by the block colour), so the count
-                // stays readable on white, yellow and grey blocks too.
-                label.color=main?(highlighted?mainColor:Color.Lerp(Color.white,color,.18f)*new Color(.93f,.93f,.93f,1)):highlighted?ink:Color.Lerp(ink,color,.2f);
+                // Back rows (recording 2, 150 s): pale digits tinted by the block with an edge in a darker shade of the
+                // block itself (dark yellow on yellow, dark green on green), not black; still readable on light blocks.
+                label.color=main?(highlighted?mainColor:Color.Lerp(Color.white,color,BackTint)):highlighted?ink:backInk;
             }
         }
     }
