@@ -86,9 +86,8 @@ namespace SandJamTest.Scene3D
             if(docked)front=false;
             // The rig is pitched ~54 deg toward the camera; stand the block back up so the front face
             // (with the number) dominates and the top is a narrow strip, as in the reference renders.
-            // Out of the lanes the camera sees the block from lower down: it leans back further so its top still shows
-            // (recording 2, 60 s: the open top of a stashed glass box reads in depth; 0 matched it, -15 already shows
-            // the box from below).
+            // On its pad (recording 2, 58.4 s zoomed) the top shows as about a quarter of the box: a little less upright
+            // than in the lanes (0 showed nearly half of it as top).
             var upright=Quaternion.Euler(docked?DockedPitch:BlockPitch,0,0);
             sand.localRotation=upright;frameRenderer.transform.localRotation=upright;
             if(glassRenderer)glassRenderer.transform.localRotation=upright;
@@ -199,7 +198,7 @@ namespace SandJamTest.Scene3D
         public static readonly Vector3 BlockSize=new Vector3(.735f,.72f,.646f), GlassInner=new Vector3(.65f,.51f,.552f);
         const float BevelRadius=.11f; // original blocks have softer, rounder edges
         public const float BlockPitch=20f; // less stood up than before: more of the top face shows (original)
-        const float DockedPitch=0f;
+        const float DockedPitch=16f;
         const float BlocksPerUnit=13.5f; // ~10 sand pixels across a face, as in the reference renders
         static Texture2D pixelSand;
 

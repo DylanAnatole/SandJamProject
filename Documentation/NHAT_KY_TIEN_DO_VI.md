@@ -629,3 +629,34 @@ không có khối đặc biệt, không khóa ô chờ.
 - Tự chơi thắng level 68.
 - Run all checks qua 8/8.
 
+### Khối bắn cát: nghiêng trên màn hình quanh tâm khối, đo trên ảnh phóng to
+
+**Đo / lý do**
+
+- Phóng to khối ×1,5 ở video 2 (49,35–49,45 và 58,4–59,25 giây), đặt cạnh bản mình cùng tỉ lệ.
+- Bản gốc:
+  - khối vẫn nhìn thẳng camera, chỉ nghiêng trên mặt phẳng màn hình về phía vùng bắn (số "15" nghiêng khoảng
+    20° theo chiều kim đồng hồ);
+  - nhấc nhẹ khỏi ô;
+  - mặt trên chiếm khoảng 1/4 chiều cao khối.
+- Bản mình:
+  - xoay ngang tới 40° và văng sang phải (xoay quanh chân, không quanh tâm);
+  - mặt trên chiếm gần nửa khối (`DockedPitch` 0).
+- Thêm một lỗi: xoay quanh trục Z thế giới bị lật về phía trước, vì camera màn chơi nhìn chéo xuống.
+
+**Sửa**
+
+- `SceneActorView`:
+  - bỏ xoay ngang;
+  - nghiêng `roll` quanh trục nhìn camera → tâm khối (`PourPivot`), dùng `RotateAround`;
+  - độ nghiêng = 0,5 × góc tới vùng đích, tối đa `MaxPourTilt` 22°;
+  - nhấc `PourLift` theo độ nghiêng;
+  - trả vị trí khung xương về gốc mỗi khung.
+- `CharacterSandVessel.DockedPitch` 0 → 16.
+
+**Kiểm tra**
+
+- Ảnh ghép cạnh nhau khớp dáng khối gốc.
+- Tự chơi thắng level 68 và 267.
+- Run all checks qua 8/8.
+
