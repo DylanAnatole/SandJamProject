@@ -33,6 +33,16 @@ namespace SandJamTest.Scene3D
                 child.position += Vector3.up * dyPx * VideoScreen.Px;
             }
         }
+        // The coin bar left visible but dimmed, as under the original's opaque CONGRATS screen.
+        internal static void DimCoinBar(Popup p, float brightness)
+        {
+            foreach (var name in CoinBar)
+            {
+                var t = p.Root.transform.Find(name); if (!t) continue;
+                foreach (var r in t.GetComponentsInChildren<SpriteRenderer>(true)) r.color = new Color(r.color.r * brightness, r.color.g * brightness, r.color.b * brightness, r.color.a);
+                foreach (var m in t.GetComponentsInChildren<TextMesh>(true)) m.color = new Color(m.color.r * brightness, m.color.g * brightness, m.color.b * brightness, m.color.a);
+            }
+        }
         internal static void HideCoinBar(Popup p)
         {
             foreach (var name in CoinBar) { var t = p.Root.transform.Find(name); if (t) t.gameObject.SetActive(false); }

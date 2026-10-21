@@ -936,3 +936,11 @@ không có khối đặc biệt, không khóa ô chờ.
 - Ảnh ghép cạnh bản gốc: thẻ chính cùng cỡ và vị trí.
 - Run all checks qua 8/8.
 
+### Ô xu trên màn CONGRATS bị làm tối
+
+- **Đo** (video 2, giây 145): bản gốc vẫn hiện ô xu nhưng tối hẳn (độ sáng khoảng 0,38); bản mình sáng rõ.
+- **Sửa:**
+  - thêm `PopupScreens.DimCoinBar(p, brightness)`, dùng chung danh sách `CoinBar` với `HideCoinBar`;
+  - `CongratsPopup` gọi `DimCoinBar` với độ sáng 0,38.
+- **Kiểm tra:** Run all checks qua 8/8.
+

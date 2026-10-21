@@ -17,6 +17,7 @@ namespace SandJamTest.Scene3D
             congrats.Root.transform.Find("Next").gameObject.SetActive(false); // the whole screen continues instead
             // The original card sits on an even, opaque dark navy (#141225): nothing of the board shows.
             congrats.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>().color = new Color32(20, 18, 37, 255);
+            PopupScreens.DimCoinBar(congrats, .38f); // greyed like the rest of the HUD under it (recording 2, 145 s)
             congratsRays = Art(congrats, "Congrats/light-congrats", new Vector3(0, 3.1f, -6.1f), 4.2f).transform;
             Art(congrats, "Congrats/bg-popUp-congrats-v2", new Vector3(0, .06f, -6.2f), 3.86f);
             cardBw = Child<SpriteRenderer>(congrats, "Cover grey", new Vector3(0, CoverY, -6.4f));
