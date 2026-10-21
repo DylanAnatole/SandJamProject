@@ -89,7 +89,9 @@ namespace SandJamTest.Scene3D
             // Measured on recording 1 (1187 s): a slightly smaller card set higher, a larger title, the coin bar dimmed.
             FitCard(failed, .965f, 37);
             VideoScreen.Place(failed.Title.transform, 1.12f, 0, 10);
-            failed.RightButton.transform.parent.position += Vector3.up * 17 * VideoScreen.Px;
+            // Try Again sits well inside the glass, clear of its lower edge (user request: tidily inside the frame).
+            var tryAgain = failed.RightButton.transform.parent;
+            tryAgain.localScale *= TryAgainScale; tryAgain.position += Vector3.up * TryAgainLiftPx * VideoScreen.Px;
             failed.Caption.color = Color.white; // "Keep Going!" in white (the reward band's lavender is for Level Complete)
             HideCoinBar(failed);
             BuildNoLivesButtons();
@@ -570,6 +572,7 @@ namespace SandJamTest.Scene3D
         // Original "OUT OF SPACE!" (recording 1, 1181.3-1183.6 s, frame by frame): a red band across the board appears
         // at once and holds ~1.75 s, then the board shows bare for ~0.5 s before the popup.
         GameObject banner; float outOfSpaceAt = -1;
+        const float TryAgainScale = .9f, TryAgainLiftPx = 32;
         const float BannerTime = 1.75f, LosePause = 2.3f;
         void BuildOutOfSpaceBanner()
         {

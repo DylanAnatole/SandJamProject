@@ -838,3 +838,18 @@ không có khối đặc biệt, không khóa ô chờ.
 - Luồng thua đúng.
 - Run all checks qua 8/8.
 
+### Nút Try Again nằm gọn trong khung kính (theo yêu cầu người dùng)
+
+**Lý do:** người dùng muốn nút Try Again nằm gọn trong khung; trước đó nút sát mép dưới của khung kính.
+
+**Sửa** (`PopupScreens`)
+
+- Hằng `TryAgainScale` 0,9 và `TryAgainLiftPx` 32: nút nhỏ lại và nâng lên, cách mép dưới khung kính rõ ràng.
+- Vùng bấm thu nhỏ theo nút.
+
+**Kiểm tra**
+
+- Chụp ở 3 tỉ lệ màn hình (16:9, iPhone, 3:4): nút đều nằm trong khung.
+- Luồng bỏ cuộc → Try Again chạy đúng.
+- Run all checks qua 8/8.
+
