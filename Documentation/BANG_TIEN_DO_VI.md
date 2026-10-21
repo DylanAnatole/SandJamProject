@@ -41,7 +41,7 @@ Cập nhật: 21/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 |---|---|---|
 | Phóng to tranh + "Superb!" (quầng sáng, chữ, đốm góc) | ✅ | |
 | Level Complete (khung, hộp thưởng, xu bay, nền) | ✅ | |
-| Hết chỗ (Out of Space) | ✅ | Ảnh chụp ô chờ bên trong nhỏ hơn bản gốc một chút |
+| Hết chỗ (Out of Space) | ✅ | Dải "OUT OF SPACE!", ảnh ô chờ nền xám tối, khung tối như bản gốc |
 | Level Failed, Hết tim | ✅ | |
 | Màu nền tối của popup | ✅ | |
 | Hard Level / Bonus Level | ✅ | Nền tím than, biểu tượng thanh trên bị làm tối như bản gốc |

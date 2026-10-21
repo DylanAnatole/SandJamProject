@@ -903,3 +903,10 @@ không có khối đặc biệt, không khóa ô chờ.
 - Luồng chơi tiếp chạy đúng: ô thứ 6 có, trạng thái Playing.
 - Run all checks qua 8/8.
 
+### Khung ảnh ô chờ trong popup Hết chỗ không còn viền tím nhạt
+
+- **Đo** (video 1, giây 1184): khung ảnh bản gốc là viền xanh tím than tối, không có viền tím nhạt như hộp thưởng
+  của Level Complete.
+- **Sửa** (`PopupScreens`): nhuộm ảnh khung của popup Hết chỗ bằng `PictureFrameTint`. Chỉ áp dụng cho popup này.
+- **Kiểm tra:** ảnh ghép cạnh bản gốc; Run all checks qua 8/8.
+
