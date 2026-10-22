@@ -1285,3 +1285,30 @@ không có khối đặc biệt, không khóa ô chờ.
 
 - Quay level 2 từng bước 0,04 s: khối xanh chuyển trắng rồi về xanh và chạy đi.
 - Tự chơi level 2, 68, 150: thắng cả 3. Run all checks qua 8/8.
+
+### Cảm giác chơi: bỏ bụi cát; khói khi khối "?" lộ màu rõ như bản gốc; sửa hiệu ứng hạt biến mất
+
+**Đo**
+
+- Video 2, giây 58,2–58,4, phóng to điểm cát rơi chạm mặt cát: không có bụi, cát chỉ đắp từng lớp.
+- Video 1, giây 209,4–210,3 (level 259): khối "?" lên đầu làn thì một đám khói trắng to khoảng 1,3 lần khối bọc
+  lấy khối (vẫn thấy khối bên trong), mỏng dần trong khoảng 0,8 s.
+- Bản mình: khói gần như không thấy. Khói nổ ở chỗ khối bắt đầu trượt, nằm sau khối, và có lúc biến mất hẳn.
+
+**Nguyên nhân khói biến mất:** hệ hạt chỉ phát bằng `Emit()` nên không có khung bao riêng. Culling mặc định của
+Unity tưởng nó nằm ngoài màn hình và tạm dừng, nên đôi khi cả đợt hạt không hiện (ảnh hưởng mọi hiệu ứng hạt).
+
+**Sửa**
+
+- `SandFx.MakeSystem`: `cullingMode = AlwaysSimulate`.
+- `SandFx.RevealSmoke`:
+  - 18 cụm khói, cỡ 1,3, alpha 0,55, sống 1 s;
+  - đặt ở `SceneActorView.Destination` (chỗ khối dừng ở đầu làn), nâng 0,4 và đưa ra trước mặt khối 0,8.
+- Bỏ `PourDust` và `SceneRegionView.TryGetPourImpact` (chỉ dùng cho bụi).
+- Công cụ quay mới (chỉ dùng trên máy): quay theo thời gian thực ở nửa độ phân giải. Cách dừng game rồi bước
+  `Advance` không quay đúng được hạt và bong bóng, vì chúng chạy theo thời gian thực.
+
+**Kiểm tra**
+
+- Quay level 259 hai lần: khói hiện cả hai lần, bọc khối, tan sau ~0,6 s.
+- Tự chơi level 2, 259, 267: thắng cả 3. Run all checks qua 8/8.

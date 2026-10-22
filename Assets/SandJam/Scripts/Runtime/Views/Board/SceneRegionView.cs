@@ -72,15 +72,6 @@ namespace SandJamTest.Scene3D
             Counter.GetComponent<MeshRenderer>().sortingOrder=11;
         }
         public Color32 SolidColor { get { return solid; } }
-        // World point where the falling stream currently hits the sand surface.
-        public bool TryGetPourImpact(out Vector3 world)
-        {
-            world=Vector3.zero;
-            if(sand==null || sand.MovingCount==0 || !Board) return false;
-            int y=sand.LandingRow();
-            world=Board.transform.TransformPoint(new Vector3((sand.MouthX+.5f)*SandBoardTextureView.CellSize,y*SandBoardTextureView.CellSize,0));
-            return true;
-        }
         void ClearMoving()
         {
             foreach(var p in previousMoving) Board.ClearGrain(p.x,p.y);

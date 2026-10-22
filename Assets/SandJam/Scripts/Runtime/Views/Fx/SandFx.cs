@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SandJamTest.Scene3D
 {
-    // Presentation-only effects modelled on the original: pour dust, region-open bubble burst,
+    // Presentation-only effects modelled on the original: region-open bubble burst,
     // sand needles out of a pouring box, the flash where a chain snaps when its pair is picked, the
     // smoke a mystery cube shows its colour in and the ring of smoke a locked waiting slot opens with. Polls game
     // state; never changes rules.
@@ -11,7 +11,7 @@ namespace SandJamTest.Scene3D
     {
         const float Front = -.45f; // towards the camera so effects draw over the board
         SandJamSceneController controller;
-        ParticleSystem dust, sparkle, puff, voxels, spray;
+        ParticleSystem sparkle, puff, voxels, spray;
         readonly Dictionary<SceneActorView, ActorState> actors = new Dictionary<SceneActorView, ActorState>();
         bool[] regionShown;
         int[] slotLocked = new int[0];
@@ -35,7 +35,6 @@ namespace SandJamTest.Scene3D
         {
             controller = owner;
             BuildTextures();
-            dust = MakeSystem("Pour dust", softDot, 400, .35f, .05f, .12f);
             sparkle = MakeSystem("Region sparkles", softDot, 600, .9f, .05f, .14f);
             puff = MakeSystem("Character puffs", softDot, 300, .5f, .12f, .28f);
             // Original region-open shower: tiny sand cubes in the region's colour pop up and fall.
@@ -100,6 +99,8 @@ namespace SandJamTest.Scene3D
             main.startSize = new ParticleSystem.MinMaxCurve(minSize, maxSize);
             main.startSpeed = 0; main.gravityModifier = .35f; main.useUnscaledTime = true;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
+            // Emit()-only systems have no bounds of their own: default culling paused them (bursts vanished at random).
+            main.cullingMode = ParticleSystemCullingMode.AlwaysSimulate;
             var emission = ps.emission; emission.enabled = false;
             var shape = ps.shape; shape.enabled = false;
             var fade = ps.colorOverLifetime; fade.enabled = true;
@@ -143,12 +144,17 @@ namespace SandJamTest.Scene3D
                 slotLocked[i] = remaining;
             }
         }
+        // Mystery cube shown (recording 1, 209.4-210.3 s): a thick white cloud about 1.3 boxes wide wraps the box (drawn in
+        // front of it, around its middle) and thins out over ~0.8 s.
+        const int RevealPuffs = 18;
+        const float RevealSpread = .42f, RevealPuffSize = 1.3f, RevealLife = 1f, RevealLift = .4f, RevealFront = -.8f, RevealAlpha = .55f;
         void RevealSmoke(Vector3 p)
         {
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < RevealPuffs; i++)
             {
-                var v = Random.insideUnitCircle * .45f;
-                Emit(puff, p + (Vector3)(Random.insideUnitCircle * .3f), new Vector3(v.x, .3f + Random.Range(0, .3f), 0), new Color(1, 1, 1, .85f), Random.Range(.8f, 1.2f), Random.Range(.55f, .8f));
+                var offset = Random.insideUnitCircle * RevealSpread;
+                var v = offset * .6f + new Vector2(0, .15f);
+                Emit(puff, p + new Vector3(offset.x * 1.3f, offset.y, 0), v, new Color(1, 1, 1, RevealAlpha), RevealPuffSize * Random.Range(.75f, 1.15f), RevealLife * Random.Range(.8f, 1.1f));
             }
         }
         void ChainSnap(Vector3 p)
@@ -188,7 +194,6 @@ namespace SandJamTest.Scene3D
             var game = controller.Game;
             if (game != lastGame) Reset(game);
             float dt = Mathf.Min(Time.unscaledDeltaTime, .1f); // matches the controller's clock
-            PourDust(dt);
             RegionBursts(game);
             Characters(game, dt);
             SlotUnlocks(game);
@@ -207,26 +212,8 @@ namespace SandJamTest.Scene3D
             foreach (var pair in actors) if (pair.Key) pair.Key.transform.localScale = pair.Value.BaseScale;
             actors.Clear();
             bubblePool.ReleaseAll();
-            dust.Clear(); sparkle.Clear(); puff.Clear(); voxels.Clear();
+            sparkle.Clear(); puff.Clear(); voxels.Clear();
             flashPool.ReleaseAll();
-        }
-
-        float dustTimer;
-        void PourDust(float dt)
-        {
-            dustTimer += dt;
-            if (dustTimer < .03f) return;
-            dustTimer = 0;
-            foreach (var region in controller.Regions)
-            {
-                Vector3 hit;
-                if (!region.TryGetPourImpact(out hit)) continue;
-                Color c = region.SolidColor; c = Color.Lerp(c, Color.white, .25f);
-                hit.z += Front;
-                for (int i = 0; i < 2; i++)
-                    Emit(dust, hit + new Vector3(Random.Range(-.03f, .03f), .02f, 0),
-                        new Vector3(Random.Range(-.55f, .55f), Random.Range(.25f, .7f), 0), c, Random.Range(.04f, .08f), Random.Range(.18f, .35f));
-            }
         }
 
         // Original (recording 2, 153.1 s): a finished region shows no burst of its own; every region it opens pops
@@ -360,7 +347,7 @@ namespace SandJamTest.Scene3D
                 }
                 // Mystery cube reaching the front of its lane: it shows its colour inside a soft white cloud.
                 bool hidden = game.IsHidden(actor.Shooter, actor.SourceLane);
-                if (state.Hidden && !hidden && actor.gameObject.activeInHierarchy) RevealSmoke(actor.transform.position + new Vector3(0, .35f, Front));
+                if (state.Hidden && !hidden && actor.gameObject.activeInHierarchy) RevealSmoke(actor.Destination + new Vector3(0, RevealLift, RevealFront)); // where its slide to the front ends
                 state.Hidden = hidden;
                 // Chained pair picked: the chain snaps with a white flash between the two cubes (shown once per pair).
                 if (actor.Shooter.Partner != null)
@@ -388,7 +375,7 @@ namespace SandJamTest.Scene3D
             if (bubbleMaterial) Destroy(bubbleMaterial);
             if (flashSprite) Destroy(flashSprite); if (bubbleSprite) Destroy(bubbleSprite);
             flashPoolValue?.Dispose(); bubblePoolValue?.Dispose();
-            foreach (var ps in new[] { dust, sparkle, puff, voxels, spray }) if (ps) Destroy(ps.GetComponent<ParticleSystemRenderer>().material);
+            foreach (var ps in new[] { sparkle, puff, voxels, spray }) if (ps) Destroy(ps.GetComponent<ParticleSystemRenderer>().material);
         }
     }
 }

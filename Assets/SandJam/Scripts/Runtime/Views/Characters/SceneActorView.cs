@@ -17,6 +17,7 @@ namespace SandJamTest.Scene3D
         public float DisplayedFill { get; private set; } = 1;
         public Vector3 AimPoint { get { return Visual ? Visual.TransformPoint(new Vector3(0,.81f,0)) : transform.position + Vector3.up * .70f; } }
         Vector3 from, destination, baseScale, basePosition;
+        public Vector3 Destination { get { return destination; } }
         // Juice: a damped spring for squash & stretch (+ = stretch up) and a short sideways shake.
         float squash, squashVelocity, shakeTime;
         bool wasRunning, wasSliding;
