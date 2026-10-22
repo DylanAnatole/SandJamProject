@@ -1422,3 +1422,32 @@ Lúc đổ cát đã sửa lỗi này trước đây, nhưng lúc chạy thì ch
 - Quay level 267 cạnh video: khối thẳng, hai chân dưới đáy, bước luân phiên, còn chân lúc vừa đáp.
 - Quay level 2: đổ cát và rời ô vẫn đúng.
 - Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
+
+### Cảm giác chơi: khối và chân quay về hướng chạy lên ô chờ (yêu cầu người dùng)
+
+**Đo** (video 2, giây 48,6–49,35: khối cam chạy từ làn phải sang ô trái nhất)
+
+- Khối quay hẳn về hướng chạy, khoảng 60°. Số nằm trên lưng nhân vật nên khi chạy sang trái, số lệch về bên
+  phải, lộ mặt bên trái và mặt trên.
+- Hai chân sải bước về hướng chạy. Khối vẫn đứng thẳng, gần tới ô thì quay lại mặt trước.
+- Lượt trước mình chỉ so cú chạy gần như thẳng lên (giây 155,6) nên đặt góc quay 10°, quá nhỏ cho cú chạy chéo.
+
+**Thử** (quay level 267, làn phải → ô trái nhất, phóng to)
+
+- Xoay quanh trục đứng riêng của khung xương hoặc của `Visual`: khối chỉ xoay phẳng trên màn hình, vì các trục
+  này gần trùng hướng nhìn camera.
+- Xoay quanh trục đứng thật: lộ mặt bên như bản gốc, nhưng khối ngả nghiêng. Bù bằng cách nghiêng ngược quanh
+  hướng nhìn camera 0,5° cho mỗi độ quay thì khối đứng thẳng.
+
+**Sửa** (`SceneActorView`)
+
+- Góc quay khi chạy = góc của hướng chạy so với thẳng lên (`Atan2(dx, dy)`), tối đa `MaxYaw` 65°. Chạy thẳng
+  lên thì gần như không quay, chạy ngang thì quay mạnh.
+- `ApplyYaw`: quay (chạy + đổ) quanh trục đứng thật qua tâm khối, rồi nghiêng `roll + yaw * RunUpright`
+  (`RunUpright` = -0,5) quanh hướng nhìn camera.
+
+**Kiểm tra**
+
+- Chạy chéo dài: khối quay về hướng chạy, đứng thẳng, chân sải theo hướng, gần tới ô thì quay lại.
+- Chạy thẳng (level 267, làn trái): quay rất nhẹ, hai chân dưới đáy như lượt trước.
+- Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.

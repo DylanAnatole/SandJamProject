@@ -44,11 +44,14 @@ namespace SandJamTest.Scene3D
         float yaw;
         // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
         const float SlideSeconds=.32f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.6f, ExitPause=.12f, ExitHop=.25f;
-        // The body turns only a little toward where it runs (recording 2, 155.6-155.9 s: mostly its front face shows);
-        // further, the pitched body reads as a lopsided diamond.
-        const float MaxYaw=10f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
-        // The rig is pitched toward the camera, so every turn (running and pouring) happens about the true vertical
-        // through the block's centre: about the body's own up axis it read as the box rolling over sideways.
+        // The box faces where it runs (its number is on its back): straight up the screen it barely turns (recording 2,
+        // 155.6-155.9 s), running sideways it turns ~65 deg so its side shows and the legs stride that way (48.6-49.2 s).
+        // Heading = angle of the run from straight up, capped at MaxYaw. Turned about the true vertical the pitched box
+        // also leans over; RunUpright rolls it back about the view axis (per degree of turn) so it stays upright.
+        const float RunUpright=-.5f;
+        const float MaxYaw=65f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
+        // The rig is pitched toward the camera (its own up axis points nearly at the camera, so turning about it only
+        // spins the box flat on screen): running and pouring both turn about the true vertical through its centre.
         Transform pose; Quaternion poseBase; Vector3 posePosition; bool poseCaptured;
         Renderer legs;
         // Only the legs turn toward where the cube runs (the body keeps facing the camera): after the animator has
@@ -113,14 +116,13 @@ namespace SandJamTest.Scene3D
                 // Running and pouring turn about the true vertical through the block's centre (about its feet it swung
                 // off the pad), then pouring adds the slight tip about the camera's view axis (it looks down at the
                 // board, so world Z would tip the box over).
-                float turn = yaw + aimYaw;
-                if (turn != 0 || roll != 0)
+                if (yaw != 0 || aimYaw != 0 || roll != 0)
                 {
                     var centre = Visual.TransformPoint(PourPivot);
                     if (!viewCamera) viewCamera = SpriteFactory.CameraForLayer(gameObject.layer);
                     var axis = viewCamera ? (centre - viewCamera.transform.position).normalized : Vector3.forward;
-                    pose.RotateAround(centre, Vector3.up, turn);
-                    pose.RotateAround(centre, axis, roll);
+                    pose.RotateAround(centre, Vector3.up, yaw + aimYaw);
+                    pose.RotateAround(centre, axis, roll + yaw * RunUpright);
                 }
                 transform.localRotation = Quaternion.identity;
             }
@@ -241,7 +243,7 @@ namespace SandJamTest.Scene3D
                     // Turn toward the horizontal direction of travel, settle facing the camera on arrival.
                     var dir = destination - from;
                     // Leaving: fully sideways so the legs stride toward the exit edge.
-                    float target = Departing ? ExitTarget : Mathf.Abs(dir.x) < .05f ? 0 : -Mathf.Sign(dir.x) * MaxYaw * Mathf.Clamp01(Mathf.Abs(dir.x) / .8f);
+                    float target = Departing ? ExitTarget : Mathf.Clamp(Mathf.Atan2(dir.x, Mathf.Max(.01f, dir.y)) * Mathf.Rad2Deg, -MaxYaw, MaxYaw);
                     float settle = t > .8f && !Departing ? (t - .8f) / .2f : 0;
                     yaw = Mathf.Lerp(Mathf.MoveTowards(yaw, target, delta * (Departing ? 900 : 420)), 0, settle);
                     if(Motion && Motion.Animator) Motion.Animator.speed = 1.6f;
