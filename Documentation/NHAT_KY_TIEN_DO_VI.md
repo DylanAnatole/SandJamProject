@@ -1245,3 +1245,21 @@ không có khối đặc biệt, không khóa ô chờ.
 
 - Run all checks qua 8/8.
 - Tự chơi level 2, 68: thắng. Luồng thua / chơi tiếp / bỏ cuộc / thử lại chạy không lỗi.
+
+### Cảm giác chơi: tranh không nảy khi đầy vùng; so cú chạy lên ô chờ
+
+**Đo** (video 2)
+
+- Mép khung tranh ở giây 56,5–57,8, 60,3–61,3 và 153,3–154,4 (có vùng đầy và mở): đứng yên, lệch 0 px.
+- Bản mình nảy cả tranh 3,5% mỗi lần đầy vùng (`BoardPunch`, tự thêm, bản gốc không có).
+- Chạm khối → đáp xuống ô chờ: bản gốc khoảng 0,4 s (giây 155,56 → 155,95), bản mình khoảng 0,48 s. Dáng chạy và
+  hàng sau dồn lên (~0,2 s) khớp, nên giữ nguyên.
+
+**Sửa**
+
+- Xóa `BoardPunch.cs` và dòng gắn nó trong `SandJamSceneController`.
+
+**Kiểm tra**
+
+- Run all checks qua 8/8.
+- Tự chơi level 12, 267: thắng, màn phóng to tranh lúc thắng vẫn chạy.
