@@ -159,7 +159,7 @@ namespace SandJamTest.Editor
                 }
             }
             controller.Characters=actorViews.ToArray();controller.ProjectileRoot=Group("Pooled sand projectiles",root);controller.ProjectilePrefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SandJam/Generated/Scene3D/SandProjectile.prefab");
-            controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.CompleteSound=Resources.Load<AudioClip>("Original/RegionComplete");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");
+            controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");
             var camera=Group("Main Camera",root).gameObject.AddComponent<Camera>();camera.tag="MainCamera";camera.transform.position=new Vector3(0,0,-30);camera.orthographic=true;camera.orthographicSize=5.375f;camera.nearClipPlane=.1f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=Hex("DDD8F8");camera.gameObject.AddComponent<AudioListener>();controller.GameCamera=camera;
             ComposeScreens(root,reference,controller);ApplyDepth(root,reference,controller);
             if(video201) ConfigureVideo201(root,reference,controller);

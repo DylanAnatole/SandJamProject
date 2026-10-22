@@ -1222,3 +1222,26 @@ không có khối đặc biệt, không khóa ô chờ.
 
 - Quay level 267 từng bước 0,04 s: vùng hồng sáng lên rồi phai; số đếm đứng yên.
 - Run all checks qua 8/8.
+
+### Cảm giác chơi: âm thanh theo đúng bản gốc
+
+**Đo** (video 1 có tiếng; video 2 im lặng)
+
+- Tách tiếng video 1, tìm 307 lần có tiếng, so dạng sóng từng lần với 7 file âm thanh gốc (khớp 0,95–1,0).
+- `Input`: 258 lần, đúng mỗi lần chạm chọn khối.
+- `pop`: khi bấm PLAY ở Home (giây 151,5, 313,6, 533,4).
+- `Victory`, panel Level Complete, `claim_gift`: màn kết thúc.
+- Lúc đổ cát, đầy vùng hay khối hết cát: im lặng hoàn toàn (-120 dB). File `audiomob-chime-soft` không lần nào phát.
+
+**Sửa**
+
+- `AudioManager`:
+  - bỏ tiếng rè đổ cát tự tạo (`SandHiss`);
+  - bỏ tiếng `pop` khi đầy vùng (kèm cao độ tăng dần) và khi khối hết cát;
+  - nút PLAY phát `pop`.
+- `SandJamSceneController`: bỏ `CompleteSound` và `CompletedRegions`; `BuildVideoScene` bỏ gán `CompleteSound`.
+
+**Kiểm tra**
+
+- Run all checks qua 8/8.
+- Tự chơi level 2, 68: thắng. Luồng thua / chơi tiếp / bỏ cuộc / thử lại chạy không lỗi.

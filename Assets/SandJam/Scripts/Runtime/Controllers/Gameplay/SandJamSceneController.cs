@@ -26,7 +26,6 @@ namespace SandJamTest.Scene3D
         public int AmmoPerShot = 20;
         [Header("Original sounds")]
         public AudioClip SelectSound;
-        public AudioClip CompleteSound;
         public AudioClip VictorySound;
         public SandGame Game { get; private set; }
         public bool BoosterInputBlocked { get; set; }
@@ -234,7 +233,6 @@ namespace SandJamTest.Scene3D
         Func<int, bool> canShootCheck;
 
         SceneActorView[] shooters;
-        int CompletedRegions() { int n = 0; foreach (var r in Game.Regions) if (r.Remaining == 0) n++; return n; }
         public void Advance(float delta)
         {
             Synchronize(delta);
@@ -247,7 +245,6 @@ namespace SandJamTest.Scene3D
                     // Allocation-free per tick (runs ~50 times a second): reused arrays and plain loops.
                     if (shooters == null || shooters.Length != Game.Slots.Length) shooters = new SceneActorView[Game.Slots.Length];
                     for (int s = 0; s < shooters.Length; s++) shooters[s] = Game.Slots[s] == null ? null : characterQueue.ViewFor(Game.Slots[s]);
-                    int completed = CompletedRegions();
                     var previousState = Game.State;
                     foreach (var shot in Game.Tick(AmmoPerShot, canShootCheck ?? (canShootCheck = CanShoot)))
                     {
@@ -257,7 +254,6 @@ namespace SandJamTest.Scene3D
                         GameEvents.RaiseSandPoured(shot.Color, shot.Amount, Mathf.Max(1, level.uiDivider));
                     }
                     if (previousState != GameState.Won && Game.State == GameState.Won) Play(VictorySound, .45f);
-                    else if (completed < CompletedRegions()) Play(CompleteSound, .3f);
                     for (int r = 0; r < Game.Regions.Length; r++)
                         if (Game.Regions[r].Remaining == 0 && !regionReported[r]) { regionReported[r] = true; GameEvents.RaiseRegionCompleted(r, Game.Regions[r].Data.ColorType); }
                 }
