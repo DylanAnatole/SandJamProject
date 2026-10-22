@@ -133,11 +133,13 @@ namespace SandJamTest.Scene3D
             if (error == null) Synchronize(0);
         }
 
+        // Original (recording 2, 152.5 s and 156 s): a cube counts down about one unit every 0.1 s (20 -> 1 in 2 s).
+        const float PourUnitsPerSecond = 9.5f, PourTick = .02f;
         public void Restart()
         {
-            // Calm pour (~6 shown units/s per cube), split into small steady ticks.
+            // Pour speed per cube in shown units (AmmoPerShot sand each), split into small steady ticks.
             // Done here because the dynamic level sets AmmoPerShot from the level data while it builds.
-            if (ShotInterval > .03f) { float rate = AmmoPerShot / ShotInterval * .42f; ShotInterval = .02f; AmmoPerShot = Mathf.Max(1, Mathf.RoundToInt(rate * ShotInterval)); }
+            if (ShotInterval > .03f) { ShotInterval = PourTick; AmmoPerShot = Mathf.Max(1, Mathf.RoundToInt(AmmoPerShot * PourUnitsPerSecond * PourTick)); }
             Game = new SandGame(level, StashSlots.Length, r => Regions[Array.IndexOf(level.parts, r.Data)].SettledCount == r.Data.rows.Length, EnableSlotUnlocks);
             foreach (var region in Regions) { region.Divider = level.uiDivider; region.ResetFlow(); }
             regionReported = new bool[Game.Regions.Length];

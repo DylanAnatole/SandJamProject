@@ -1157,3 +1157,24 @@ không có khối đặc biệt, không khóa ô chờ.
   hoặc chạm khối không ở đầu làn.
 
 **Kiểm tra:** chụp lại vùng xám level 267 đúng 2 tông như bản gốc; Run all checks qua 8/8.
+
+### Cảm giác chơi: tốc độ đổ cát của khối bằng bản gốc
+
+**Đo**
+
+- Video 2, giây 152,5 (khối vàng) và giây 156 (khối tím, 20 → 1 trong 2,0 s): mỗi khối đếm xuống khoảng 1 đơn vị
+  mỗi 0,1 s.
+- Bản mình trước đây chỉ 5,25 đơn vị/s, chậm gần gấp đôi.
+- Cách quay mới (chỉ dùng trên máy): dừng game rồi tự gọi `Advance(0,04)` và chụp từng bước, nên khoảng cách giữa
+  các khung đúng tuyệt đối (game chạy theo thời gian thực nên `timeScale` không làm chậm được).
+
+**Sửa** (`SandJamSceneController.Restart`)
+
+- Bỏ hệ số 0,42 khó hiểu, thay bằng `PourUnitsPerSecond` 9,5 và `PourTick` 0,02 s.
+
+**Kiểm tra**
+
+- Quay lại level 267: khối đếm 20 → 10 trong 0,96 s, khớp bản gốc.
+- Đo trực tiếp `Shake`: lệch ±0,03, 2 nhịp, tắt dần.
+- Tự chơi level 2, 12, 68, 150, 267: thắng cả 5, không lỗi.
+- Run all checks qua 8/8.
