@@ -1136,3 +1136,24 @@ không có khối đặc biệt, không khóa ô chờ.
 - Thua level 68 → Bỏ cuộc → Try Again → Home.
 - Run all checks qua 8/8.
 
+
+### Cảm giác chơi: cát đổ lên tranh giống bản gốc, khối không đi được thì lắc nhẹ (yêu cầu người dùng)
+
+**Đo** (video 2, giây 57,5–61, phóng to từng pixel)
+
+- Cát đã đổ: màu gốc, khoảng 1/5 hạt tối hơn (×0,85), không có hạt sáng. Cát vừa rơi xuống đã có màu cuối, không
+  ửng trắng.
+- Dòng cát rơi: vạch 1 px đúng màu cát (bản mình trước đây tối hơn).
+- Tốc độ chảy đều, bản mình theo kịp nên giữ nguyên.
+
+**Sửa**
+
+- `SceneRegionView`:
+  - `SandShade` còn 2 tông (`DarkGrainPercent` 20, `DarkGrainShade` 0,85), bỏ 2 tông phụ.
+  - Dòng cát và hạt đang rơi dùng màu cát, không làm tối / sáng.
+  - Ánh cát mới giảm còn ánh nhẹ: `FreshLift` 0,32 → 0,1, `FreshSteps` 180 → 120.
+- `SceneActorView.Shake`: lắc trái phải nhẹ, 2 nhịp trong 0,34 s, biên độ 0,035, nhỏ dần
+  (`ShakeSeconds`, `ShakeSwings`, `ShakeAmount`); trước đây rung nhanh 0,06. Dùng lại chỗ gọi sẵn có khi ô chờ đầy
+  hoặc chạm khối không ở đầu làn.
+
+**Kiểm tra:** chụp lại vùng xám level 267 đúng 2 tông như bản gốc; Run all checks qua 8/8.

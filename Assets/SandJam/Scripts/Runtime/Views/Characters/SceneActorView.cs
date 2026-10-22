@@ -21,7 +21,9 @@ namespace SandJamTest.Scene3D
         float squash, squashVelocity, shakeTime;
         bool wasRunning, wasSliding;
         public void Punch(float strength) { squashVelocity += strength * 18f; }
-        public void Shake() { shakeTime = .28f; }
+        // A cube that cannot go: a light left-right wobble, fading out (ShakeSwings full swings in ShakeSeconds).
+        const float ShakeSeconds = .34f, ShakeSwings = 2, ShakeAmount = .035f;
+        public void Shake() { shakeTime = ShakeSeconds; }
         Quaternion baseRotation;
         // Original camera looks down the lanes like a floor: rows nearer the bottom of the screen are nearer the
         // camera, so they look bigger and the lanes fan out. Rows below the front row are pulled toward the camera.
@@ -285,7 +287,7 @@ namespace SandJamTest.Scene3D
             float hop = gait == Gait.Run && !AtRest && !Departing && duration > 0 ? 1 + RunBulge * Mathf.Sin(Mathf.PI * travel / duration) : 1;
             Visual.localScale = size * hop * new Vector3(baseScale.x * (1 - squash * .5f), baseScale.y * (1 + squash), baseScale.z * (1 - squash * .5f));
             float shake = 0;
-            if (shakeTime > 0) { shakeTime = Mathf.Max(0, shakeTime - delta); shake = Mathf.Sin(shakeTime * 70f) * .06f * (shakeTime / .28f); }
+            if (shakeTime > 0) { shakeTime = Mathf.Max(0, shakeTime - delta); float left = shakeTime / ShakeSeconds; shake = Mathf.Sin((1 - left) * ShakeSwings * 2 * Mathf.PI) * ShakeAmount * left; }
             Visual.localPosition = basePosition + new Vector3(shake, 0, 0);
         }
     }
