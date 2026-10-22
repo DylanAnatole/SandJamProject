@@ -1110,3 +1110,10 @@ không có khối đặc biệt, không khóa ô chờ.
 - LEVEL (383,563,122×33) so với (387,560,122×33).
 - Run all checks qua 8/8.
 
+### Nút PLAY ở Home
+
+- **Đo** (video 2, giây 244): nút bản gốc 372×110 px, chữ PLAY 198×61 px. Bản mình 354×104 px, chữ khoảng
+  180 px rộng.
+- **Sửa** (`VideoScreen`): `PlayButtonScale` 1,05, `PlayButtonDropPx` 6, `PlayLabelGrow` 1,08, dùng lại `Place`.
+- **Kiểm tra:** nút 370×109 px, chữ 195×60 px; bấm PLAY vẫn vào màn chơi; Run all checks qua 8/8.
+

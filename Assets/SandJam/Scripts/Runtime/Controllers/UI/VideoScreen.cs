@@ -201,7 +201,9 @@ namespace SandJamTest.Scene3D
             var stage=Home.transform.Find("Lower stage");var walk=Home.transform.Find("Walkway edge");
             // Original PLAY caption is much larger on the button.
             var play=Home.transform.Find("PLAY");
-            if(play)foreach(var label in play.GetComponentsInChildren<TextMesh>(true))if(label.name!="Text outline"){label.transform.localScale*=1.3f;break;}
+            if(play)foreach(var label in play.GetComponentsInChildren<TextMesh>(true))if(label.name!="Text outline"){label.transform.localScale*=1.3f*PlayLabelGrow;break;}
+            // The button itself is ~5% larger and a few px lower (recording 2, 244 s).
+            Place(play,PlayButtonScale,0,PlayButtonDropPx);
             if(!stage || !walk)return;
             var stageArt=stage.GetComponent<Renderer>();
             if(stageArt)AddStagePattern(stageArt,floorBottom,(walkway?walkway.position.z:stage.position.z)-.01f);
@@ -411,6 +413,7 @@ namespace SandJamTest.Scene3D
         }
         // Gameplay top bar measured on recording 2 (153 s): the gear, level pill and coin wallet sit ~20 px higher; the
         // gear a little smaller and further left, the pill a little wider, the wallet further right.
+        const float PlayButtonScale=1.05f,PlayButtonDropPx=6,PlayLabelGrow=1.08f;
         const float WalkwayTopDropPx=32,WalkwayBottomDropPx=14,MascotScale=.8f,MascotDropPx=24f;
         void FitGameplayHud()
         {
