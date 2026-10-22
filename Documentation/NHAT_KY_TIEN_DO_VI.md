@@ -1562,3 +1562,18 @@ chạy (tới 65°), trục này quay theo, nên chân bị hất ra sau thay v�
 
 - Quay level 267 (khối rời ô 3): khối quay ngang, có chân, đi sau khối cam ở ô 1.
 - Tự chơi level 2, 68, 267: thắng cả 3. Luồng thua / chơi tiếp / thử lại không lỗi. Run all checks qua 8/8.
+
+### Cảm giác chơi: hàng khối dồn lên chậm–nhanh–chậm như bản gốc
+
+**Đo** (video 2, giây 48,3–49,0, làn phải; đỉnh khối xám từng khung 54 fps)
+
+- Khối đầu rời đi lúc ~0,31 s. Khối xám đi 296 → 286 → 282 → 264 → 246 → 232 → 220 → 212 → 206 → 202 → 200 px
+  tới ~0,70 s: bắt đầu chậm, nhanh ở giữa, chậm ở cuối, ~0,37 s, không nảy lên.
+- Bản mình: chậm dần mạnh (cubic ease-out) trong 0,32 s, nảy lên 0,05. Đi gần hết quãng chỉ trong ~0,15 s rồi
+  đứng chờ, nên nhìn giật.
+
+**Sửa** (`SceneActorView`): trượt hàng dùng `smoothstep`, `SlideSeconds` 0,32 → 0,38, bỏ nảy lên. Giữ cú nhún
+nhẹ khi dừng.
+
+**Kiểm tra:** quay level 68 làn trái: khối vàng dồn lên đều trong ~0,38 s. Tự chơi level 2, 68, 267 thắng cả 3.
+Run all checks qua 8/8.
