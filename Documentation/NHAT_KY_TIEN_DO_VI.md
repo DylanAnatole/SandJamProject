@@ -1202,3 +1202,23 @@ không có khối đặc biệt, không khóa ô chờ.
 
 - Quay lại level 267 từng bước 0,04 s: vùng mới nổ đúng màu, số đếm vẫn đọc được qua bong bóng.
 - Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
+
+### Cảm giác chơi: vùng mới mở sáng lên; số đếm trên vùng không nảy
+
+**Đo** (video 2)
+
+- Giây 153,1–153,5: vùng vừa mở sáng lên màu trắng xanh, khoảng 30–40% về phía trắng (đo màu: G 128 → 73), rồi phai
+  về màu vùng trong 0,4 s.
+- Giây 152,7–153,0: số đếm trên vùng giảm 6 → 5 → 4 mà không nảy (cao 26 px ở mọi khung). Bản mình nảy 28% mỗi lần
+  giảm, và với tốc độ đổ mới (10 lần/s) thì số rung liên tục.
+
+**Sửa** (`SceneRegionView`)
+
+- Vùng mở giữa màn (trước đó bị ẩn): `revealGlow` 1 → 0 trong `RevealSeconds` 0,4. Màu nền vùng trộn với
+  `RevealWash` theo `RevealStrength` 0,4, dùng lại `PaintBase`. Vùng mở sẵn từ đầu không sáng.
+- Bỏ hẳn `counterPunch` (nảy số đếm) và biến `counterScale` chỉ dùng cho nó.
+
+**Kiểm tra**
+
+- Quay level 267 từng bước 0,04 s: vùng hồng sáng lên rồi phai; số đếm đứng yên.
+- Run all checks qua 8/8.

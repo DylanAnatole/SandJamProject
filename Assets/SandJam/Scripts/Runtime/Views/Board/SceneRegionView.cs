@@ -53,7 +53,10 @@ namespace SandJamTest.Scene3D
         // none (recording 2, 58 s: grains land in their final colour), so it stays a faint glint on the surface.
         const int FreshSteps=120; const float FreshLift=.1f;
         int idleSteps, lastSettleStep; bool freshPainted;
-        float counterPunch;
+        // Region opening mid-level (recording 2, 153.1-153.5 s): it lights up white-cyan (~0.3-0.4 of the way to white)
+        // and fades into its colour.
+        const float RevealSeconds=.4f, RevealStrength=.4f; static readonly Color RevealWash=new Color(.88f,.97f,1f);
+        float revealGlow; bool seenHidden; Color32 openEmpty;
         public void AttachBoard(SandBoardTextureView board)
         {
             Board=board; Geometry.GetComponent<MeshRenderer>().enabled=false;
@@ -85,7 +88,7 @@ namespace SandJamTest.Scene3D
         }
         public void ResetFlow()
         {
-            advancing=false; idleSteps=0; lastSettleStep=0; freshPainted=false; counterPunch=0; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0;completionGlow=0; lockDone=false;
+            advancing=false; idleSteps=0; revealGlow=0; seenHidden=false; lastSettleStep=0; freshPainted=false; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0;completionGlow=0; lockDone=false;
         }
         void ApplyLock(Region region)
         {
@@ -141,19 +144,21 @@ namespace SandJamTest.Scene3D
                 for(int i=0;i<settledColors.Length;i++) settledColors[i]=SandShade(solid,sand.Cols[i],sand.Rows[i]);
             }
             if(region.Remaining==lastRemaining && region.Open==lastOpen && region.InformationVisible==lastVisible) return;
-            // The amount label pops each time it counts down (original counter feedback).
-            if(lastRemaining>0 && region.Remaining<lastRemaining && region.Remaining>0) counterPunch=1f;
             lastRemaining=region.Remaining; lastOpen=region.Open; lastVisible=region.InformationVisible;
             sand.Request((int)((long)(region.Data.amount-region.Remaining)*region.Data.rows.Length/region.Data.amount));
             // Open regions use the original pale InitColor; locked ones stay neutral.
             var original=OverrideSandColor?null:OriginalConfig.Color(region.Data.ColorType);
-            empty=region.InformationVisible && original!=null && original.HasInit?(Color32)original.init:(Color32)Color.Lerp(EmptyTint,(Color)solid,region.InformationVisible?OpenTintStrength:0f);
+            openEmpty=region.InformationVisible && original!=null && original.HasInit?(Color32)original.init:(Color32)Color.Lerp(EmptyTint,(Color)solid,region.InformationVisible?OpenTintStrength:0f);
+            if(!region.InformationVisible) seenHidden=true;
+            else if(seenHidden){ seenHidden=false; revealGlow=1; }
+            empty=RevealedEmpty();
             Counter.gameObject.SetActive(region.InformationVisible);
             if(region.InformationVisible) SortCounter();
             var backing=transform.Find("Amount backing"); if(backing) backing.gameObject.SetActive(region.InformationVisible);
             Counter.text=!region.InformationVisible || region.Remaining==0?"":DisplayAmount.Text(DisplayAmount.Units(region.Remaining,Divider));
             PaintBase(); PaintMoving();
         }
+        Color32 RevealedEmpty() { return (Color32)Color.Lerp((Color)openEmpty,RevealWash,revealGlow*RevealStrength); }
         void PaintBase()
         {
             // Run avoids dispatch/wait overhead for these small regions while using Burst native code.
@@ -202,17 +207,15 @@ namespace SandJamTest.Scene3D
             float k=roll<DarkGrainPercent?DarkGrainShade:1f;
             Color c=(Color)baseColor*k;c.a=1;return c;
         }
-        // Board counters in the original (recording 2, 158 s, zoomed): digits ~25 px tall with a thin dark edge.
+        // Board counters in the original (recording 2, 158 s, zoomed): digits ~25 px tall with a thin dark edge. They
+        // count down without popping (152.7-153.0 s: same height every frame).
         const float CounterScale=.77f, CounterOutlineThickness=.045f;
-        Vector3 counterScale; bool counterScaleKnown; OutlinedText counterOutline;
+        bool counterScaleKnown; OutlinedText counterOutline;
         void LateUpdate()
         {
             if(!Counter) return;
-            if(!counterScaleKnown){counterScale=Counter.transform.localScale*CounterScale;Counter.transform.localScale=counterScale;counterScaleKnown=true;}
+            if(!counterScaleKnown){Counter.transform.localScale*=CounterScale;counterScaleKnown=true;}
             if(!counterOutline){counterOutline=Counter.GetComponent<OutlinedText>();if(counterOutline)counterOutline.SetThickness(CounterOutlineThickness);}
-            if(counterPunch<=0) return;
-            counterPunch=Mathf.Max(0,counterPunch-Time.deltaTime/.18f);
-            Counter.transform.localScale=counterScale*(1f+.28f*Mathf.Sin(counterPunch*Mathf.PI));
         }
         NativeArray<int> boardIndex;
         void ReleaseColors(){if(settledColors.IsCreated)settledColors.Dispose();if(paintedColors.IsCreated)paintedColors.Dispose();if(boardIndex.IsCreated)boardIndex.Dispose();}
@@ -253,6 +256,7 @@ namespace SandJamTest.Scene3D
         public void BeginAdvance(float delta)
         {
             if(sand==null || delta<=0) return;
+            if(revealGlow>0){ revealGlow=Mathf.Max(0,revealGlow-delta/RevealSeconds); empty=RevealedEmpty(); PaintBase(); }
             if(IsSettled)
             {
                 if(freshPainted){idleSteps+=Mathf.Max(1,Mathf.RoundToInt(delta/StepSeconds));PaintBase();}
