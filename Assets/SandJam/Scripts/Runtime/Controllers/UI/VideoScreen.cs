@@ -272,7 +272,7 @@ namespace SandJamTest.Scene3D
             if(level)level.position=new Vector3(ab.center.x,ab.min.y+ab.size.y*.22f,level.position.z);
             // Thin dark rods from the top bar to the sign.
             if(bar)FitHangers(bar,ab.max.y-.03f,true);
-            StartCoroutine(SoftSignInk());
+            StartCoroutine(SignText());
         }
         // Original "JOIN" plaque under the Sand Quest chest: the gold label art (Chest_Label_Enable, 262x111), same
         // width as the drawn pill it replaces. Kept when the art is absent.
@@ -287,8 +287,11 @@ namespace SandJamTest.Scene3D
             r.FitWorldSize(width,height);
             label.position=new Vector3(b.center.x,b.center.y,label.position.z);
         }
-        IEnumerator SoftSignInk()
+        // Recording 2 (244 s): the number and LEVEL are white with a thin near-black edge (the shared ink), the number
+        // 6% smaller and 15 px higher, LEVEL 12% smaller and 14 px higher than first built.
+        IEnumerator SignText()
         {
+            Place(Home.transform.Find("147"),.94f,0,-15);Place(Home.transform.Find("LEVEL"),.88f,0,-14);
             // The outline component is added by TextOutliner a moment after the page is built.
             for(int i=0;i<30;i++)
             {
@@ -296,12 +299,13 @@ namespace SandJamTest.Scene3D
                 foreach(var name in new[]{"147","LEVEL"})
                 {
                     var t=Home.transform.Find(name);var o=t?t.GetComponent<OutlinedText>():null;
-                    if(o)o.SetInk(new Color(.2f,.42f,.72f));else if(t)done=false;
+                    if(o)o.SetThickness(SignOutline);else if(t)done=false;
                 }
                 if(done)yield break;
                 yield return new WaitForSecondsRealtime(.2f);
             }
         }
+        const float SignOutline=.03f;
         static void Tint(Transform t,Color color)
         {
             if(!t)return;var r=t.GetComponent<Renderer>();if(!r)return;

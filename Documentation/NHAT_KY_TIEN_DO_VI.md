@@ -1093,3 +1093,20 @@ không có khối đặc biệt, không khóa ô chờ.
 - Ảnh ghép: nhân vật cùng cỡ, chân trên lối đi.
 - Run all checks qua 8/8.
 
+### Chữ trên bảng Level ở Home
+
+**Đo** (video 2, giây 244)
+
+- Số và chữ LEVEL của bản gốc màu trắng, viền đen mảnh. Bản mình viền xanh dày (đặt riêng trong `SoftSignInk`).
+- Bản mình số to hơn 6% và thấp hơn 15 px; LEVEL to hơn 12% và thấp hơn 14 px.
+
+**Sửa** (`VideoScreen`)
+
+- `SoftSignInk` thay bằng `SignText`: dùng màu viền chung, độ dày `SignOutline` 0,03, chỉnh cỡ và vị trí bằng `Place`.
+
+**Kiểm tra**
+
+- Số (339,376,210×92) so với (343,373,211×97).
+- LEVEL (383,563,122×33) so với (387,560,122×33).
+- Run all checks qua 8/8.
+
