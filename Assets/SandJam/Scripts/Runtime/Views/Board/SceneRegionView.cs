@@ -46,7 +46,7 @@ namespace SandJamTest.Scene3D
         readonly List<Vector2Int> previousMoving=new List<Vector2Int>(256);
         int lastRemaining=-1;
         bool lastOpen, lastVisible;
-        float stepTime, completionGlow;
+        float stepTime;
         // One grain enters per step; the original pours roughly 550-600 cells per second.
         const float StepSeconds=1f/320f; // calm, continuous trickle (one grain enters per step)
         // Fresh-sand sheen: newly settled grains start this much lighter and fade over ~0.4 s. The original has
@@ -79,7 +79,7 @@ namespace SandJamTest.Scene3D
         }
         public void ResetFlow()
         {
-            advancing=false; idleSteps=0; revealGlow=0; seenHidden=false; lastSettleStep=0; freshPainted=false; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0;completionGlow=0; lockDone=false;
+            advancing=false; idleSteps=0; revealGlow=0; seenHidden=false; lastSettleStep=0; freshPainted=false; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0; lockDone=false;
         }
         void ApplyLock(Region region)
         {
@@ -156,7 +156,7 @@ namespace SandJamTest.Scene3D
             // Run avoids dispatch/wait overhead for these small regions while using Burst native code.
             // The Burst job also writes the colours straight into the board texture (no per-cell C# loop).
             if(!boardIndex.IsCreated){boardIndex=new NativeArray<int>(sand.Filled.Length,Allocator.Persistent);for(int i=0;i<boardIndex.Length;i++)boardIndex[i]=sand.Rows[i]*Board.Width+sand.Cols[i];}
-            new PaintRegionJob{Filled=sand.Filled,Colors=settledColors,Output=paintedColors,Empty=empty,Glow=.12f*completionGlow,
+            new PaintRegionJob{Filled=sand.Filled,Colors=settledColors,Output=paintedColors,Empty=empty,
                 SettleStep=sand.SettleStep,Now=sand.StepCount+idleSteps,FreshSteps=FreshSteps,FreshLift=FreshLift,
                 BoardIndex=boardIndex,BoardBackground=Board.BackgroundPixels,BoardPixels=Board.Pixels}.Run();
             Board.MarkDirty();
@@ -215,7 +215,9 @@ namespace SandJamTest.Scene3D
         NativeArray<int> boardIndex;
         void ReleaseColors(){if(settledColors.IsCreated)settledColors.Dispose();if(paintedColors.IsCreated)paintedColors.Dispose();if(boardIndex.IsCreated)boardIndex.Dispose();}
         void OnDestroy(){if(sand!=null)sand.Dispose();ReleaseColors();if(FlowMask)Destroy(FlowMask);}
-        [BurstCompile]
+        // Compiled before first use in the editor (like the sand step job): asynchronously it kept running the previous
+        // build after a field change, reading the new fields at the old offsets.
+        [BurstCompile(CompileSynchronously=true)]
         public struct PaintRegionJob : IJob
         {
             [ReadOnly] public NativeArray<byte> Filled;
@@ -226,7 +228,7 @@ namespace SandJamTest.Scene3D
             [ReadOnly] public NativeArray<int> BoardIndex;
             [NativeDisableContainerSafetyRestriction] public NativeArray<Color32> BoardBackground, BoardPixels;
             public Color32 Empty;
-            public float Glow, FreshLift;
+            public float FreshLift;
             public int Now, FreshSteps;
             public void Execute()
             {
@@ -240,7 +242,7 @@ namespace SandJamTest.Scene3D
                         // Freshly landed grains catch the light, then fade into the pile.
                         int age=Now-SettleStep[i];
                         float fresh=age>=0 && age<FreshSteps?FreshLift*(1f-(float)age/FreshSteps):0f;
-                        c=(Color32)Color.Lerp((Color)Colors[i],Color.white,Glow+fresh);
+                        c=(Color32)Color.Lerp((Color)Colors[i],Color.white,fresh);
                     }
                     Output[i]=c;
                     if(board){int p=BoardIndex[i];BoardBackground[p]=c;BoardPixels[p]=c;}
@@ -255,10 +257,10 @@ namespace SandJamTest.Scene3D
             if(IsSettled)
             {
                 if(freshPainted){idleSteps+=Mathf.Max(1,Mathf.RoundToInt(delta/StepSeconds));PaintBase();}
-                if(lastRemaining==0 && completionGlow<1)
+                // A finished region keeps its plain colour (recording 2, 55.5-62 s: grey stays 134); only its count goes.
+                if(lastRemaining==0 && Counter.gameObject.activeSelf)
                 {
-                    completionGlow=Mathf.MoveTowards(completionGlow,1,delta/.35f);
-                    PaintBase(); Counter.gameObject.SetActive(false);
+                    Counter.gameObject.SetActive(false);
                     var backing=transform.Find("Amount backing");if(backing)backing.gameObject.SetActive(false);
                 }
                 return;

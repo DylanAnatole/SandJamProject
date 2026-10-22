@@ -1522,3 +1522,23 @@ chạy (tới 65°), trục này quay theo, nên chân bị hất ra sau thay v�
 - Chạy chéo dài: số nằm nửa phải khối, nghiêng theo.
 - Đổ cát (level 2): số lệch nhẹ theo góc đổ, về giữa khi khối rời ô.
 - Tự chơi level 2, 68, 259, 267: thắng cả 4. Run all checks qua 8/8.
+
+### Cảm giác chơi: vùng đã đầy giữ đúng màu (bỏ sáng 12%); job tô màu biên dịch Burst đồng bộ
+
+**Đo**
+
+- Video 2, vùng xám giây 54–62: đầy lúc 55,5 s, sau đó giữ 134 tới cuối, không sáng lên.
+- Bản mình: vùng nào đầy thì sáng thêm 12% về phía trắng mãi mãi (`completionGlow`). Xám 132 hiện thành 144,
+  nên tranh đã tô xong nhạt hơn bản gốc.
+
+**Sửa**
+
+- `SceneRegionView`: bỏ `completionGlow` và trường `Glow` của `PaintRegionJob`; vùng đầy chỉ ẩn số đếm.
+- `PaintRegionJob` thêm `[BurstCompile(CompileSynchronously=true)]` như `StepJob`. Sau khi bỏ một trường, editor
+  vẫn chạy bản Burst cũ (biên dịch bất đồng bộ) và đọc các trường mới ở vị trí cũ; bài kiểm tra bắt được lỗi này.
+- `BurstSandChecks`: kiểm tra ánh cát mới theo tuổi hạt (0, 45, 90, 180 bước) thay cho kiểm tra `Glow`.
+
+**Kiểm tra**
+
+- Level 267 tô xong: xám (128, hạt tối 120), cam (248,128,0), tím (104,0,232 / 72,0,160) khớp video.
+- Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.

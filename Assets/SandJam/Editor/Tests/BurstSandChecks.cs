@@ -18,25 +18,26 @@ namespace SandJamTest.Editor
             using(var noBoard=new NativeArray<int>(0,Allocator.TempJob))
             using(var noPixels=new NativeArray<Color32>(0,Allocator.TempJob))
             {
-                // Grains landed long ago: no fresh-grain highlight, only the region glow is tested here.
-                var settledWrite=settled;for(int i=0;i<256;i++)settledWrite[i]=-100000;
+                // Every grain landed `age` steps ago: the fresh-grain highlight fades from FreshLift to nothing.
+                var settledWrite=settled;for(int i=0;i<256;i++)settledWrite[i]=0;
                 var fillWrite=filled;var colorWrite=colors;
                 for(int i=0;i<256;i++){fillWrite[i]=(byte)(i%3==0?0:1);colorWrite[i]=new Color32((byte)i,(byte)(255-i),(byte)(i/2),255);}
                 Color32 empty=new Color32(182,180,204,255);
-                foreach(float glow in new[]{0f,.03f,.06f,.12f})
+                foreach(int age in new[]{0,45,90,180,100000})
                 {
-                    new SceneRegionView.PaintRegionJob{Filled=filled,Colors=colors,Output=output,Empty=empty,Glow=glow,SettleStep=settled,Now=0,FreshSteps=180,FreshLift=.32f,BoardIndex=noBoard,BoardBackground=noPixels,BoardPixels=noPixels}.Run();
+                    float glow=age<180?.32f*(1f-age/180f):0f;
+                    new SceneRegionView.PaintRegionJob{Filled=filled,Colors=colors,Output=output,Empty=empty,SettleStep=settled,Now=age,FreshSteps=180,FreshLift=.32f,BoardIndex=noBoard,BoardBackground=noPixels,BoardPixels=noPixels}.Run();
                     for(int i=0;i<256;i++)
                     {
                         Color32 expected=filled[i]==0?empty:(Color32)Color.Lerp(colors[i],Color.white,glow);
                         var actual=output[i];
                         // Burst/native float rounding can differ by one 8-bit colour step.
                         if(Math.Abs(actual.r-expected.r)>1 || Math.Abs(actual.g-expected.g)>1 || Math.Abs(actual.b-expected.b)>1 || actual.a!=expected.a)
-                            throw new Exception("Burst pixel colour differs at "+i);
+                            throw new Exception("Burst pixel colour differs at "+i+" age "+age+" got "+actual+" want "+expected);
                     }
                 }
             }
-            UnityEngine.Debug.Log("PASS Burst region colours: locked, black/white, partial and completed glow");
+            UnityEngine.Debug.Log("PASS Burst region colours: locked, black/white, fresh-grain highlight");
         }
         public static void Run()
         {
