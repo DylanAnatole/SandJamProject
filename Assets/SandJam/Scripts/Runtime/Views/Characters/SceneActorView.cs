@@ -24,7 +24,7 @@ namespace SandJamTest.Scene3D
         public void Punch(float strength) { squashVelocity += strength * 18f; }
         // A cube that cannot go: a light left-right wobble, fading out (ShakeSwings full swings in ShakeSeconds).
         const float ShakeSeconds = .34f, ShakeSwings = 2, ShakeAmount = .035f;
-        public void Shake() { shakeTime = ShakeSeconds; }
+        public void Shake() { shakeTime = ShakeSeconds; HapticsManager.Refused(); }
         Quaternion baseRotation;
         // Original camera looks down the lanes like a floor: rows nearer the bottom of the screen are nearer the
         // camera, so they look bigger and the lanes fan out. Rows below the front row are pulled toward the camera.

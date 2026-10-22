@@ -3,8 +3,9 @@ using UnityEngine;
 
 namespace SandJamTest
 {
-    // Short, light vibrations driven by game events (original VibrationManager): tap on pick, a firmer tick when a
-    // region is completed, a double pulse on win, a soft buzz on loss. Respects the Vibration toggle in Settings.
+    // Short, light vibrations driven by game events (original VibrationManager): tap on pick, a faint tick when an
+    // emptied box leaves, a firmer tick when a region is completed or a pick is refused, a strong pulse on win, a soft
+    // buzz on loss. Respects the Vibration toggle in Settings.
     // Android uses the system Vibrator with millisecond durations (Handheld.Vibrate is ~400 ms, far too long);
     // iOS falls back to Handheld.Vibrate only for the big moments. No-op in the editor.
     public static class HapticsManager
@@ -50,11 +51,15 @@ namespace SandJamTest
             GameEvents.LevelWon -= OnWon; GameEvents.LevelWon += OnWon;
             GameEvents.LevelLost -= OnLost; GameEvents.LevelLost += OnLost;
             GameEvents.BoosterUsed -= OnBooster; GameEvents.BoosterUsed += OnBooster;
+            GameEvents.CharacterEmptied -= OnEmptied; GameEvents.CharacterEmptied += OnEmptied;
         }
         static void OnSelected(int color) { Pulse(12); }
         static void OnRegion(int region, int color) { Pulse(28); }
         static void OnWon(int level) { Pulse(70, true); }
         static void OnLost(int level) { Pulse(45, true); }
         static void OnBooster(string action, int paid) { Pulse(20); }
+        static void OnEmptied(int color) { Pulse(8); }
+        // A box that cannot go: its shake is felt as a firm tick.
+        public static void Refused() { Pulse(30); }
     }
 }

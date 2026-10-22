@@ -1577,3 +1577,24 @@ nhẹ khi dừng.
 
 **Kiểm tra:** quay level 68 làn trái: khối vàng dồn lên đều trong ~0,38 s. Tự chơi level 2, 68, 267 thắng cả 3.
 Run all checks qua 8/8.
+
+### Cảm giác chơi: đo độ nhạy chạm và cú đáp; thêm rung khi khối rời đi và khi chạm khối không đi được
+
+**Đo (không cần sửa)**
+
+- Chạm: nhận ngay lúc chạm xuống (`GetMouseButtonDown`), khối chạy trong cùng khung hình.
+- Vùng chạm (level 68): collider rộng hơn khối ~10% mỗi bên. Khe giữa làn/hàng ~10–20 px. Collider gốc (prefab
+  `Character`: 0,75 × 1,15) cao hơn khối. Không kéo cao collider của mình, vì collider khối hàng sau (gần camera
+  hơn) sẽ đè lên nửa dưới khối hàng đầu.
+- Cú đáp: bản gốc (video 2, giây 155,9–156,2) hạ êm, không bẹp. Bản mình chỉ thấp đi ~4% (cao 189 → 182 px),
+  đủ gần.
+- Mã gốc giải nén chỉ còn tên hàm (`SelectionController.CharacterShake`, `_inputTimerCounter`), không đọc được
+  thân hàm.
+
+**Sửa** (rung, chỉ có tác dụng trên điện thoại)
+
+- `HapticsManager`: khối hết cát rời đi → `Pulse(8)`. `Refused()` → `Pulse(30)`.
+- `SceneActorView.Shake` gọi `HapticsManager.Refused()`: chạm vào khối không đi được thì vừa lắc vừa rung.
+
+**Kiểm tra:** gọi `Shake` trong Play mode không lỗi, khối vẫn lắc ±0,03. Tự chơi level 2, 68 thắng. Run all
+checks qua 8/8.
