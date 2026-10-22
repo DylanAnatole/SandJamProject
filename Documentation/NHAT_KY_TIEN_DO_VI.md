@@ -1609,3 +1609,24 @@ checks qua 8/8.
 **Sửa:** `ProjectileManager.FireInterval` 0,1 → 0,115 s, comment ghi lại số đo.
 
 **Kiểm tra:** tự chơi level 2, 267 thắng. Run all checks qua 8/8.
+
+### Popup "NO MORE LIVES!" đúng cỡ, nút đóng ở góc, thanh xu tối như bản gốc
+
+**Đo** (video 1, giây 1330,6–1334,2: hết tim, về Home)
+
+- Popup bật lên trong ~0,3 s, lố rất ít (~3%) rồi đứng yên. Khung rộng 779 px, mép đỏ từ y 258 đến 1161.
+- Nút đóng ~96 px, đè lên góc trên phải khung. Thanh xu tối theo nền (độ sáng 175 → 63).
+- ~1,5 s sau, bảng "Special Refill Pack" bật ra bên dưới. Đây là gói mua bằng tiền thật (`bundle_refillpack`
+  trong `RC_Shop.asset`), không làm (clone không có thanh toán).
+- Bản mình: rộng 851 px, thấp hơn ~30 px, nút đóng nhỏ (~66 px) nằm lệch lên trên, thanh xu vẫn sáng.
+
+**Sửa** (`LivesPopup`)
+
+- `FitCard(noLives, 0,915, 53)` → rộng 779 px, mép đỏ từ y 240 đến 1171.
+- Nút đóng 145 × 168 đơn vị canvas tại (511, 556), vùng chạm 0,7.
+- `DimCoinBar(noLives, 0,38)` → thanh xu 68 (gốc 63).
+
+**Kiểm tra**
+
+- Mở popup: collider nút đóng có (0,64), đóng được.
+- Luồng thua / bỏ cuộc / về Home không lỗi. Run all checks qua 8/8.

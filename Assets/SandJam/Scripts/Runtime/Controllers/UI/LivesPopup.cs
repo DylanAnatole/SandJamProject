@@ -43,11 +43,15 @@ namespace SandJamTest.Scene3D
             Ui(noLives, "Shop/icon-coin_1", LivesCentre, LivesUnit, -190, -446, 90, 90, -6.5f);
             SetText(OutlinedLabel(noLives, "Refill label", LivesPos(30, -446, -6.6f), .048f), EconomyManager.RefillLivesPrice + " Refill");
             Hit(noLives, LivesPos(5, -455, -8.5f), new Vector2(596.3f * LivesUnit, 213.3f * LivesUnit), "refill-lives");
-            // Red exit button anchored to the frame's top-right corner.
-            // (pulled slightly inside the frame: on narrow screens the corner would sit on the coin counter)
-            Ui(noLives, "Lives/button-exit", LivesCentre, LivesUnit, 480, 600, 100, 116, -6.6f);
-            Hit(noLives, LivesPos(480, 600, -8.5f), new Vector2(.6f, .6f), "close-failed");
+            // Red exit button over the frame's top-right corner (recording 1, 1333.9 s: ~96 px, centred at 804, 255).
+            Ui(noLives, "Lives/button-exit", LivesCentre, LivesUnit, 511, 556, 145, 168, -6.6f);
+            Hit(noLives, LivesPos(511, 556, -8.5f), new Vector2(.7f, .7f), "close-failed");
+            // Recording 1 (1333.9 s): the frame is 779 px wide, its red edges from y 258 to 1161 (ours was ~10% larger and
+            // ~30 px lower).
+            PopupScreens.FitCard(noLives, CardScale, CardShiftPx);
+            PopupScreens.DimCoinBar(noLives, .38f); // greyed with the HUD under it (175 -> 63 in the recording)
         }
+        const float CardScale = .915f, CardShiftPx = 53f;
 
         public void ShowPopup()
         {
