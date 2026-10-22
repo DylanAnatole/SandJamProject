@@ -1075,3 +1075,21 @@ không có khối đặc biệt, không khóa ô chờ.
 - Luồng thua đúng.
 - Run all checks qua 8/8.
 
+### Lối đi và nhân vật ở Home
+
+**Đo** (video 2, giây 244)
+
+- Lối đi bản gốc: mép sau ở 1176 px, khe giữa ở 1224 px, mép trước ở 1288 px. Bản mình 1144 / 1200 / 1272 px.
+- Nhân vật đi trên lối đi của bản gốc nhỏ hơn và thấp hơn.
+
+**Sửa** (`VideoScreen`)
+
+- `WalkwayTopDropPx` 32 và `WalkwayBottomDropPx` 14. Sân khấu phía dưới co mép trên theo, để trời hiện xuống tới lối đi.
+- `MascotScale` 0,8 và `MascotDropPx` 24.
+
+**Kiểm tra**
+
+- Lối đi 1176 / 1224 / 1288 px, trùng bản gốc.
+- Ảnh ghép: nhân vật cùng cỡ, chân trên lối đi.
+- Run all checks qua 8/8.
+

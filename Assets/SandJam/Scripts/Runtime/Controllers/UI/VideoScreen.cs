@@ -180,6 +180,13 @@ namespace SandJamTest.Scene3D
             {
                 var wr=walkway.GetComponent<SpriteRenderer>();
                 if(walkwayEdge)floorBottom=walkwayEdge.GetComponent<Renderer>().bounds.min.y;
+                // Recording 2 (244 s): the walkway's back edge is 32 px lower and its front lip 14 px lower; the stage
+                // below loses the same top strip so the sky shows down to the walkway.
+                floorTop-=WalkwayTopDropPx*Px;floorBottom-=WalkwayBottomDropPx*Px;
+                // The cube walking on it is smaller and lower too (recording 2, 244 s: ~95 px wide, feet at ~1245 px).
+                if(Mascot){Mascot.localScale*=MascotScale;Mascot.position+=Vector3.down*MascotDropPx*Px;mascotPosition=Mascot.localPosition;}
+                if(lowerStage){var lr=lowerStage.GetComponent<Renderer>();var lb=lr.bounds;float k=(floorTop-lb.min.y)/lb.size.y;
+                    var ls=lowerStage.localScale;lowerStage.localScale=new Vector3(ls.x,ls.y*k,ls.z);lowerStage.position+=Vector3.up*(lb.min.y-lr.bounds.min.y);}
                 if(wr)
                 {
                     wr.sprite=WalkwaySprite();wr.color=Color.white;
@@ -400,6 +407,7 @@ namespace SandJamTest.Scene3D
         }
         // Gameplay top bar measured on recording 2 (153 s): the gear, level pill and coin wallet sit ~20 px higher; the
         // gear a little smaller and further left, the pill a little wider, the wallet further right.
+        const float WalkwayTopDropPx=32,WalkwayBottomDropPx=14,MascotScale=.8f,MascotDropPx=24f;
         void FitGameplayHud()
         {
             var hud=Gameplay.transform.Find("HUD - visual controls only");if(!hud)return;
