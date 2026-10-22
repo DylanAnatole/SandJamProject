@@ -210,7 +210,9 @@ namespace SandJamTest.Scene3D
         {
             if(!Counter) return;
             if(!counterScaleKnown){Counter.transform.localScale*=CounterScale;counterScaleKnown=true;}
-            if(!counterOutline){counterOutline=Counter.GetComponent<OutlinedText>();if(counterOutline)counterOutline.SetThickness(CounterOutlineThickness);}
+            // TryGetComponent: a missing component costs nothing (GetComponent built a null-error message every frame in
+            // the editor, ~0.6 KB per counter).
+            if(!counterOutline && Counter.TryGetComponent(out counterOutline))counterOutline.SetThickness(CounterOutlineThickness);
         }
         NativeArray<int> boardIndex;
         void ReleaseColors(){if(settledColors.IsCreated)settledColors.Dispose();if(paintedColors.IsCreated)paintedColors.Dispose();if(boardIndex.IsCreated)boardIndex.Dispose();}

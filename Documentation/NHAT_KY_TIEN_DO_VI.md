@@ -1649,3 +1649,22 @@ checks qua 8/8.
 - Level 267: rương x 680–845, y 667–847; chữ 70 × 22 px.
 - Level 68: rương, bảng, chữ vẫn ẩn.
 - Tự chơi level 68 thắng. Run all checks qua 8/8.
+
+### Độ mượt: bỏ cấp phát bộ nhớ mỗi khung của số đếm trên vùng; cảnh vào màn đã khớp
+
+**Đo**
+
+- Vào màn (video 1, giây 152,2): cắt cứng từ SAND JAM sang màn chơi, sau đó màn hình đứng yên hoàn toàn tới lần
+  chạm đầu. Bản mình cũng đứng yên (khác biệt giữa các khung = 0), không sửa.
+- Cấp phát bộ nhớ mỗi khung (ProfilerRecorder "GC Allocated In Frame", level 267): Home 8,3 KB (nền editor),
+  màn chơi đứng yên 32 KB, đang chơi 26 KB.
+- `Advance` và `SandFx` cấp phát 0 byte. Đọc cây Profiler một khung: 23,6 KB nằm ở
+  `SceneRegionView.LateUpdate → GetComponentNullErrorMessage`. `GetComponent<OutlinedText>()` gọi mỗi khung
+  cho các số đếm chưa có viền; trong editor mỗi lần không thấy, Unity tạo một chuỗi báo lỗi.
+
+**Sửa:** `SceneRegionView.LateUpdate` dùng `TryGetComponent` (không cấp phát khi không có).
+
+**Kiểm tra**
+
+- Màn chơi đứng yên 8,3 KB (bằng nền editor); một khung đang chơi, phần của game chỉ ~0,5 KB.
+- Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
