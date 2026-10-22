@@ -1598,3 +1598,14 @@ Run all checks qua 8/8.
 
 **Kiểm tra:** gọi `Shake` trong Play mode không lỗi, khối vẫn lắc ±0,03. Tự chơi level 2, 68 thắng. Run all
 checks qua 8/8.
+
+### Cảm giác chơi: nhịp bắn viên cát đúng số đo
+
+**Đo** (video 2, giây 57,6–58,6, khối vàng đổ; dò vệt sáng trong dải giữa khối và tranh)
+
+- 7 viên ở 57,64 / 57,76 / 57,89 / 58,01 / 58,12 / 58,23 / 58,33 s: cách nhau 0,11–0,12 s.
+- Comment cũ ghi "~0,07 s", sai. Bản mình bắn 0,1 s.
+
+**Sửa:** `ProjectileManager.FireInterval` 0,1 → 0,115 s, comment ghi lại số đo.
+
+**Kiểm tra:** tự chơi level 2, 267 thắng. Run all checks qua 8/8.

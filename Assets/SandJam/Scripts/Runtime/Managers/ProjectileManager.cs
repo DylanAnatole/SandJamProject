@@ -5,11 +5,11 @@ using UnityEngine;
 namespace SandJamTest.Scene3D
 {
     // Sand shots as in the original (54 fps recording of level 268): while a cube pours it fires a small square
-    // pellet of its colour about every 0.07 s; each pellet flies straight from the cube top to the region's pour
-    // mouth in ~0.08 s, trailing a short pale streak. The falling thread inside the region is drawn by the region.
+    // pellet of its colour about every 0.115 s (recording 2, 57.64-58.33 s: seven pellets 0.11-0.12 s apart); each
+    // pellet flies straight from the cube top to the region's pour mouth in ~0.08 s, trailing a short pale streak. The falling thread inside the region is drawn by the region.
     public sealed class ProjectileManager
     {
-        const float FireInterval = .1f, FlightTime = .08f, PelletSize = .075f, TrailLength = .9f;
+        const float FireInterval = .115f, FlightTime = .08f, PelletSize = .075f, TrailLength = .9f;
         readonly Transform root;
         readonly Color[] colors;
         readonly int[] colorIds;
