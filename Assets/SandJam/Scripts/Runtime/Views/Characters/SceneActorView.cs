@@ -67,9 +67,9 @@ namespace SandJamTest.Scene3D
         const float PourYaw = 30f, PourTilt = 3f;
         static readonly Vector3 PourPivot = new Vector3(0, .42f, 0); // block centre in Visual space
         public void Pour(Vector3 target) { pourTarget = target; }
-        // Recording 2 (155.6-155.9 s, zoomed): both legs show side by side under the block, short and thick; turned
-        // toward the run they hid behind each other as one thin stick.
-        const float RunLegYaw = 0f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.25f;
+        // Recording 2 (155.6-155.9 s and 48.6-49.3 s, zoomed): both legs come out of the middle of the block's base,
+        // thick, ~0.6 of its height, with bent knees; turned toward the run they hid behind each other.
+        const float RunLegYaw = 0f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.45f;
         Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
         void FindRig()
         {
@@ -97,7 +97,10 @@ namespace SandJamTest.Scene3D
                 return;
             }
             var frame = pose ? pose : hips;
-            var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, Vector3.up) * Quaternion.AngleAxis(legDrop, frame.right);
+            // The legs swing down about the screen's horizontal (the rig's right at rest): about the rig's own right,
+            // once the box had turned toward its run they swung out behind it instead of below it.
+            var dropAxis = new Vector3(Mathf.Sign(frame.right.x), 0, 0);
+            var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, Vector3.up) * Quaternion.AngleAxis(legDrop, dropAxis);
             // Longer legs while running (the bones' length axis is their local Y).
             var stretch = new Vector3(1, 1 + (RunLegStretch - 1) * legDrop / RunLegDrop, 1);
             foreach (var thigh in new[] { leftThigh, rightThigh })

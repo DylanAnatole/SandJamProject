@@ -1451,3 +1451,26 @@ Lúc đổ cát đã sửa lỗi này trước đây, nhưng lúc chạy thì ch
 - Chạy chéo dài: khối quay về hướng chạy, đứng thẳng, chân sải theo hướng, gần tới ô thì quay lại.
 - Chạy thẳng (level 267, làn trái): quay rất nhẹ, hai chân dưới đáy như lượt trước.
 - Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
+
+### Cảm giác chơi: chân mọc từ giữa đáy khối khi chạy chéo, dài hơn (yêu cầu người dùng)
+
+**Đo** (video 2, cú chạy làn phải → ô trái nhất, từng khung ~1/27 s)
+
+- Bản gốc: hai chân dày mọc ra từ giữa đáy khối, dài ~0,6–0,7 chiều cao khối, đầu gối gập, sải bước rộng ~nửa
+  bề ngang khối, chu kỳ ~0,2 s. Khối gần như không nhún.
+- Bản mình: chân bị đẩy ra sau hoặc sang bên khối, dài ~0,4 chiều cao khối.
+
+**Nguyên nhân:** động tác hạ chân (`legDrop`) xoay quanh trục ngang của khung xương. Từ khi khối quay về hướng
+chạy (tới 65°), trục này quay theo, nên chân bị hất ra sau thay vì xuống dưới.
+
+**Sửa** (`SceneActorView`)
+
+- Hạ chân quanh trục ngang của màn hình (`dropAxis`, cùng chiều với trục ngang của khung xương lúc đứng yên).
+- `RunLegStretch` 1,25 → 1,45.
+- Đo góc và kích thước khối từng khung khi chạy: thay đổi mượt, không rung, nên giữ nguyên.
+
+**Kiểm tra**
+
+- Chạy chéo dài: chân dưới đáy khối, sải theo hướng chạy.
+- Chạy thẳng: hai chân dưới đáy như trước.
+- Tự chơi level 2, 267: thắng. Run all checks qua 8/8.
