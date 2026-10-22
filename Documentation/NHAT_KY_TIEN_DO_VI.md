@@ -1051,3 +1051,27 @@ không có khối đặc biệt, không khóa ô chờ.
 - Ô xu lệch ≤ 5 px.
 - Run all checks qua 8/8.
 
+## 2026-10-22
+
+### Huy hiệu số lượng booster
+
+**Đo** (video 1, giây 720)
+
+- Huy hiệu vàng của bản gốc khoảng 46 px, nằm thấp ở góc dưới-trái của nút; bản mình 37 px, cao hơn 17 px.
+- Số trên huy hiệu của bản gốc màu trắng, viền tối; bản mình màu nâu.
+
+**Sửa** (`BoosterController`)
+
+- `BadgeSize` 0,3; `BadgeShiftPx` (6, 17).
+- Số màu trắng, thêm viền `TextOutliner.Ink`. Vì huy hiệu rất nhỏ trong không gian thế giới, phải kéo dãn trục sâu
+  của chữ để viền nằm sau chữ nhưng trước huy hiệu.
+
+**Ghi chú môi trường:** cửa sổ Game của Unity bị đổi về "Free Aspect" (640×480, màn ngang), làm các nút booster
+được đặt ra ngoài màn hình. Đã chuyển lại "9:16 Aspect". Code không lỗi.
+
+**Kiểm tra**
+
+- Huy hiệu 47×45 px ở đúng góc như bản gốc.
+- Luồng thua đúng.
+- Run all checks qua 8/8.
+

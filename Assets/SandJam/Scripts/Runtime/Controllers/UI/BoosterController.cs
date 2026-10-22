@@ -112,19 +112,26 @@ namespace SandJamTest.Scene3D
             var size = image.sprite.bounds.size;
             badge.transform.localPosition = new Vector3(-size.x * .5f, -size.y * .22f, -.05f);
             var lossy = image.transform.lossyScale;
-            float worldHeight = .24f; // original badge: small, on the button's left edge
+            // Original badge (recording 1, 720 s): ~46 px across, on the button's lower-left corner.
+            float worldHeight = BadgeSize;
             badge.transform.localScale = new Vector3(worldHeight / (sprite.bounds.size.y * lossy.x), worldHeight / (sprite.bounds.size.y * lossy.y), 1);
             var r = badge.AddComponent<SpriteRenderer>(); r.sprite = sprite; r.sortingOrder = image.sortingOrder; // in front of the button by depth, under popup layers
             var text = new GameObject("Quantity") { layer = badge.layer };
             text.transform.SetParent(badge.transform, false); text.transform.localPosition = new Vector3(0, 0, -.05f);
             var label = text.AddComponent<TextMesh>();
             label.text = "1"; label.fontSize = 64; label.anchor = TextAnchor.MiddleCenter; label.alignment = TextAlignment.Center;
-            label.fontStyle = FontStyle.Bold; label.color = new Color(.33f, .2f, .05f);
+            label.fontStyle = FontStyle.Bold; label.color = Color.white; // white with a dark outline (recording 1, 720 s)
             label.characterSize = sprite.bounds.size.y * .11f;
             if (controller.InterfaceFont) { label.font = controller.InterfaceFont; text.GetComponent<MeshRenderer>().sharedMaterial = controller.InterfaceFont.material; }
             text.GetComponent<MeshRenderer>().sortingOrder = r.sortingOrder;
+            OutlinedText.Add(label, TextOutliner.Ink, .08f);
+            // The badge is tiny in world units: stretch the label's depth so its outline copies sit clearly behind it.
+            text.transform.localScale = new Vector3(1, 1, 4); // copies at -.01: behind the digit, in front of the badge
             badges[action] = badge; badgeLabels[action] = label;
+            badge.transform.position += new Vector3(BadgeShiftPx.x, -BadgeShiftPx.y, 0) * VideoScreen.Px;
         }
+        const float BadgeSize = .3f;
+        static readonly Vector2 BadgeShiftPx = new Vector2(6, 17);
         void RefreshBadges()
         {
             foreach (var pair in placeholders)
