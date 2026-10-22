@@ -1373,3 +1373,24 @@ khói cũ.
 trên trái (sáng) xuống dưới phải (0,78), bo góc, lọc mượt.
 
 **Kiểm tra:** quay level 267: khối pháo giấy mềm, không viền tối. Tự chơi level 267 thắng. Run all checks qua 8/8.
+
+### Cảm giác chơi: hạt cát tối đúng màu riêng của từng màu (bảng màu gốc)
+
+**Đo**
+
+- So cả quá trình tô level 267 với video 2 (giây 50–63,5, cùng bức tranh): viền vàng chữ U dâng đều hai nhánh ở
+  cả hai bản (thứ tự lấp `SeepOrder` theo hàng), tốc độ và thứ tự mở vùng khớp.
+- Hạt tối trong video: vàng (208,176,8), tím (72,0,160), xám (120,120,120). Tỉ lệ so với màu nền khác nhau theo
+  từng màu (×0,84 / ×0,7 / ×0,94).
+- Bảng màu gốc `OriginalConfig` có sẵn trường `dark` cho từng màu: vàng (214,172,0), tím (78,0,166), xám
+  (125,125,125), khớp số đo. Bản mình dùng chung ×0,85 nên hạt tối của tím quá nhạt, của xám quá đậm.
+
+**Sửa** (`SceneRegionView`)
+
+- `DarkGrain` lấy màu `dark` của bảng màu gốc; màu nào không có thì dùng ×0,85.
+- `SandShade(base, dark, x, y)` chọn giữa 2 màu, dùng cho cát đã đổ và hạt đang rơi.
+
+**Kiểm tra**
+
+- Quay level 267: hạt tối của tím ra (72,0,160), đúng bản gốc.
+- Tự chơi level 2, 68: thắng. Run all checks qua 8/8.

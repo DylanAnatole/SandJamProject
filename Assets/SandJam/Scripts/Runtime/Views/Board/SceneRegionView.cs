@@ -41,7 +41,7 @@ namespace SandJamTest.Scene3D
         public Texture2D FlowMask { get; private set; }
         BurstSandSimulation sand;
         int beforeStep;bool advancing;
-        Color32 solid, empty;
+        Color32 solid, darkGrain, empty;
         NativeArray<Color32> settledColors, paintedColors;
         readonly List<Vector2Int> previousMoving=new List<Vector2Int>(256);
         int lastRemaining=-1;
@@ -130,9 +130,10 @@ namespace SandJamTest.Scene3D
                     FlowMask.SetPixels32(maskPixels);FlowMask.Apply(false,true);
                 }
                 solid=OverrideSandColor?SandColor:ColorPalette.Of(region.Data.ColorType);
+                darkGrain=DarkGrain(solid,OverrideSandColor?null:OriginalConfig.Color(region.Data.ColorType));
                 settledColors=new NativeArray<Color32>(sand.Filled.Length,Allocator.Persistent);
                 paintedColors=new NativeArray<Color32>(sand.Filled.Length,Allocator.Persistent);
-                for(int i=0;i<settledColors.Length;i++) settledColors[i]=SandShade(solid,sand.Cols[i],sand.Rows[i]);
+                for(int i=0;i<settledColors.Length;i++) settledColors[i]=SandShade(solid,darkGrain,sand.Cols[i],sand.Rows[i]);
             }
             if(region.Remaining==lastRemaining && region.Open==lastOpen && region.InformationVisible==lastVisible) return;
             lastRemaining=region.Remaining; lastOpen=region.Open; lastVisible=region.InformationVisible;
@@ -180,7 +181,7 @@ namespace SandJamTest.Scene3D
             }
             for(int i=0;i<sand.MovingCount;i++){var g=sand.Moving[i];
                 if(!sand.Inside(g.X,g.Y)) continue;
-                var c=SandShade(solid,g.X,g.Y+g.Index);
+                var c=SandShade(solid,darkGrain,g.X,g.Y+g.Index);
                 Board.SetGrain(g.X,g.Y,c); previousMoving.Add(new Vector2Int(g.X,g.Y));
                 // Motion trail: fill the cells a fast grain skipped this step, so the stream reads as one
                 // unbroken thread instead of a dotted line.
@@ -188,15 +189,18 @@ namespace SandJamTest.Scene3D
                     Board.SetGrain(g.X,y,c); previousMoving.Add(new Vector2Int(g.X,y));}}
         }
         bool IsFilledCell(int x,int y){int i=sand.CellIndex(x,y);return i>=0 && sand.Filled[i]!=0;}
-        // Settled sand in the original (recording 2, 58-61 s) is the base colour with about one grain in five a
-        // darker shade (x.85); no lighter grains.
+        // Settled sand in the original (recording 2, 58-61 s) is the base colour with about one grain in five in the
+        // colour's own dark shade (original config "dark": yellow 214,172,0, purple 78,0,166, grey 125 - measured
+        // 208,176,8 / 72,0,160 / 120); no lighter grains. Colours without one use x.85.
         const int DarkGrainPercent=20; const float DarkGrainShade=.85f;
-        public static Color32 SandShade(Color32 baseColor,int x,int y)
+        static Color32 DarkGrain(Color32 baseColor,OriginalConfig.ColorEntry original)
+        {
+            Color c=original!=null && original.dark.maxColorComponent>0?original.dark:(Color)baseColor*DarkGrainShade;c.a=1;return c;
+        }
+        public static Color32 SandShade(Color32 baseColor,Color32 dark,int x,int y)
         {
             uint h=(uint)(x*73856093)^(uint)(y*19349663);h^=h>>13;h*=0x5bd1e995;h^=h>>15;
-            int roll=(int)(h%100);
-            float k=roll<DarkGrainPercent?DarkGrainShade:1f;
-            Color c=(Color)baseColor*k;c.a=1;return c;
+            return (int)(h%100)<DarkGrainPercent?dark:baseColor;
         }
         // Board counters in the original (recording 2, 158 s, zoomed): digits ~25 px tall with a thin dark edge. They
         // count down without popping (152.7-153.0 s: same height every frame).
