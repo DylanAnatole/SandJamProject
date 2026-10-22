@@ -1349,3 +1349,27 @@ khói cũ.
 
 - Tự chơi level 2, 68 tới bảng Level Complete: không lỗi; kích thước bảng không đổi.
 - Run all checks qua 8/8.
+
+### Cảm giác chơi: so cảnh thắng, lúc vào màn, lúc rời ô theo thời gian thực; khối pháo giấy mềm như bản gốc
+
+**Đo (không cần sửa)**
+
+- Cảnh thắng (video 1, giây 88,6–93,2; bản mình quay level 2 theo thời gian thực):
+
+  | | Bản gốc | Bản mình |
+  |---|---|---|
+  | Tranh phóng to | ~0,6 s | ~0,7 s |
+  | Từ lúc thắng đến "Superb!" | 2,0 s | 1,8 s |
+  | Chữ "Superb!" | 1,9 s | 2,1 s |
+  | Từ lúc thắng đến bảng Level Complete | 4,6 s | 4,4 s |
+
+- Bấm PLAY (giây 151,55): bản gốc đứng ở Home ~0,6 s, chớp màn SAND JAM khi tải rồi mới vào màn. Bản mình vào
+  ngay, giữ nguyên vì nhanh hơn.
+- Khối rời ô (video 2, giây 158,5–159,0): nhảy lên rồi chạy ngang ra mép, ~0,45 s, khớp.
+- Nút gốc không co khi bấm. "Next" chuyển sang xám trong lúc xu bay về. Bản mình giữ nhún 12% cho cảm giác bấm.
+- Rung (haptics): mã gốc giải nén chỉ còn vỏ hàm, không đo được, giữ nguyên.
+
+**Sửa:** texture khối pháo giấy (`SandFx` voxel) theo video 2 (giây 153,25): bỏ viền tối 0,62, đổ bóng nhẹ từ
+trên trái (sáng) xuống dưới phải (0,78), bo góc, lọc mượt.
+
+**Kiểm tra:** quay level 267: khối pháo giấy mềm, không viền tối. Tự chơi level 267 thắng. Run all checks qua 8/8.

@@ -63,13 +63,15 @@ namespace SandJamTest.Scene3D
                 softDot.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(1 - d) * Mathf.Clamp01(1 - d)));
             }
             softDot.Apply();
-            // A little sand cube: solid colour with a darker rim.
-            voxel = new Texture2D(16, 16, TextureFormat.RGBA32, false) { name = "Fx voxel", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Point };
+            // A little sand cube as in the original's bursts (recording 2, 153.25 s): soft shading, lit at the upper left,
+            // a little darker to the lower right, rounded corners and no dark rim.
+            voxel = new Texture2D(16, 16, TextureFormat.RGBA32, false) { name = "Fx voxel", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++)
             {
-                bool rim = x < 2 || y < 2 || x > 13 || y > 13;
-                float shade = rim ? .62f : (x + y < 12 ? 1f : .9f);
-                voxel.SetPixel(x, y, new Color(shade, shade, shade, 1));
+                float lit = Mathf.Clamp01((x - (15 - y)) / 30f + .5f); // 1 at the lower right, 0 at the upper left (rows start at the bottom)
+                float shade = Mathf.Lerp(1f, .78f, lit);
+                float cx = Mathf.Max(0, Mathf.Abs(x - 7.5f) - 4.5f), cy = Mathf.Max(0, Mathf.Abs(y - 7.5f) - 4.5f);
+                voxel.SetPixel(x, y, new Color(shade, shade, shade, Mathf.Clamp01(3.5f - Mathf.Sqrt(cx * cx + cy * cy))));
             }
             voxel.Apply();
             int m = n * 2;
