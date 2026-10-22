@@ -91,7 +91,7 @@ namespace SandJamTest.Scene3D
             var upright=Quaternion.Euler(docked?DockedPitch:BlockPitch,0,0);
             sand.localRotation=upright;frameRenderer.transform.localRotation=upright;
             if(glassRenderer)glassRenderer.transform.localRotation=upright;
-            var color=fillRenderer.sharedMaterial.GetColor("_Color");
+            var color=Color.Lerp(fillRenderer.sharedMaterial.GetColor("_Color"),Color.white,Actor.EmptyWhite);
             // Measured on the reference renders: faces read ~1.15-1.25x brighter than FinalColor with a
             // faint white lift (red 190,24,24 renders as 218,32,60), and lighting is soft.
             var lit=color*1.25f+Color.white*.06f;lit.a=1;

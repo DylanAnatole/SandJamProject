@@ -30,7 +30,10 @@ namespace SandJamTest.Scene3D
         public static float DepthOriginY = -2.98f, DepthPerUnit = .6f;
         float laneZ; bool laneZKnown;
         public static float DepthOffset(float y) { return Mathf.Min(0, y - DepthOriginY) * DepthPerUnit; }
-        float travel, duration, exitDelay;
+        float travel, duration, exitDelay, leaveAge;
+        // An emptied box turns white as it leaves (recording 2, 158.38-158.55 s), then runs off in its colour.
+        const float EmptyWhiteSeconds=.18f;
+        public float EmptyWhite { get { return Departing ? Mathf.Clamp01(1-leaveAge/EmptyWhiteSeconds) : 0; } }
         int shownAmmo = int.MinValue;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
@@ -188,7 +191,7 @@ namespace SandJamTest.Scene3D
             float side=transform.position.x<0?-1:1;
             Begin(new Vector3(side*4.8f,transform.position.y,transform.position.z),Gait.Run,ExitSeconds);
             Departing = true;
-            exitDelay=ExitPause;
+            exitDelay=ExitPause; leaveAge=0;
             if(Motion)Motion.SetWalking(false);
             AmmoLabel.gameObject.SetActive(false);
             ClickCollider.enabled = false;
@@ -197,6 +200,7 @@ namespace SandJamTest.Scene3D
         public void Advance(float delta, bool firing)
         {
             if (!gameObject.activeSelf || Shooter == null) return;
+            if (Departing) leaveAge += delta;
             float targetFill=(float)Shooter.Ammo/Mathf.Max(1,Shooter.InitialAmmo);
             DisplayedFill=Mathf.Lerp(DisplayedFill,targetFill,1-Mathf.Exp(-18*delta));
             if(Mathf.Abs(DisplayedFill-targetFill)<.003f)DisplayedFill=targetFill;

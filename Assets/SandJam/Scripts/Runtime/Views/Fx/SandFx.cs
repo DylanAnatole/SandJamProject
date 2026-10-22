@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SandJamTest.Scene3D
 {
     // Presentation-only effects modelled on the original: pour dust, region-open bubble burst,
-    // shooter recoil, arrival puff, departure poof, the flash where a chain snaps when its pair is picked, the
+    // sand needles out of a pouring box, the flash where a chain snaps when its pair is picked, the
     // smoke a mystery cube shows its colour in and the ring of smoke a locked waiting slot opens with. Polls game
     // state; never changes rules.
     public sealed class SandFx : MonoBehaviour
@@ -19,7 +19,7 @@ namespace SandJamTest.Scene3D
         Material bubbleMaterial;
         static Texture2D softDot, ring, voxel;
 
-        sealed class ActorState { public int Ammo; public bool Departing, AtRest, Hidden; public float Pulse; public Vector3 BaseScale; public SceneActorView Partner; public Renderer[] Box; }
+        sealed class ActorState { public int Ammo; public bool Hidden; public Vector3 BaseScale; public SceneActorView Partner; public Renderer[] Box; }
         sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Glow; public float Age, Life, Size; }
         // Region-open bubbles of the original (recording 2, 153.05-153.35 s): one per region that just opened, on its
         // counter: nearly clear (the region and its number show through), a thin bright rim, gone in ~0.3 s. Around it
@@ -27,8 +27,6 @@ namespace SandJamTest.Scene3D
         const float BubbleScale = 1.6f, BubbleLife = .45f, BubbleSize = .75f;
         const int BurstGrains = 34, BurstSparkles = 16;
         const float ConfettiShare = .25f; static readonly Color Confetti = new Color(.25f, .85f, .3f);
-        // White flash over a box that has just emptied (about the box's size).
-        const float EmptyFlashSize = 1.1f;
         // Sand needles out of a pouring box (count range per shot, speed, life, width; colour a little darker).
         const int SprayMin = 1, SprayMax = 3;
         const float SpraySpeed = 3.6f, SprayLife = .12f, SprayWidth = .034f, SprayShade = .82f;
@@ -356,7 +354,7 @@ namespace SandJamTest.Scene3D
                 ActorState state;
                 if (!actors.TryGetValue(actor, out state))
                 {
-                    state = new ActorState { Ammo = actor.Shooter.Ammo, Departing = actor.Departing, AtRest = actor.AtRest, BaseScale = actor.transform.localScale };
+                    state = new ActorState { Ammo = actor.Shooter.Ammo, BaseScale = actor.transform.localScale };
                     state.Hidden = game.IsHidden(actor.Shooter, actor.SourceLane);
                     actors.Add(actor, state);
                 }
@@ -380,26 +378,8 @@ namespace SandJamTest.Scene3D
                 bool inSlot = System.Array.IndexOf(game.Slots, actor.Shooter) >= 0;
                 if (inSlot && !actor.Departing && actor.Shooter.Ammo < state.Ammo) Spray(actor, state, color);
                 state.Ammo = actor.Shooter.Ammo;
-                // Landing puff when a character reaches its waiting slot.
-                if (actor.AtRest && !state.AtRest && inSlot && !actor.Departing)
-                {
-                    var p = actor.transform.position + new Vector3(0, -.05f, Front);
-                    for (int i = 0; i < 12; i++)
-                        Emit(puff, p, new Vector3(Random.Range(-1.2f, 1.2f), Random.Range(.1f, .6f), 0), new Color(1, 1, 1, .85f), Random.Range(.08f, .16f), Random.Range(.25f, .4f));
-                }
-                state.AtRest = actor.AtRest;
-                // Empty character leaves: the box flashes white (recording 2, 60.6 s) in a coloured poof.
-                if (actor.Departing && !state.Departing)
-                {
-                    var p = actor.AimPoint + new Vector3(0, 0, Front);
-                    SpawnFlash(p, EmptyFlashSize);
-                    for (int i = 0; i < 22; i++)
-                    {
-                        var v = Random.insideUnitCircle.normalized * Random.Range(.8f, 2f);
-                        Emit(puff, p, new Vector3(v.x, v.y + .5f, 0), Color.Lerp(color, Color.white, Random.Range(.1f, .6f)), Random.Range(.07f, .16f), Random.Range(.3f, .5f));
-                    }
-                }
-                state.Departing = actor.Departing;
+                // The original lands and leaves without puffs (recording 2, 155.9-156.1 s and 158.3-158.7 s); an emptied
+                // box turns white itself (SceneActorView.EmptyWhite).
             }
         }
 

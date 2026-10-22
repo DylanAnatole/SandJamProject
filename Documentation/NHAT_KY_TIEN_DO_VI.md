@@ -1263,3 +1263,25 @@ không có khối đặc biệt, không khóa ô chờ.
 
 - Run all checks qua 8/8.
 - Tự chơi level 12, 267: thắng, màn phóng to tranh lúc thắng vẫn chạy.
+
+### Cảm giác chơi: khối hết cát tự chuyển trắng; bỏ khói lúc đáp và lúc rời ô
+
+**Đo** (video 2, phóng to)
+
+- Giây 155,9–156,1: khối đáp xuống ô chờ, không có khói.
+- Giây 158,3–158,7: khối hết cát chuyển trắng cả khối khoảng 0,17 s (158,38 → 158,55) và nhảy lên trong lúc trắng.
+  Sau đó khối về màu cũ rồi chạy đi, không có khói màu.
+- Bản mình trước đây: khói trắng lúc đáp; lúc rời ô có đốm sáng tròn đè lên khối và 22 hạt khói màu.
+
+**Sửa**
+
+- `SceneActorView.EmptyWhite`: 1 → 0 trong `EmptyWhiteSeconds` 0,18 s kể từ lúc `Leave()`.
+- `CharacterSandVessel.Apply` trộn màu khối với trắng theo `EmptyWhite`; `CharacterDepthStyle` tô lại khi giá trị
+  này đổi. Dùng lại đường tô màu sẵn có.
+- `SandFx`: bỏ khói lúc đáp, đốm sáng và khói lúc rời ô (`EmptyFlashSize`), cùng các trường `ActorState` không
+  còn dùng.
+
+**Kiểm tra**
+
+- Quay level 2 từng bước 0,04 s: khối xanh chuyển trắng rồi về xanh và chạy đi.
+- Tự chơi level 2, 68, 150: thắng cả 3. Run all checks qua 8/8.
