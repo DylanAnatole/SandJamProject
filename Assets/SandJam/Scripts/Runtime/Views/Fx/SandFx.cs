@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SandJamTest.Scene3D
 {
-    // Presentation-only effects modelled on the original: pour dust, region-complete bubble burst,
+    // Presentation-only effects modelled on the original: pour dust, region-open bubble burst,
     // shooter recoil, arrival puff, departure poof, the flash where a chain snaps when its pair is picked, the
     // smoke a mystery cube shows its colour in and the ring of smoke a locked waiting slot opens with. Polls game
     // state; never changes rules.
@@ -12,9 +12,8 @@ namespace SandJamTest.Scene3D
         const float Front = -.45f; // towards the camera so effects draw over the board
         SandJamSceneController controller;
         ParticleSystem dust, sparkle, puff, voxels, spray;
-        readonly List<Color> palette = new List<Color>();
         readonly Dictionary<SceneActorView, ActorState> actors = new Dictionary<SceneActorView, ActorState>();
-        bool[] regionDone;
+        bool[] regionShown;
         int[] slotLocked = new int[0];
         SandGame lastGame;
         Material bubbleMaterial;
@@ -22,9 +21,12 @@ namespace SandJamTest.Scene3D
 
         sealed class ActorState { public int Ammo; public bool Departing, AtRest, Hidden; public float Pulse; public Vector3 BaseScale; public SceneActorView Partner; public Renderer[] Box; }
         sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Glow; public float Age, Life, Size; }
-        // Region-complete bubbles of the original (recording 2, 50.5-51.3 s): ~1.6x larger than first built, brighter,
-        // lasting ~0.8 s; the sand cubes around them are small grains.
-        const float BubbleScale = 1.6f, BubbleLife = .8f;
+        // Region-open bubbles of the original (recording 2, 153.05-153.35 s): one per region that just opened, on its
+        // counter: nearly clear (the region and its number show through), a thin bright rim, gone in ~0.3 s. Around it
+        // a few big sand cubes in the region's colour and some green confetti.
+        const float BubbleScale = 1.6f, BubbleLife = .45f, BubbleSize = .75f;
+        const int BurstGrains = 34, BurstSparkles = 16;
+        const float ConfettiShare = .25f; static readonly Color Confetti = new Color(.25f, .85f, .3f);
         // White flash over a box that has just emptied (about the box's size).
         const float EmptyFlashSize = 1.1f;
         // Sand needles out of a pouring box (count range per shot, speed, life, width; colour a little darker).
@@ -38,7 +40,7 @@ namespace SandJamTest.Scene3D
             dust = MakeSystem("Pour dust", softDot, 400, .35f, .05f, .12f);
             sparkle = MakeSystem("Region sparkles", softDot, 600, .9f, .05f, .14f);
             puff = MakeSystem("Character puffs", softDot, 300, .5f, .12f, .28f);
-            // Original region-complete shower: hundreds of tiny sand cubes in the level's colours pop up and fall.
+            // Original region-open shower: tiny sand cubes in the region's colour pop up and fall.
             voxels = MakeSystem("Region voxels", voxel, 1500, 1.3f, .05f, .1f);
             // Original (recording 2, 58.5-59.1 s): every shot flings a few thin needles of sand up out of the box's
             // mouth: stretched along their flight, no gravity, gone in ~0.1 s.
@@ -79,7 +81,7 @@ namespace SandJamTest.Scene3D
                 var p = new Vector2(x + .5f, y + .5f) / (m / 2f) - Vector2.one;
                 float d = p.magnitude;
                 // Translucent bubble: faint body, bright rim and a highlight in the upper left.
-                float body = d < 1 ? .3f + .35f * d * d : 0;
+                float body = d < 1 ? .04f + .22f * d * d * d : 0;
                 float rim = Mathf.Clamp01(1 - Mathf.Abs(d - .93f) / .07f);
                 float shine = Mathf.Clamp01(1 - Vector2.Distance(p, new Vector2(-.4f, .45f)) / .22f);
                 ring.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(body + rim * .9f + shine * .8f)));
@@ -199,7 +201,9 @@ namespace SandJamTest.Scene3D
         void Reset(SandGame game)
         {
             lastGame = game;
-            regionDone = new bool[game.Regions.Length];
+            // Regions open at the start show no burst.
+            regionShown = new bool[controller.Regions.Length];
+            for (int i = 0; i < regionShown.Length; i++) regionShown[i] = controller.Regions[i] && game.Regions[controller.Regions[i].PartIndex].InformationVisible;
             slotLocked = new int[game.Slots.Length];
             for (int i = 0; i < slotLocked.Length; i++) slotLocked[i] = game.SlotRemaining(i);
             foreach (var pair in actors) if (pair.Key) pair.Key.transform.localScale = pair.Value.BaseScale;
@@ -207,15 +211,6 @@ namespace SandJamTest.Scene3D
             bubblePool.ReleaseAll();
             dust.Clear(); sparkle.Clear(); puff.Clear(); voxels.Clear();
             flashPool.ReleaseAll();
-            palette.Clear();
-            foreach (var view in controller.Regions)
-            {
-                if (!view) continue;
-                Color sc = view.SolidColor;
-                float h, sat, val; Color.RGBToHSV(sc, out h, out sat, out val);
-                if (sat < .3f || val < .35f) continue; // greys, black and white would just look like dirt
-                if (!palette.Exists(c => Mathf.Abs(c.r - sc.r) + Mathf.Abs(c.g - sc.g) + Mathf.Abs(c.b - sc.b) < .05f)) palette.Add(sc);
-            }
         }
 
         float dustTimer;
@@ -236,37 +231,39 @@ namespace SandJamTest.Scene3D
             }
         }
 
+        // Original (recording 2, 153.1 s): a finished region shows no burst of its own; every region it opens pops
+        // at once, each with one glowing bubble on its counter and a shower of sand cubes in its own colour.
         void RegionBursts(SandGame game)
         {
             for (int i = 0; i < controller.Regions.Length; i++)
             {
                 var view = controller.Regions[i];
-                bool done = view.IsSettled && game.Regions[view.PartIndex].Remaining == 0;
-                if (!done || regionDone[i]) { regionDone[i] = done; continue; }
-                regionDone[i] = true;
-                var center = view.Counter ? view.Counter.transform.position : view.Target.position;
-                center.z = view.Board.transform.position.z + Front;
-                Color color = view.SolidColor;
-                // Original (recording, level 267): a bright white-cyan flash and a shower of little sand cubes in the
-                // level's colours that pop up and fall with gravity.
-                SpawnFlash(center);
-                for (int v = 0; v < 110; v++)
-                {
-                    // Recording: the cubes stay around the finished region, drifting up a little and falling back.
-                    float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad, speed = Random.Range(.3f, 1.6f);
-                    var vel = new Vector3(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed + .9f, 0);
-                    Color vc = palette.Count > 0 && v % 4 != 0 ? palette[Random.Range(0, palette.Count)] : (v % 8 == 0 ? Color.white : color);
-                    Emit(voxels, center + (Vector3)(Random.insideUnitCircle * .55f), vel, vc, Random.Range(.03f, .065f), Random.Range(.6f, 1f));
-                }
-                // Original: a few translucent bubbles pop over the finished region with coloured sparkles.
-                for (int b = 0; b < 5; b++)
-                    SpawnBubble(center + (Vector3)(Random.insideUnitCircle * .55f), Random.Range(.5f, .85f) * BubbleScale, b * .07f);
-                for (int s = 0; s < 46; s++)
-                {
-                    var dir = Random.insideUnitCircle.normalized * Random.Range(.6f, 2.2f);
-                    Color sc = s % 3 == 0 ? Color.white : Color.Lerp(color, Color.white, Random.Range(0f, .35f));
-                    Emit(sparkle, center + (Vector3)(Random.insideUnitCircle * .25f), new Vector3(dir.x, dir.y + .6f, 0), sc, Random.Range(.07f, .17f), Random.Range(.45f, .9f));
-                }
+                if (!view) continue;
+                bool shown = game.Regions[view.PartIndex].InformationVisible;
+                if (shown && !regionShown[i]) RegionOpens(view);
+                regionShown[i] = shown;
+            }
+        }
+        void RegionOpens(SceneRegionView view)
+        {
+            var center = view.Counter ? view.Counter.transform.position : view.Target.position;
+            center.z = view.Board.transform.position.z + Front;
+            Color color = view.SolidColor;
+            SpawnFlash(center, 1.6f);
+            SpawnBubble(center, BubbleSize * BubbleScale, 0);
+            for (int v = 0; v < BurstGrains; v++)
+            {
+                // The cubes stay around the region, drifting up a little and falling back.
+                float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad, speed = Random.Range(.3f, 1.4f);
+                var vel = new Vector3(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed + .9f, 0);
+                Color vc = Random.value < ConfettiShare ? Confetti : Color.Lerp(color, Color.white, Random.Range(0f, .25f));
+                Emit(voxels, center + (Vector3)(Random.insideUnitCircle * .4f), vel, vc, Random.Range(.06f, .1f), Random.Range(.6f, 1f));
+            }
+            for (int s = 0; s < BurstSparkles; s++)
+            {
+                var dir = Random.insideUnitCircle.normalized * Random.Range(.6f, 2f);
+                Color sc = s % 3 == 0 ? Color.white : Color.Lerp(color, Color.white, Random.Range(0f, .35f));
+                Emit(sparkle, center + (Vector3)(Random.insideUnitCircle * .2f), new Vector3(dir.x, dir.y + .6f, 0), sc, Random.Range(.07f, .15f), Random.Range(.4f, .8f));
             }
         }
 
@@ -345,8 +342,9 @@ namespace SandJamTest.Scene3D
                 float grow = 1 - Mathf.Pow(1 - Mathf.Clamp01(t * 1.6f), 3);
                 b.Root.localScale = Vector3.one * b.Size * (.3f + .7f * grow + .08f * Mathf.Sin(t * 20));
                 float alpha = Mathf.Clamp01(t * 6) * (1 - t * .3f);
-                b.Disc.color = new Color(.55f, .9f, 1f, alpha);
-                if (b.Glow) b.Glow.color = new Color(.8f, .97f, 1f, alpha * .75f);
+                b.Disc.color = new Color(.75f, .95f, 1f, alpha);
+                // The halo glows as the bubble appears, then only the clear bubble is left.
+                if (b.Glow) b.Glow.color = new Color(.8f, .97f, 1f, alpha * .6f * (1 - t) * (1 - t));
             }
         }
 

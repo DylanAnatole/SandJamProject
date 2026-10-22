@@ -1178,3 +1178,27 @@ không có khối đặc biệt, không khóa ô chờ.
 - Đo trực tiếp `Shake`: lệch ±0,03, 2 nhịp, tắt dần.
 - Tự chơi level 2, 12, 68, 150, 267: thắng cả 5, không lỗi.
 - Run all checks qua 8/8.
+
+### Cảm giác chơi: hiệu ứng khi mở vùng mới giống bản gốc
+
+**Đo** (video 2, giây 152,9–154,3)
+
+- Vùng đổ đầy không có hiệu ứng riêng, số đếm chỉ biến mất.
+- Các vùng vừa mở nổ cùng lúc. Mỗi vùng có 1 bong bóng ngay tại số đếm: gần như trong suốt, vành sáng mảnh, nhìn
+  xuyên thấy vùng và số, tắt sau khoảng 0,3 s.
+- Pháo giấy là các khối cát to, màu của vùng đó, kèm vài mảnh xanh lá.
+- Bản mình trước đây ngược lại: nổ ở vùng vừa đầy, 5 bong bóng xanh đục che kín vùng, khối cát li ti nhiều màu.
+
+**Sửa** (`SandFx`)
+
+- `RegionBursts` theo dõi `InformationVisible`: vùng nào vừa hiện ra thì gọi `RegionOpens`. Vùng mở sẵn từ đầu
+  level không nổ; vùng mở bằng Flare cũng nổ.
+- `RegionOpens`: 1 bong bóng, `BurstGrains` 34 khối cát (cỡ 0,06–0,1), `ConfettiShare` 25% màu xanh lá,
+  `BurstSparkles` 16.
+- Bong bóng: thân gần trong suốt, quầng sáng chỉ lúc mới hiện, `BubbleLife` 0,8 → 0,45 s.
+- Bỏ `palette` (màu cả tranh), không còn dùng.
+
+**Kiểm tra**
+
+- Quay lại level 267 từng bước 0,04 s: vùng mới nổ đúng màu, số đếm vẫn đọc được qua bong bóng.
+- Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.

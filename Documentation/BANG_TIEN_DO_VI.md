@@ -31,7 +31,7 @@ Cập nhật: 22/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 | Khối trên ô chờ: kính, cỡ, xoay khi đổ, lắc | ✅ | |
 | Khối hết cát: chớp trắng, nhảy, chạy ra | ✅ | |
 | Hàng khối dồn lên | ✅ | |
-| Bong bóng khi đầy vùng, hạt cát | ✅ | |
+| Bong bóng, pháo giấy khi mở vùng mới; màu hạt cát; tốc độ đổ | ✅ | Đo theo video 2 (giây 57–61, 152–157) |
 | Số đếm trên vùng, màu vùng đang chờ | ✅ | Đã sửa màu 14–16 bị đen |
 | Thanh trên (Level, xu, cài đặt) trong màn chơi | ✅ | |
 
