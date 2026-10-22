@@ -1630,3 +1630,22 @@ checks qua 8/8.
 
 - Mở popup: collider nút đóng có (0,64), đóng được.
 - Luồng thua / bỏ cuộc / về Home không lỗi. Run all checks qua 8/8.
+
+### Home: rương Sand Quest và chữ JOIN đúng cỡ, đúng chỗ
+
+**Đo** (video 1, giây 1334,6, Home level 267)
+
+- Rương + bảng: rộng 165 px, x 680–845, y 670–847. Bản mình nhỏ hơn 5%, lệch trái 11 px, thấp 10 px.
+- Chữ JOIN: 72 × 22 px, viền vàng sẫm mảnh (139,106,4). Bản mình 85 × 28 px, viền đen.
+
+**Sửa**
+
+- `VideoScreen`: dùng lại `NavPlace` / `Place` cho rương, bảng và chữ JOIN (`ChestGrow` 1,05,
+  `ChestShiftPx`, `JoinTextScale` 0,82).
+- `CampaignUi`: viền chữ JOIN đổi sang `VideoScreen.JoinInk` (đổi một lần khi viền đã có).
+
+**Kiểm tra**
+
+- Level 267: rương x 680–845, y 667–847; chữ 70 × 22 px.
+- Level 68: rương, bảng, chữ vẫn ẩn.
+- Tự chơi level 68 thắng. Run all checks qua 8/8.

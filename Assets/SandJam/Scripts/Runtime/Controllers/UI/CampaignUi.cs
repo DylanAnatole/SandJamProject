@@ -266,7 +266,13 @@ namespace SandJamTest.Scene3D
             nextLivesRefresh = Time.unscaledTime + .5f;
             if (livesCount) livesCount.text = LivesManager.Lives.ToString();
             string join = SandQuest.Joined ? SandQuest.StepsDone + "/" + SandQuest.Steps : "JOIN";
-            foreach (var label in joinLabels) if (label) label.text = join;
+            foreach (var label in joinLabels)
+            {
+                if (!label) continue;
+                label.text = join;
+                var edge = label.GetComponent<OutlinedText>();
+                if (edge && edge.Ink != VideoScreen.JoinInk) edge.SetInk(VideoScreen.JoinInk);
+            }
             foreach (var part in questParts) if (part && part.activeSelf != SandQuest.Unlocked) part.SetActive(SandQuest.Unlocked);
             if (livesStatus) livesStatus.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
         }

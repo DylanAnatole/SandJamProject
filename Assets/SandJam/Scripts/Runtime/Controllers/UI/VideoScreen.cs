@@ -151,6 +151,10 @@ namespace SandJamTest.Scene3D
             if(rimNow && bar)FitHangers(bar,rimNow.GetComponent<Renderer>().bounds.max.y-.02f,false);
             ReplaceLevelSign(bar);
             ReplaceJoinPlaque();
+            // Sand Quest chest and plaque (recording 1, 1334.6 s at level 267): 165 px wide at x 680-845, y 670-847;
+            // ours was 5% smaller and 11 px left, 10 px low. The plaque's JOIN text moves with it.
+            NavPlace("Chest_Enable",ChestGrow,ChestShiftPx.x,ChestShiftPx.y-5);NavPlace("Join label",ChestGrow,ChestShiftPx.x,ChestShiftPx.y);
+            foreach(var t in Home.GetComponentsInChildren<TextMesh>(true))if(t.text=="JOIN")Place(t.transform,ChestGrow*JoinTextScale,ChestShiftPx.x,ChestShiftPx.y);
             // Navbar, measured on the original Home (recording 2, 888x1920): the bar sits 19 px lower, the selected tab
             // rises 12 px higher above it, the icons are lower (shop and home bigger, gallery smaller) and so are the captions.
             NavPlace("bg-navbar",1,0,19);NavPlace("bg-navBar-seleckted",1,0,-12);
@@ -264,6 +268,8 @@ namespace SandJamTest.Scene3D
         }
         // Original "JOIN" plaque under the Sand Quest chest: the gold label art (Chest_Label_Enable, 262x111), same
         // width as the drawn pill it replaces. Kept when the art is absent.
+        // JOIN text: 72 x 22 px with a thin dark-gold edge (139,106,4), ours was 85 x 28 with the black ink.
+        const float ChestGrow=1.05f, JoinTextScale=.82f; internal static readonly Color JoinInk=new Color32(139,106,4,255); static readonly Vector2 ChestShiftPx=new Vector2(11,-8);
         void ReplaceJoinPlaque()
         {
             var tex=Resources.Load<Texture2D>("VideoUI/chest-label");var label=Home.transform.Find("Join label");
