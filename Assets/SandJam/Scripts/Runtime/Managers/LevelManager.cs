@@ -37,10 +37,11 @@ namespace SandJamTest.Scene3D
         public bool LoadNext()
         {
             if(!RecordCompletion())return false;
-            if(PlayedNumber>=Campaign.HomeAfterLevel){if(loading)return false;Campaign.OpenHome=true;return Reload(false);}
-            return Reload(true);
+            return GoHome();
         }
-        public bool Retry(){if(loading)return false;Campaign.RetrySplash=true;return Reload(true);}
+        // After a win and after Try Again the game goes back to the Home screen; the player taps PLAY to go on.
+        public bool Retry(){return GoHome();}
+        bool GoHome(){if(loading)return false;Campaign.OpenHome=true;return Reload(false);}
         public bool Reload(bool skipIntro)
         {
             if(loading)return false;

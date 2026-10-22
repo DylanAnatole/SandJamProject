@@ -82,7 +82,7 @@ chạy thật, gói tiền thật chỉ hiển thị (không có thanh toán).
 **NEW ART STYLE** khi gặp bộ tranh mới (ảnh render gốc trong `Resources/LevelRenders`).
 **CONGRATS** = thẻ Gallery (`GalleryCollections`, theo FeatureConfig gốc): ảnh bìa đen trắng được tô màu dần, mỗi màn thắng thêm 1 phần.
 **HẾT CHỖ!** dải đỏ ~1 giây trước popup Hết chỗ. **Hết tim**: nút Hồi tim 600 xu. Màn khó thưởng +20.
-**Sand Quest** (`SandQuest` + `SandQuestPopup.cs`): từ màn 30, bấm rương JOIN ở Home; thắng 10 màn liên tiếp trong 24 giờ,
+**Sand Quest** (`SandQuest` + `SandQuestPopup.cs`): từ màn 85 (rương JOIN ẩn trước đó), bấm rương JOIN ở Home; thắng 10 màn liên tiếp trong 24 giờ,
 số người chơi giảm theo `botProgressionList` gốc, về đích chia giải 1000 xu; thua 1 màn hoặc hết giờ là trượt.
 **Shop / Gallery** là trang có thanh trên và thanh SHOP/HOME/GALLERY như bản thật (`PopupScreens.Pages.cs`).
 Gallery: mỗi bộ hiện tên, ảnh bìa và tranh của chính nó; băng chuyền ảnh bìa, 3 mốc thưởng; tranh của màn đã thắng úp "? Claim" (viền vàng) tới khi nhận từng thẻ hoặc "Claim All Cards".

@@ -1,6 +1,6 @@
 # Bảng tiến độ — Sand Jam clone
 
-Cập nhật: 21/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.md`.
+Cập nhật: 22/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.md`.
 
 **Ký hiệu**
 
@@ -56,7 +56,7 @@ Cập nhật: 21/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 | Thanh điều hướng Shop / Home / Gallery | ✅ | |
 | Sand Shop | ✅ | Mở ở mục BOOSTERS như bản gốc; gói tiền thật chỉ hiển thị (không thanh toán) |
 | Gallery (bộ sưu tập, thẻ úp "Claim") | ✅ | Lưới thẻ đúng cỡ; nút "Claim All Cards" màu như bản gốc |
-| Sand Quest (rương JOIN) | ✅ | Popup mời khớp video 2 (giây 22); bản đồ hành trình chưa có cảnh đối chiếu |
+| Sand Quest (rương JOIN) | ✅ | Mở từ level 85 (rương ẩn trước đó); popup mời khớp video 2 (giây 22) |
 | Cài đặt | ✅ | Bản trên Home đo theo video 2 (giây 15); chữ tiêu đề, bề rộng nút còn chênh nhỏ |
 | Loading / splash giữa các level | ✅ | |
 

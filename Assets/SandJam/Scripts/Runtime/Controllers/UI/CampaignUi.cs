@@ -18,6 +18,7 @@ namespace SandJamTest.Scene3D
         Color badgeColor = Color.white;
         int shownCoins = -1, shownLevel = -1;
         TextMesh[] joinLabels = new TextMesh[0];
+        GameObject[] questParts = new GameObject[0];
         bool shownDoubled;
         public bool SettingsOpen { get { return screen.Popups.Open; } }
 
@@ -54,6 +55,8 @@ namespace SandJamTest.Scene3D
             var chest = owner.Home.transform.Find("Chest_Enable");
             if (chest) AddHit(chest, "sand-quest");
             joinLabels = owner.Home.GetComponentsInChildren<TextMesh>(true).Where(t => t.text == "JOIN").ToArray();
+            // The chest and its plaque appear only once the event is unlocked (SandQuest.StartLevel).
+            questParts = new[] { chest, owner.Home.transform.Find("Join label") }.Concat(joinLabels.Select(l => l.transform)).Where(t => t).Select(t => t.gameObject).ToArray();
             // Navbar SHOP opens the Sand Shop page.
             var shopIcon = owner.Home.transform.Find("icon-shop");
             if (shopIcon) AddHit(shopIcon, "shop");
@@ -264,6 +267,7 @@ namespace SandJamTest.Scene3D
             if (livesCount) livesCount.text = LivesManager.Lives.ToString();
             string join = SandQuest.Joined ? SandQuest.StepsDone + "/" + SandQuest.Steps : "JOIN";
             foreach (var label in joinLabels) if (label) label.text = join;
+            foreach (var part in questParts) if (part && part.activeSelf != SandQuest.Unlocked) part.SetActive(SandQuest.Unlocked);
             if (livesStatus) livesStatus.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
         }
 

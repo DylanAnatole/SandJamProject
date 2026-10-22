@@ -9,7 +9,7 @@ namespace SandJamTest
     // Finishers share the 1000-coin grand prize with the players still standing.
     public static class SandQuest
     {
-        public const int StartLevel = 30, Steps = 10, StartPlayers = 100, GrandPrize = 1000;
+        public const int StartLevel = 85, Steps = 10, StartPlayers = 100, GrandPrize = 1000;
         public static readonly TimeSpan Duration = TimeSpan.FromSeconds(86400);    // totalTimeInSeconds
         static readonly TimeSpan OfferCooldown = TimeSpan.FromHours(8);
         // Players left after each step: random between x and y (MainMenu_Basic botProgressionList).

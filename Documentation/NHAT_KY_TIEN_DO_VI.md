@@ -1117,3 +1117,22 @@ không có khối đặc biệt, không khóa ô chờ.
 - **Sửa** (`VideoScreen`): `PlayButtonScale` 1,05, `PlayButtonDropPx` 6, `PlayLabelGrow` 1,08, dùng lại `Place`.
 - **Kiểm tra:** nút 370×109 px, chữ 195×60 px; bấm PLAY vẫn vào màn chơi; Run all checks qua 8/8.
 
+### Sự kiện JOIN mở từ level 85; thắng / thử lại đều về Home (yêu cầu người dùng)
+
+**Sửa**
+
+- `SandQuest.StartLevel` 30 → 85. `CampaignUi` ẩn rương JOIN, nhãn và chữ JOIN ở Home cho tới khi mở khóa
+  (`questParts`).
+- `LevelManager`: `LoadNext` (sau thắng) và `Retry` (Try Again) cùng gọi `GoHome()`: màn SAND JAM ngắn rồi về Home,
+  người chơi bấm PLAY để chơi tiếp.
+- Bỏ code không còn dùng: `Campaign.HomeAfterLevel` (trước đây 10 level đầu chơi nối tiếp),
+  `Campaign.RetrySplash`, `VideoScreen.RetrySplash` / `playAfterSplash` / `RetryHint*`.
+- README cập nhật mốc 85.
+
+**Kiểm tra**
+
+- Level 68: không có rương; level 90: có rương.
+- Thắng level 12 → CONGRATS → bấm tiếp → Home (level 13).
+- Thua level 68 → Bỏ cuộc → Try Again → Home.
+- Run all checks qua 8/8.
+

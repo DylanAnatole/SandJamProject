@@ -86,20 +86,6 @@ namespace SandJamTest.Scene3D
             foreach(var name in new[]{"bg-fillbar-splashScene","Loading fill","Loading..."}){var t=Loading.transform.Find(name);if(t)t.localPosition+=new Vector3(0,-1.0f,0);}
             fillScale=LoadingFill.localScale;
         }
-        // Original after Try Again (recording 1, 718-719.5 s): the SAND JAM logo and a tip, no loading bar, ~1.5 s, then
-        // straight into the level.
-        bool playAfterSplash;
-        const float RetryHintScale=2.5f,RetryHintY=-2.4f;
-        void RetrySplash()
-        {
-            QuickSplash();
-            foreach(var name in new[]{"bg-fillbar-splashScene","Loading fill","Loading..."}){var t=Loading.transform.Find(name);if(t)t.gameObject.SetActive(false);}
-            // The tip sits ~73% down the screen, centred, in two large lines (recording 1, 718.8 s).
-            var hint=Loading.transform.Find("Loading hint");
-            if(hint){hint.gameObject.SetActive(true);hint.localScale*=RetryHintScale;hint.position=new Vector3(Loading.transform.position.x,RetryHintY,hint.position.z);
-                foreach(var text in loadingHint)if(text)text.text=LoadingHints.Wrap(LoadingHints.Random(),36);}
-            loadingTime=1.3f;playAfterSplash=true;
-        }
         void StyleHome()
         {
             // Colours measured on the original Home (recording, level 267). The sign's blue panel and inset are tinted
@@ -487,7 +473,7 @@ namespace SandJamTest.Scene3D
             {
                 float progress=Mathf.Clamp01(elapsed/loadingTime);LoadingFill.localScale=new Vector3(fillScale.x*progress,fillScale.y,fillScale.z);
                 var p=LoadingFill.localPosition;p.x=-1.625f*(1-progress);LoadingFill.localPosition=p;
-                if(elapsed>loadingTime+.2f){if(playAfterSplash){playAfterSplash=false;Play();}else Show(Page.Home);}
+                if(elapsed>loadingTime+.2f)Show(Page.Home);
             }
             if(Current==Page.Home)
             {
@@ -554,9 +540,8 @@ namespace SandJamTest.Scene3D
         void Start()
         {
             // "Next" / "Retry" reload the scene straight into gameplay.
-            if(Campaign.SkipIntro && Campaign.RetrySplash){Campaign.SkipIntro=Campaign.RetrySplash=false;RetrySplash();}
-            else if(Campaign.SkipIntro){Campaign.SkipIntro=false;Play();}
-            // Original: after a win the SAND JAM splash shows for under a second, then Home.
+            if(Campaign.SkipIntro){Campaign.SkipIntro=false;Play();}
+            // After a win or Try Again the SAND JAM splash shows for under a second, then Home.
             else if(Campaign.OpenHome){Campaign.OpenHome=false;loadingTime=.6f;QuickSplash();}
         }
     }
