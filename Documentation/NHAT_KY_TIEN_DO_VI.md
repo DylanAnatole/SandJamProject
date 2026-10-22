@@ -1474,3 +1474,28 @@ chạy (tới 65°), trục này quay theo, nên chân bị hất ra sau thay v�
 - Chạy chéo dài: chân dưới đáy khối, sải theo hướng chạy.
 - Chạy thẳng: hai chân dưới đáy như trước.
 - Tự chơi level 2, 267: thắng. Run all checks qua 8/8.
+
+### Cảm giác chơi: khối chạy không nhún, nhịp bước như bản gốc; sửa lò xo co giãn bị giật khi khung hình dài
+
+**Đo** (video 2, cú chạy dài giây 48,6–49,3, từng khung 54 fps)
+
+- Đỉnh khối gốc chỉ lệch chậm ±5 px trên khối cao 137 px, không nhún theo bước. Bản mình nhún `StepBob` 0,07
+  (~10% chiều cao khối).
+- Chân gốc dạng/khép ~4–5 lần mỗi giây (~0,21–0,26 s một bước). Bản mình: clip đi bộ 0,875 s (2 bước) ở tốc độ
+  1,6 → ~0,27 s một bước.
+- Khi quay, khối của mình đổi dáng qua lại giữa các khung (lúc hẹp cao, lúc bè thấp). Ghi lại từng khung: góc
+  quay giữ nguyên, nhưng khung bao đổi 0,75 ↔ 0,82. Đó là lò xo co giãn (`squash`) tính bằng Euler hiện, mất ổn
+  định khi một khung dài (~0,1 s) và đổi dấu mỗi khung. Ở 60 fps không thấy, nhưng máy yếu hoặc lúc game khựng sẽ
+  giật như vậy.
+
+**Sửa** (`SceneActorView`)
+
+- `StepBob` 0,07 → 0,012.
+- `RunAnimSpeed` 1,9 (thay số 1,6 viết cứng). `StepsPerSecond` tính từ `WalkClipSeconds` và `RunAnimSpeed` nên
+  nhịp nhún khớp nhịp bước.
+- `ApplyJuice`: lò xo tính theo bước nhỏ tối đa `SpringStep` = 1/120 s.
+
+**Kiểm tra**
+
+- Quay lại cú chạy dài: khung bao đứng yên 0,75–0,77, khối thẳng, chân dưới đáy sải theo hướng chạy.
+- Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.

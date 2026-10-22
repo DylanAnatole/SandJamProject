@@ -49,7 +49,10 @@ namespace SandJamTest.Scene3D
         // Heading = angle of the run from straight up, capped at MaxYaw. Turned about the true vertical the pitched box
         // also leans over; RunUpright rolls it back about the view axis (per degree of turn) so it stays upright.
         const float RunUpright=-.5f;
-        const float MaxYaw=65f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
+        const float MaxYaw=65f, ExitYaw=0f;
+        // Walk clip (0.875 s, two steps) played at RunAnimSpeed: ~0.23 s a step, as the original's legs open and close
+        // ~4-5 times a second (recording 2, 48.6-49.2 s). The box itself barely bobs there (under 2% of its height).
+        const float WalkClipSeconds=.875f, RunAnimSpeed=1.9f, StepsPerSecond=2*RunAnimSpeed/WalkClipSeconds, StepBob=.012f;
         // The rig is pitched toward the camera (its own up axis points nearly at the camera, so turning about it only
         // spins the box flat on screen): running and pouring both turn about the true vertical through its centre.
         Transform pose; Quaternion poseBase; Vector3 posePosition; bool poseCaptured;
@@ -249,7 +252,7 @@ namespace SandJamTest.Scene3D
                     float target = Departing ? ExitTarget : Mathf.Clamp(Mathf.Atan2(dir.x, Mathf.Max(.01f, dir.y)) * Mathf.Rad2Deg, -MaxYaw, MaxYaw);
                     float settle = t > .8f && !Departing ? (t - .8f) / .2f : 0;
                     yaw = Mathf.Lerp(Mathf.MoveTowards(yaw, target, delta * (Departing ? 900 : 420)), 0, settle);
-                    if(Motion && Motion.Animator) Motion.Animator.speed = 1.6f;
+                    if(Motion && Motion.Animator) Motion.Animator.speed = RunAnimSpeed;
                 }
                 ApplyYaw();
                 if(!Motion && gait==Gait.Run)Visual.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 4) * 7);
@@ -291,12 +294,18 @@ namespace SandJamTest.Scene3D
             if (!laneZKnown) return;
             var p = transform.position; p.z = laneZ + DepthOffset(p.y); transform.position = p;
         }
+        const float SpringStep = 1f / 120f;
         void ApplyJuice(float delta)
         {
             if (baseScale == Vector3.zero || delta <= 0) return;
-            // Critically-damped-ish spring: snappy overshoot, settles in ~0.3 s.
-            float accel = -260f * squash - 16f * squashVelocity;
-            squashVelocity += accel * delta; squash += squashVelocity * delta;
+            // Critically-damped-ish spring: snappy overshoot, settles in ~0.3 s. Integrated in steps of at most
+            // SpringStep: in one long frame (a hitch, a slow phone) a single step overshot and flipped the box between
+            // squashed and stretched every frame.
+            for (float left = delta; left > 0; left -= SpringStep)
+            {
+                float step = Mathf.Min(left, SpringStep);
+                squashVelocity += (-260f * squash - 16f * squashVelocity) * step; squash += squashVelocity * step;
+            }
             squash = Mathf.Clamp(squash, -.35f, .35f);
             if (Mathf.Abs(squash) < .0005f && Mathf.Abs(squashVelocity) < .01f) { squash = 0; squashVelocity = 0; }
             size = Mathf.MoveTowards(size, sizeTarget, delta * 1.2f); // about the length of the run to the pad
