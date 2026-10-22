@@ -46,16 +46,19 @@ namespace SandJamTest.Scene3D
         const float SlideSeconds=.32f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.6f, ExitPause=.12f, ExitHop=.25f;
         // The box faces where it runs (its number is on its back): straight up the screen it barely turns (recording 2,
         // 155.6-155.9 s), running sideways it turns ~65 deg so its side shows and the legs stride that way (48.6-49.2 s).
-        // Heading = angle of the run from straight up, capped at MaxYaw. Turned about the true vertical the pitched box
+        // Heading = angle of the run from straight up times RunTurnGain (the original turns a little past its path, its
+        // number almost at the box's right edge on a run to the left), capped at MaxYaw. Turned about the true vertical the pitched box
         // also leans over; RunUpright rolls it back about the view axis (per degree of turn) so it stays upright.
         const float RunUpright=-.5f;
-        const float MaxYaw=65f, ExitYaw=0f;
+        const float MaxYaw=80f, RunTurnGain=1.25f, ExitYaw=0f;
         // Walk clip (0.875 s, two steps) played at RunAnimSpeed: ~0.23 s a step, as the original's legs open and close
         // ~4-5 times a second (recording 2, 48.6-49.2 s). The box itself barely bobs there (under 2% of its height).
         const float WalkClipSeconds=.875f, RunAnimSpeed=1.9f, StepsPerSecond=2*RunAnimSpeed/WalkClipSeconds, StepBob=.012f;
         // The rig is pitched toward the camera (its own up axis points nearly at the camera, so turning about it only
         // spins the box flat on screen): running and pouring both turn about the true vertical through its centre.
         Transform pose; Quaternion poseBase; Vector3 posePosition; bool poseCaptured;
+        Vector3 labelRest; Quaternion labelRestRotation; bool labelMoved;
+        const float LabelSlide = .14f, LabelTurnShare = .45f;
         Renderer legs;
         // Only the legs turn toward where the cube runs (the body keeps facing the camera): after the animator has
         // posed the rig, both thighs are swung around the hips' up axis.
@@ -119,16 +122,34 @@ namespace SandJamTest.Scene3D
             {
                 pose.localRotation = poseBase;
                 pose.localPosition = posePosition;
+                var label = AmmoLabel ? AmmoLabel.transform : null;
+                bool turned = yaw != 0 || aimYaw != 0 || roll != 0;
+                if (label && !turned)
+                {
+                    if (labelMoved) { label.localPosition = labelRest; label.localRotation = labelRestRotation; labelMoved = false; }
+                    else { labelRest = label.localPosition; labelRestRotation = label.localRotation; }
+                }
                 // Running and pouring turn about the true vertical through the block's centre (about its feet it swung
                 // off the pad), then pouring adds the slight tip about the camera's view axis (it looks down at the
                 // board, so world Z would tip the box over).
-                if (yaw != 0 || aimYaw != 0 || roll != 0)
+                if (turned)
                 {
                     var centre = Visual.TransformPoint(PourPivot);
                     if (!viewCamera) viewCamera = SpriteFactory.CameraForLayer(gameObject.layer);
                     var axis = viewCamera ? (centre - viewCamera.transform.position).normalized : Vector3.forward;
                     pose.RotateAround(centre, Vector3.up, yaw + aimYaw);
                     pose.RotateAround(centre, axis, roll + yaw * RunUpright);
+                    // The number is printed on the box's back face, but it is not part of the rig: as the box turns it
+                    // slides toward the face's far edge (recording 2, 48.9 s: ~3/4 across on a run to the left) and
+                    // turns part of the way with it.
+                    if (label)
+                    {
+                        float turn = yaw + aimYaw;
+                        label.localPosition = labelRest; label.localRotation = labelRestRotation;
+                        label.position += Vector3.right * (-Mathf.Sin(turn * Mathf.Deg2Rad) * LabelSlide * size);
+                        label.rotation = Quaternion.AngleAxis(turn * LabelTurnShare, Vector3.up) * label.rotation;
+                        labelMoved = true;
+                    }
                 }
                 transform.localRotation = Quaternion.identity;
             }
@@ -249,7 +270,7 @@ namespace SandJamTest.Scene3D
                     // Turn toward the horizontal direction of travel, settle facing the camera on arrival.
                     var dir = destination - from;
                     // Leaving: fully sideways so the legs stride toward the exit edge.
-                    float target = Departing ? ExitTarget : Mathf.Clamp(Mathf.Atan2(dir.x, Mathf.Max(.01f, dir.y)) * Mathf.Rad2Deg, -MaxYaw, MaxYaw);
+                    float target = Departing ? ExitTarget : Mathf.Clamp(RunTurnGain * Mathf.Atan2(dir.x, Mathf.Max(.01f, dir.y)) * Mathf.Rad2Deg, -MaxYaw, MaxYaw);
                     float settle = t > .8f && !Departing ? (t - .8f) / .2f : 0;
                     yaw = Mathf.Lerp(Mathf.MoveTowards(yaw, target, delta * (Departing ? 900 : 420)), 0, settle);
                     if(Motion && Motion.Animator) Motion.Animator.speed = RunAnimSpeed;

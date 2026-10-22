@@ -1499,3 +1499,26 @@ chạy (tới 65°), trục này quay theo, nên chân bị hất ra sau thay v�
 
 - Quay lại cú chạy dài: khung bao đứng yên 0,75–0,77, khối thẳng, chân dưới đáy sải theo hướng chạy.
 - Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
+
+### Cảm giác chơi: số trên khối quay theo khối khi chạy
+
+**Đo** (video 2, giây 48,6–49,3)
+
+- Bản gốc: số in trên mặt khối nên khi khối quay về hướng chạy, số dạt về phía mép xa (chạy sang trái thì số
+  nằm ~3/4 bề ngang về bên phải) và nghiêng theo mặt khối.
+- Bản mình: số `Ammo` là đối tượng riêng nằm ngoài khung xương, nên đứng yên giữa khối, nhìn thẳng camera. Khối
+  trông như không quay. Tăng góc quay 1,25 lần (tối đa 80°) cũng gần như không khác, vì người xem nhìn vào số.
+- Gắn số theo đúng phép quay của khung xương: số gần như nằm cạnh và ra ngoài khối, vì mặt có số của khối được
+  dựng ngả về phía camera.
+
+**Sửa** (`SceneActorView.ApplyYaw`)
+
+- Khi khối quay (chạy hoặc đổ), số trượt ngang `-sin(góc) × LabelSlide` (0,14 × cỡ khối) và quay
+  `LabelTurnShare` (0,45) góc quanh trục đứng. Khi khối về thẳng thì số trả về chỗ cũ (`labelRest`, `labelMoved`).
+- Giữ `RunTurnGain` 1,25 và `MaxYaw` 80° (quay mạnh hơn một chút như bản gốc).
+
+**Kiểm tra**
+
+- Chạy chéo dài: số nằm nửa phải khối, nghiêng theo.
+- Đổ cát (level 2): số lệch nhẹ theo góc đổ, về giữa khi khối rời ô.
+- Tự chơi level 2, 68, 259, 267: thắng cả 4. Run all checks qua 8/8.
