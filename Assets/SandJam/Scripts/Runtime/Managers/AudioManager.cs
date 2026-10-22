@@ -6,8 +6,9 @@ namespace SandJamTest
     public enum Sfx { Select, Victory, Pop, Button, ClaimCoin, ClaimGift, LevelCompletePanel }
 
     // Plays the original sound effects in response to game events and honours the sound setting. As in the original
-    // (recording 1, every sound matched against the game's clips): a tap on a cube plays Input, PLAY plays pop, a win
-    // plays Victory; pouring, filled regions and emptied cubes are silent.
+    // (recording 1, every sound matched against the game's clips): a tap on a cube plays Input, PLAY plays pop, the
+    // finished picture plays the level-complete jingle and the Level Complete card Victory (~4.3 s later); pouring,
+    // filled regions, emptied cubes and the win reward are silent.
     public sealed class AudioManager : Singleton<AudioManager>
     {
         readonly Dictionary<Sfx, AudioClip> clips = new Dictionary<Sfx, AudioClip>();
@@ -62,8 +63,8 @@ namespace SandJamTest
         }
 
         void OnSelected(int color) { Play(Sfx.Select); }
-        void OnWon(int level) { Play(Sfx.Victory); }
+        void OnWon(int level) { Play(Sfx.LevelCompletePanel); }
         void OnButton(string action) { Play(action == "play" ? Sfx.Pop : Sfx.Button); }
-        void OnCoins(int balance, int delta, string reason) { if (delta > 0 && (reason == "win" || reason == "double")) Play(Sfx.ClaimCoin); }
+        void OnCoins(int balance, int delta, string reason) { if (delta > 0 && reason == "double") Play(Sfx.ClaimCoin); }
     }
 }

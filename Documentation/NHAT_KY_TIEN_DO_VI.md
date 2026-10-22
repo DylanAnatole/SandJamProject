@@ -1328,3 +1328,24 @@ khói cũ.
 - Quay level 264 theo thời gian thực, tua nhanh tới lúc ô 4 còn 1: khói phủ kín ô, loang thành vòng, tan sau
   khoảng 0,6 s.
 - Tự chơi level 264, 68: thắng. Run all checks qua 8/8.
+
+### Cảm giác chơi: âm thanh lúc thắng đúng thời điểm như bản gốc
+
+**Đo** (video 1, 3 lần thắng ở giây 88, 213, 372; so dạng sóng)
+
+- Lúc tranh hoàn thành: phát `level completed panel` (khớp 0,47, đều cả 3 lần).
+- "Superb!": không có tiếng.
+- Bảng Level Complete hiện ra: phát `Victory` (khớp 0,98–0,99), muộn hơn lúc thắng khoảng 4,3 s.
+- `claim_coin`: không lần nào (khớp 0,13).
+- Bản mình trước đây phát `Victory` và tiếng xu ngay lúc thắng, không phát `LevelCompletePanel`.
+- Quay lại bong bóng mở vùng theo thời gian thực (level 267): bong bóng sống khoảng 0,35–0,45 s, sát bản gốc.
+
+**Sửa**
+
+- `AudioManager`: lúc thắng phát `LevelCompletePanel`; tiếng xu chỉ còn khi nhân đôi thưởng (x2).
+- `VideoScreen.Show(Page.Result)` phát `Victory` khi bảng Level Complete hiện ra.
+
+**Kiểm tra**
+
+- Tự chơi level 2, 68 tới bảng Level Complete: không lỗi; kích thước bảng không đổi.
+- Run all checks qua 8/8.

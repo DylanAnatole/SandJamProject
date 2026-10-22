@@ -420,6 +420,7 @@ namespace SandJamTest.Scene3D
         public void Show(Page page)
         {
             if (Boosters && page != Page.Gameplay) Boosters.Cancel();
+            if (page == Page.Result && Current != Page.Result && AudioManager.Ready) AudioManager.Instance.Play(Sfx.Victory);
             // Pages switch with a hard cut, as in the original (recording 2: Home -> level, Level Complete -> CONGRATS
             // -> Home); Superb! brings its own flash.
             Current=page;elapsed=0;
