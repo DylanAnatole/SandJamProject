@@ -1312,3 +1312,19 @@ Unity tưởng nó nằm ngoài màn hình và tạm dừng, nên đôi khi cả
 
 - Quay level 259 hai lần: khói hiện cả hai lần, bọc khối, tan sau ~0,6 s.
 - Tự chơi level 2, 259, 267: thắng cả 3. Run all checks qua 8/8.
+
+### Cảm giác chơi: khói mở khóa ô chờ dày như bản gốc
+
+**Đo** (video 1, giây 1004,8–1005,1, ô 4 đếm về 0)
+
+- Đám khói trắng dày phủ kín cả ô, rồi loang thành vòng ra ngoài và tan sau khoảng 0,3 s.
+- Bản mình chỉ có vòng khói mỏng (22 cụm nhỏ), không có lớp khói phủ kín ô lúc đầu.
+
+**Sửa:** `SandFx.SlotUnlocks` thêm `SlotCloudPuffs` = 12 cụm khói to giữa ô (sống 0,3–0,4 s), giữ nguyên vòng
+khói cũ.
+
+**Kiểm tra**
+
+- Quay level 264 theo thời gian thực, tua nhanh tới lúc ô 4 còn 1: khói phủ kín ô, loang thành vòng, tan sau
+  khoảng 0,6 s.
+- Tự chơi level 264, 68: thắng. Run all checks qua 8/8.

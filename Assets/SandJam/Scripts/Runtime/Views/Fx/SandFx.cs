@@ -124,6 +124,7 @@ namespace SandJamTest.Scene3D
             return null;
         }
         // A locked waiting slot opening (its counter reached 0): a ring of white smoke bursts out around it.
+        const int SlotCloudPuffs = 12;
         void SlotUnlocks(SandGame game)
         {
             var slots = controller.StashSlots;
@@ -140,6 +141,9 @@ namespace SandJamTest.Scene3D
                         var dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a) * .75f, 0);
                         Emit(puff, p + dir * .3f, dir * Random.Range(.6f, .9f), new Color(1, 1, 1, .9f), Random.Range(.5f, .7f), Random.Range(.45f, .6f));
                     }
+                    // Original (recording 1, 1004.8-1005.1 s): the cloud first covers the whole slot, then opens into the ring.
+                    for (int k = 0; k < SlotCloudPuffs; k++)
+                        Emit(puff, p + (Vector3)(Random.insideUnitCircle * .15f), (Vector3)(Random.insideUnitCircle * .3f), new Color(1, 1, 1, .9f), Random.Range(.6f, .85f), Random.Range(.3f, .4f));
                 }
                 slotLocked[i] = remaining;
             }
