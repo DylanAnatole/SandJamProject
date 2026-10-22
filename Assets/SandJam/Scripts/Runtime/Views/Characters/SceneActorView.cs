@@ -50,7 +50,10 @@ namespace SandJamTest.Scene3D
         // number almost at the box's right edge on a run to the left), capped at MaxYaw. Turned about the true vertical the pitched box
         // also leans over; RunUpright rolls it back about the view axis (per degree of turn) so it stays upright.
         const float RunUpright=-.5f;
-        const float MaxYaw=80f, RunTurnGain=1.25f, ExitYaw=0f;
+        const float MaxYaw=80f, RunTurnGain=1.25f;
+        // An emptied box leaving turns fully side-on toward its exit and strides off in profile (recording 2,
+        // 158.55-158.9 s), like a run straight sideways.
+        const float ExitYaw=90f, ExitBehind=.5f;
         // Walk clip (0.875 s, two steps) played at RunAnimSpeed: ~0.23 s a step, as the original's legs open and close
         // ~4-5 times a second (recording 2, 48.6-49.2 s). The box itself barely bobs there (under 2% of its height).
         const float WalkClipSeconds=.875f, RunAnimSpeed=1.9f, StepsPerSecond=2*RunAnimSpeed/WalkClipSeconds, StepBob=.012f;
@@ -75,7 +78,7 @@ namespace SandJamTest.Scene3D
         public void Pour(Vector3 target) { pourTarget = target; }
         // Recording 2 (155.6-155.9 s and 48.6-49.3 s, zoomed): both legs come out of the middle of the block's base,
         // thick, ~0.6 of its height, with bent knees; turned toward the run they hid behind each other.
-        const float RunLegYaw = 0f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.45f;
+        const float RunLegYaw = 0f, RunLegDrop = 35f, RunLegStretch = 1.45f;
         Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
         void FindRig()
         {
@@ -94,9 +97,9 @@ namespace SandJamTest.Scene3D
             if (!hips || !leftThigh || !rightThigh || Shooter == null) return;
             bool running = gait == Gait.Run && (!AtRest || (Departing && exitDelay > 0));
             float dx = destination.x - from.x;
-            float target = !running ? 0 : Departing ? ExitLegYaw * Mathf.Sign(dx) : Mathf.Abs(dx) < .05f ? 0 : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
+            float target = !running || Mathf.Abs(dx) < .05f ? 0 : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
             legYaw = Mathf.MoveTowards(legYaw, target, Time.deltaTime * 600f);
-            legDrop = Mathf.MoveTowards(legDrop, running && !Departing ? RunLegDrop : 0, Time.deltaTime * 400f);
+            legDrop = Mathf.MoveTowards(legDrop, running ? RunLegDrop : 0, Time.deltaTime * 400f);
             if (Mathf.Abs(legYaw) < .01f && Mathf.Abs(legDrop) < .01f)
             {
                 if (leftThigh.localScale != thighScale) leftThigh.localScale = rightThigh.localScale = thighScale; // back to rest
@@ -156,7 +159,7 @@ namespace SandJamTest.Scene3D
             else transform.localRotation = Quaternion.Euler(0, yaw, 0);
         }
         // Legs only exist while running; sitting in the lane or on a waiting slot the block rests on its base.
-        float ExitTarget { get { return -Mathf.Sign(destination.x - from.x) * ExitYaw; } }
+        float ExitTarget { get { return Mathf.Sign(destination.x - from.x) * ExitYaw; } }
         void ShowLegs(bool visible) { if (legs && legs.enabled != visible) legs.enabled = visible; }
         // After running onto its pad the box still stands on its legs a moment (recording 2, 156.0-156.15 s).
         const float LegLinger = .15f; float landedAge;
@@ -313,7 +316,8 @@ namespace SandJamTest.Scene3D
         void ApplyDepth()
         {
             if (!laneZKnown) return;
-            var p = transform.position; p.z = laneZ + DepthOffset(p.y); transform.position = p;
+            // Leaving, the box runs along behind the boxes still on their pads (recording 2, 158.6-158.9 s).
+            var p = transform.position; p.z = laneZ + DepthOffset(p.y) + (Departing && exitDelay <= 0 ? ExitBehind : 0); transform.position = p;
         }
         const float SpringStep = 1f / 120f;
         void ApplyJuice(float delta)

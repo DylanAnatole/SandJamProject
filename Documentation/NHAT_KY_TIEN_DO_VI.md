@@ -1542,3 +1542,23 @@ chạy (tới 65°), trục này quay theo, nên chân bị hất ra sau thay v�
 
 - Level 267 tô xong: xám (128, hạt tối 120), cam (248,128,0), tím (104,0,232 / 72,0,160) khớp video.
 - Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
+
+### Cảm giác chơi: khối hết cát quay ngang, sải chân, chạy ra phía sau hàng ô
+
+**Đo** (video 2, giây 158,35–158,9, khối tím rời ô 2)
+
+- Chuyển trắng, nhảy lên, rồi quay hẳn 90° sang ngang (thấy mặt bên). Chân sải dài nhìn nghiêng ngay dưới khối.
+- Chạy ngang ra mép trái phía sau khối vàng ở ô 1 (bị khối vàng che).
+- Bản mình: khối không quay (`ExitYaw` = 0). Chân xoay riêng 85° và không hạ xuống, nên gần như không thấy.
+  Khối chạy ngang đè lên khối ở ô bên cạnh.
+
+**Sửa** (`SceneActorView`)
+
+- `ExitYaw` 0 → 90°, cùng chiều với cách quay khi chạy lên ô (`Sign(dx)`). Thân và chân cùng quay, chân hạ dưới
+  đáy như lúc chạy lên. Bỏ `ExitLegYaw`.
+- `ApplyDepth`: khi đang chạy ra, khối lùi `ExitBehind` (0,5) về phía sau nên đi sau các khối còn trên ô.
+
+**Kiểm tra**
+
+- Quay level 267 (khối rời ô 3): khối quay ngang, có chân, đi sau khối cam ở ô 1.
+- Tự chơi level 2, 68, 267: thắng cả 3. Luồng thua / chơi tiếp / thử lại không lỗi. Run all checks qua 8/8.
