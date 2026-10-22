@@ -44,11 +44,11 @@ namespace SandJamTest.Scene3D
         float yaw;
         // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
         const float SlideSeconds=.32f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.6f, ExitPause=.12f, ExitHop=.25f;
-        // The body turns a little toward where it runs (recording 2, ~25 deg); further, the pitched body reads as a
-        // lopsided diamond.
-        const float MaxYaw=25f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
-        // The rig is pitched toward the camera, so turning happens around the body's own up axis
-        // (rotating the root around world Y would roll the tilted body sideways).
+        // The body turns only a little toward where it runs (recording 2, 155.6-155.9 s: mostly its front face shows);
+        // further, the pitched body reads as a lopsided diamond.
+        const float MaxYaw=10f, ExitYaw=0f, StepsPerSecond=7f, StepBob=.07f;
+        // The rig is pitched toward the camera, so every turn (running and pouring) happens about the true vertical
+        // through the block's centre: about the body's own up axis it read as the box rolling over sideways.
         Transform pose; Quaternion poseBase; Vector3 posePosition; bool poseCaptured;
         Renderer legs;
         // Only the legs turn toward where the cube runs (the body keeps facing the camera): after the animator has
@@ -64,7 +64,9 @@ namespace SandJamTest.Scene3D
         const float PourYaw = 30f, PourTilt = 3f;
         static readonly Vector3 PourPivot = new Vector3(0, .42f, 0); // block centre in Visual space
         public void Pour(Vector3 target) { pourTarget = target; }
-        const float RunLegYaw = 30f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.6f;
+        // Recording 2 (155.6-155.9 s, zoomed): both legs show side by side under the block, short and thick; turned
+        // toward the run they hid behind each other as one thin stick.
+        const float RunLegYaw = 0f, ExitLegYaw = 85f, RunLegDrop = 35f, RunLegStretch = 1.25f;
         Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
         void FindRig()
         {
@@ -92,7 +94,7 @@ namespace SandJamTest.Scene3D
                 return;
             }
             var frame = pose ? pose : hips;
-            var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, frame.up) * Quaternion.AngleAxis(legDrop, frame.right);
+            var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, Vector3.up) * Quaternion.AngleAxis(legDrop, frame.right);
             // Longer legs while running (the bones' length axis is their local Y).
             var stretch = new Vector3(1, 1 + (RunLegStretch - 1) * legDrop / RunLegDrop, 1);
             foreach (var thigh in new[] { leftThigh, rightThigh })
@@ -106,17 +108,18 @@ namespace SandJamTest.Scene3D
         {
             if (pose)
             {
-                pose.localRotation = poseBase * Quaternion.Euler(0, yaw, 0);
+                pose.localRotation = poseBase;
                 pose.localPosition = posePosition;
-                // Pouring: turned about the true vertical through the block's centre (the rig is pitched toward the
-                // camera, so its own up axis would read as a tilt; about its feet it swung off the pad), then the slight
-                // tip about the camera's view axis (it looks down at the board, so world Z would tip the box over).
-                if (aimYaw != 0 || roll != 0)
+                // Running and pouring turn about the true vertical through the block's centre (about its feet it swung
+                // off the pad), then pouring adds the slight tip about the camera's view axis (it looks down at the
+                // board, so world Z would tip the box over).
+                float turn = yaw + aimYaw;
+                if (turn != 0 || roll != 0)
                 {
                     var centre = Visual.TransformPoint(PourPivot);
                     if (!viewCamera) viewCamera = SpriteFactory.CameraForLayer(gameObject.layer);
                     var axis = viewCamera ? (centre - viewCamera.transform.position).normalized : Vector3.forward;
-                    pose.RotateAround(centre, Vector3.up, aimYaw);
+                    pose.RotateAround(centre, Vector3.up, turn);
                     pose.RotateAround(centre, axis, roll);
                 }
                 transform.localRotation = Quaternion.identity;
@@ -126,6 +129,8 @@ namespace SandJamTest.Scene3D
         // Legs only exist while running; sitting in the lane or on a waiting slot the block rests on its base.
         float ExitTarget { get { return -Mathf.Sign(destination.x - from.x) * ExitYaw; } }
         void ShowLegs(bool visible) { if (legs && legs.enabled != visible) legs.enabled = visible; }
+        // After running onto its pad the box still stands on its legs a moment (recording 2, 156.0-156.15 s).
+        const float LegLinger = .15f; float landedAge;
 
         public const float CubeScale = .9f;
         // Original (recording 2, 48.6-52 s): a cube on its waiting pad reads ~0.96 of its size in the lanes, and on
@@ -169,7 +174,7 @@ namespace SandJamTest.Scene3D
         {
             if (Departing || (destination - position).sqrMagnitude < .00001f) return;
             from = transform.position; destination = position;
-            gait = kind; travel = 0; duration = seconds;
+            gait = kind; travel = 0; duration = seconds; landedAge = 0;
             // Picked: a quick stretch as it jumps off.
             if (kind == Gait.Run && !Departing) Punch(.22f);
             if(Motion)Motion.SetWalking(kind == Gait.Run);
@@ -257,7 +262,8 @@ namespace SandJamTest.Scene3D
                 aimYaw = Mathf.MoveTowards(aimYaw, pouring ? side * PourYaw : 0, delta * 300);
                 roll = Mathf.MoveTowards(roll, pouring ? -side * PourTilt : 0, delta * 60);
                 ApplyYaw();
-                ShowLegs(false);
+                landedAge += delta;
+                ShowLegs(gait == Gait.Run && !Departing && landedAge < LegLinger);
                 if(!Motion)Visual.localRotation = Quaternion.Euler(firing ? Mathf.Sin(Time.time * 25) * 3 : 0, 0, 0);
                 if(Motion){Motion.SetWalking(false); if(Motion.Animator) Motion.Animator.speed = 1;}
                 if (Departing) { gameObject.SetActive(false); return; }

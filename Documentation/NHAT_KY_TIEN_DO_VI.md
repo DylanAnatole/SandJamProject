@@ -1394,3 +1394,31 @@ trên trái (sáng) xuống dưới phải (0,78), bo góc, lọc mượt.
 
 - Quay level 267: hạt tối của tím ra (72,0,160), đúng bản gốc.
 - Tự chơi level 2, 68: thắng. Run all checks qua 8/8.
+
+### Cảm giác chơi: khối chạy đứng thẳng, hai chân ngắn cạnh nhau (người dùng báo chân xoay sai)
+
+**Đo** (video 2, giây 155,6–156,15, phóng to; bản mình level 267 quay theo thời gian thực)
+
+- Bản gốc: khối đứng thẳng, chỉ xoay nhẹ theo hướng chạy (gần như chỉ thấy mặt trước). Hai chân ngắn, mập, đứng
+  cạnh nhau ngay dưới đáy khối, bước luân phiên, vẫn thấy chân khoảng 0,15 s sau khi đáp.
+- Bản mình trước đây:
+  - khối lật nghiêng sang bên 20–25°;
+  - chân thành một que dài mảnh chĩa chéo ra sau;
+  - chân biến mất ngay lúc đáp.
+
+**Nguyên nhân:** khi chạy, khối và chân xoay quanh trục đứng của chính khối. Khối đang ngả về phía camera ~54°,
+nên trên màn hình động tác xoay thành lật nghiêng. Chân xoay 30° theo hướng chạy nên hai chân che nhau thành một.
+Lúc đổ cát đã sửa lỗi này trước đây, nhưng lúc chạy thì chưa.
+
+**Sửa** (`SceneActorView`)
+
+- `ApplyYaw`: xoay khi chạy (`yaw`) và khi đổ (`aimYaw`) cộng chung, cùng xoay quanh trục đứng thật đi qua tâm
+  khối. Chân cũng xoay quanh trục đứng thật.
+- `MaxYaw` 25 → 10°, `RunLegYaw` 30 → 0° (hai chân cạnh nhau), `RunLegStretch` 1,6 → 1,25.
+- `LegLinger` 0,15 s: chân còn hiện một chút sau khi đáp.
+
+**Kiểm tra**
+
+- Quay level 267 cạnh video: khối thẳng, hai chân dưới đáy, bước luân phiên, còn chân lúc vừa đáp.
+- Quay level 2: đổ cát và rời ô vẫn đúng.
+- Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
