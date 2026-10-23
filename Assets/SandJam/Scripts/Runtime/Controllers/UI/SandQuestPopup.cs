@@ -102,8 +102,10 @@ namespace SandJamTest.Scene3D
         {
             if (Open) return;
             if (SandQuest.ResultPending) { ShowQuestResult(); return; }
-            if (SandQuest.ShouldOffer) { SandQuest.MarkOffered(); Show(questOffer); RefreshQuestTexts(); }
+            if (SandQuest.ShouldOffer) { SandQuest.MarkOffered(); Show(questOffer); RefreshQuestTexts(); Host.HoldCard(OfferDelay); }
         }
+        // Recording 2 (144.9-146.2 s): back on Home the screen dims at once and the offer pops in ~0.75 s later.
+        const float OfferDelay = .75f;
         // Home chest ("JOIN"): the journey while joined, otherwise the offer.
         public void OpenSandQuest()
         {

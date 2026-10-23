@@ -704,19 +704,38 @@ namespace SandJamTest.Scene3D
         const float PopStart = .1f, PopTime = .4f, SlowPopTime = .5f, FastPopTime = .13f, CloseTime = .33f;
         GameObject closing; float closedAt; Collider[] closingHits;
         // The dimmed backdrop always covers the whole screen; only the card zooms.
-        void FitBackdrop(GameObject root, float scale)
+        // Pop scale of a card: across the screen only - its depth stays, so the dim layer keeps its place between the
+        // page under it and the card (scaled in depth too, it slid behind Home's buttons while the card was small and
+        // they flashed bright for the first ~0.1 s of every pop). The dim layer undoes the scale to cover the screen.
+        void SetPopScale(GameObject root, float scale)
         {
+            root.transform.localScale = new Vector3(scale, scale, 1);
             var dim = root.transform.Find("Dark backdrop");
             if (!dim) return;
             Vector3 full;
-            if (!backdropScales.TryGetValue(dim, out full)) backdropScales[dim] = full = dim.localScale;
-            dim.localScale = full / Mathf.Max(.05f, scale);
+            if (!backdrops.TryGetValue(dim, out full)) backdrops[dim] = full = dim.localScale;
+            float k = Mathf.Max(.05f, scale);
+            dim.localScale = new Vector3(full.x / k, full.y / k, full.z);
         }
-        readonly System.Collections.Generic.Dictionary<Transform, Vector3> backdropScales = new System.Collections.Generic.Dictionary<Transform, Vector3>();
+        readonly System.Collections.Generic.Dictionary<Transform, Vector3> backdrops = new System.Collections.Generic.Dictionary<Transform, Vector3>();
         int LevelShown { get { return screen.Levels.PlayedNumber; } }
+
+        // A card that waits a moment over its dimmed screen before popping in: everything but the backdrop and the
+        // coin bar is hidden until then (pop-in starts at the new shownAt; taps wait for it too).
+        readonly System.Collections.Generic.List<GameObject> heldCard = new System.Collections.Generic.List<GameObject>();
+        internal void HoldCard(float seconds)
+        {
+            if (!Open) return;
+            shownAt = Time.unscaledTime + seconds;
+            foreach (Transform child in Open.transform)
+                if (child.gameObject.activeSelf && child.name != "Dark backdrop" && System.Array.IndexOf(CoinBar, child.name) < 0)
+                { child.gameObject.SetActive(false); heldCard.Add(child.gameObject); }
+        }
+        void ReleaseCard() { foreach (var g in heldCard) if (g) g.SetActive(true); heldCard.Clear(); }
 
         internal void Show(Popup p)
         {
+            ReleaseCard();
             if (Open) Open.SetActive(false);
             if (closing) FinishClosing();
             Open = p.Root; shownAt = Time.unscaledTime;
@@ -728,13 +747,13 @@ namespace SandJamTest.Scene3D
             if (edge && p.Border) edge.GetComponent<SpriteRenderer>().color = Color.Lerp(p.Border.color, new Color(.45f, .08f, .04f), .35f);
             p.Root.SetActive(true);
             bool fullPage = IsPage(p.Root);
-            p.Root.transform.localScale = Vector3.one * (fullPage ? 1 : PopStart);
-            FitBackdrop(p.Root, fullPage ? 1 : PopStart);
+            SetPopScale(p.Root, fullPage ? 1 : PopStart);
             if (screen.Controller) screen.Controller.BoosterInputBlocked = true;
         }
 
         public void Close()
         {
+            ReleaseCard();
             if (!Open) return;
             if (closing) FinishClosing();
             // The card shrinks away (pages go at once); its touch areas are off meanwhile. Open is cleared now, so
@@ -760,8 +779,7 @@ namespace SandJamTest.Scene3D
             if (!closing) return;
             float t = Mathf.Clamp01((Time.unscaledTime - closedAt) / CloseTime);
             float s = Mathf.Max(.001f, Mathf.Pow(1 - t, 1.6f));
-            closing.transform.localScale = Vector3.one * s;
-            FitBackdrop(closing, s);
+            SetPopScale(closing, s);
             if (t >= 1) FinishClosing();
         }
         public bool Owns(VideoUiButton button) { return Open && button && button.transform.IsChildOf(Open.transform); }
@@ -817,12 +835,12 @@ namespace SandJamTest.Scene3D
             if (Open == failed.Root && Time.frameCount % 15 == 0) { failed.Big.text = TimerText; LayoutTimerRow(); }
             // Pop-in (see PopStart); the HARD / BONUS level cards grow a little more slowly (recording of level 260).
             bool page = IsPage(Open);
+            if (heldCard.Count > 0 && Time.unscaledTime >= shownAt) ReleaseCard();
             bool fast = congrats.FastPopIn;
             float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / (intros.SlowPopIn ? SlowPopTime : fast ? FastPopTime : PopTime));
             if (fast) t = 1 - (1 - t) * (1 - t);
-            float s = page ? 1 : PopStart + (1 - PopStart) * t;
-            Open.transform.localScale = Vector3.one * s;
-            FitBackdrop(Open, s);
+            float s = page || heldCard.Count > 0 ? 1 : PopStart + (1 - PopStart) * t;
+            SetPopScale(Open, s);
             if ((Open == lose.Root || (Open == failed.Root && !failedIsNoLives)) && !screen.Feedback.FailureVisible) Close();
             foreach (var module in modules) module.Tick();
         }

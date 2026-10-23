@@ -1707,3 +1707,28 @@ checks qua 8/8.
 
 - Level 2, bấm Next: CONGRATS 79 → 734 → 805 px trong 1,90–2,00 s.
 - Luồng thua / thử lại không lỗi. Run all checks qua 8/8.
+
+### Về Home sau CONGRATS: nền tối trước, lời mời Sand Quest bật sau; sửa nút Home sáng lên khi popup bật
+
+**Đo** (video 2, giây 144,8–146,3)
+
+- Chạm CONGRATS → màn SAND JAM ~0,1 s → Home đã tối sẵn → ~0,75 s sau thẻ Sand Quest mới bắt đầu lớn
+  (145,75 → 146,2 s).
+- Bản mình: thẻ bật ngay khi về Home. Lúc thẻ còn nhỏ (0,1 s đầu của mọi popup), tấm biển level, nút PLAY và
+  thanh điều hướng sáng lên qua lớp tối.
+
+**Nguyên nhân sáng lên:** popup co giãn đều cả 3 chiều khi bật, nên lớp nền tối (con của popup) bị kéo lùi về
+phía sau các nút của Home lúc thẻ nhỏ.
+
+**Sửa** (`PopupScreens`)
+
+- `SetPopScale` gộp 3 chỗ đặt cỡ popup (bật, đóng, mỗi khung): chỉ co giãn ngang và dọc, giữ chiều sâu. Lớp
+  tối bù lại ngang và dọc để vẫn phủ kín màn. Thay cho `FitBackdrop`.
+- `HoldCard(giây)`: ẩn mọi thứ trừ nền tối và thanh xu, dời thời điểm bật. `Show` / `Close` / `Update` trả lại.
+- `SandQuestPopup`: lời mời trên Home giữ `OfferDelay` 0,75 s.
+
+**Kiểm tra**
+
+- Level 90: về Home thì tối ngay, Home tối đều suốt; 0,75 s sau thẻ bật sáng rõ, đủ cỡ sau ~0,45 s.
+- Luồng thua / chơi tiếp (ô 6) / bỏ cuộc / thử lại / về Home không lỗi. Tự chơi level 2 thắng.
+- Run all checks qua 8/8.
