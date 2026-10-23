@@ -97,8 +97,7 @@ namespace SandJamTest.Scene3D
         {
             gallery = Blank("Gallery page");
             gallery.RightButton.transform.parent.gameObject.SetActive(false);
-            foreach (var name in new[] { "bg-currency", "button-plus_0", "icon-coin", "2040" })
-            { var t = gallery.Root.transform.Find(name); if (t) t.gameObject.SetActive(false); }
+            PopupScreens.HideCoinBar(gallery);
             var backdrop = gallery.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>();
             backdrop.color = new Color(.1f, .3f, .55f, 1);
             var top = Art(gallery, "GalleryPage/bg-topTexture-cardCollection", new Vector3(0, 3.2f, -6.05f), 5.8f);

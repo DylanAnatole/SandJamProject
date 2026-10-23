@@ -761,8 +761,7 @@ namespace SandJamTest.Scene3D
             if (closing) FinishClosing();
             Open = p.Root; shownAt = Time.unscaledTime;
             p.Header.text = "Level " + LevelShown;
-            foreach (var label in p.Root.GetComponentsInChildren<TextMesh>(true))
-                if (label.name == "2040") label.text = Campaign.Coins.ToString();
+            RefreshPopupCoins();
             // The frame's darker edge follows the popup's frame colour (gold, red...).
             var edge = p.Root.transform.Find(ResultFx.EdgeName);
             if (edge && p.Border) edge.GetComponent<SpriteRenderer>().color = Color.Lerp(p.Border.color, new Color(.45f, .08f, .04f), .35f);

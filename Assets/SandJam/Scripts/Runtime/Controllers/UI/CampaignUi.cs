@@ -162,7 +162,7 @@ namespace SandJamTest.Scene3D
 
         public void Refresh()
         {
-            int coins = Campaign.Coins, level = DisplayedLevel;
+            int coins = EconomyManager.Coins, level = DisplayedLevel;
             bool doubled = screen.Levels.RewardDoubled;
             if (coins == shownCoins && level == shownLevel && doubled == shownDoubled) return;
             shownCoins = coins; shownLevel = level; shownDoubled = doubled;
@@ -232,7 +232,7 @@ namespace SandJamTest.Scene3D
         readonly Dictionary<TextMesh, Vector3> coinScales = new Dictionary<TextMesh, Vector3>();
         void RollCoins()
         {
-            int target = Campaign.Coins;
+            int target = EconomyManager.Coins;
             bool canRoll = (screen.Current == VideoScreen.Page.Result && ResultFx.CoinsLanded) || screen.Current == VideoScreen.Page.Home;
             if (rollingCoins < 0 || target < rollingCoins) rollingCoins = target; // spending is instant
             else if (rollingCoins < target && canRoll)

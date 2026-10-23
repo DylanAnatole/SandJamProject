@@ -32,6 +32,8 @@ namespace SandJamTest
             }
         }
 
-        static Color Hex(string value) { Color c; ColorUtility.TryParseHtmlString("#" + value, out c); return c; }
+        // "RRGGBB" or 0xRRGGBB to an opaque colour (the one place colours are written as hex).
+        public static Color Hex(string value) { Color c; ColorUtility.TryParseHtmlString("#" + value, out c); return c; }
+        public static Color Hex(int rgb) { return new Color(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f); }
     }
 }

@@ -59,8 +59,7 @@ namespace SandJamTest.Scene3D
             CloseX(questMap, new Vector3(2.08f, 4.62f, -8.5f), "quest-close"); // fully on screen
             // Full-screen page: no green button or coin counter; the house on the left goes back home.
             questMap.RightButton.transform.parent.gameObject.SetActive(false);
-            foreach (var name in new[] { "bg-currency", "button-plus_0", "icon-coin", "2040" })
-            { var t = questMap.Root.transform.Find(name); if (t) t.gameObject.SetActive(false); }
+            PopupScreens.HideCoinBar(questMap);
             var home = Child<BoxCollider>(questMap, "Hit area - quest-close", MapPoint(new Vector2(65, 1000), -8.5f));
             home.gameObject.layer = 9; home.size = new Vector3(.8f, .8f, .2f);
             home.gameObject.AddComponent<VideoUiButton>().Action = "quest-close";

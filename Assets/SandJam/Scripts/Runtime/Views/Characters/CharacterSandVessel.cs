@@ -134,7 +134,7 @@ namespace SandJamTest.Scene3D
             var obj=new GameObject(name);obj.transform.SetParent(parent,false);
             obj.AddComponent<MeshFilter>().sharedMesh=mesh;
             var renderer=obj.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;
-            renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=false;return renderer;
+            renderer.NoShadows();return renderer;
         }
         static Vector3[] Loop(float width,float depth,float radius,float y)
         {

@@ -37,6 +37,12 @@ namespace SandJamTest
             return b;
         }
 
+        // Flat effect / UI geometry: casts and receives no shadows.
+        public static T NoShadows<T>(this T renderer) where T : Renderer
+        {
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false; return renderer;
+        }
+
         // First descendant (inactive included, the root itself too) with this exact name; null when none.
         public static Transform FindDeep(this Transform root, string name)
         {

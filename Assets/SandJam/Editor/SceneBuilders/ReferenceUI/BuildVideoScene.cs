@@ -19,7 +19,7 @@ namespace SandJamTest.Editor
         static Color VideoColor(int id){switch(id){case 1: return new Color(0.74509805f,0.09411765f,0.09411765f,1.0f);case 2: return new Color(0.11372549f,0.7921569f,0.0f,1.0f);case 3: return new Color(0.0f,0.6392157f,1.0f,1.0f);case 4: return new Color(1.0f,0.8039216f,0.0f,1.0f);case 5: return new Color(1.0f,0.5294118f,0.0f,1.0f);case 6: return new Color(0.83137256f,0.0f,0.78039217f,1.0f);case 7: return new Color(0.43529412f,0.0f,0.9254902f,1.0f);case 8: return new Color(0.07450981f,0.07450981f,0.07450981f,1.0f);case 9: return new Color(0.8666667f,0.8666667f,0.8666667f,1.0f);case 10: return new Color(0.6509804f,0.40392157f,0.22352941f,1.0f);default:return new Color(.6f,.6f,.65f,1);}}
         static Font font; static Material spriteMaterial;
         static Sprite rounded, pad;
-        static Color Hex(string value){Color c;ColorUtility.TryParseHtmlString("#"+value,out c);return c;}
+        static Color Hex(string value){return ColorPalette.Hex(value);}
         static Vector3 P(float x,float y,float z=0){return new Vector3((x-241.5f)*.01f,(537.5f-y)*.01f,z);}
         static Transform Group(string name,Transform parent=null){var t=new GameObject(name).transform;if(parent)t.SetParent(parent,false);return t;}
         static T Save<T>(T asset,string name) where T:UnityEngine.Object

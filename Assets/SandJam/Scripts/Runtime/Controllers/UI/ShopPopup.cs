@@ -77,8 +77,7 @@ namespace SandJamTest.Scene3D
             var foot = Child<SpriteRenderer>(shop, "Footer bar", new Vector3(0, -5.1f, -7.3f)); foot.sprite = bar.sprite;
             foot.color = bar.color; foot.transform.localScale = new Vector3(8, 1.8f, 1);
             AddPageChrome(shop, "icon-shop");
-            foreach (var name in new[] { "bg-currency", "button-plus_0", "icon-coin", "2040" })
-            { var t = shop.Root.transform.Find(name); if (t) t.gameObject.SetActive(false); }
+            PopupScreens.HideCoinBar(shop);
         }
 
         SpriteRenderer ShopArt(string sprite, float x, float y, float width, float z, Transform parent)

@@ -115,7 +115,7 @@ namespace SandJamTest.Scene3D
             var renderer = obj.GetComponent<ParticleSystemRenderer>();
             renderer.material = new Material(Shader.Find("Sprites/Default")) { mainTexture = texture };
             renderer.sortingOrder = 30;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false;
+            renderer.NoShadows();
             ps.Play();
             return ps;
         }

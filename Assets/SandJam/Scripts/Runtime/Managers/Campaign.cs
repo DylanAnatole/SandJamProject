@@ -10,7 +10,6 @@ namespace SandJamTest
     public static class Campaign
     {
         [Serializable] sealed class CampaignFile { public string[] levels; }
-        public const int WinReward = EconomyManager.WinReward;
         static string[] levels;
 
         public static string[] Levels
@@ -46,13 +45,6 @@ namespace SandJamTest
             var asset = Resources.Load<TextAsset>("Levels/Data/" + id);
             return asset ? asset : Resources.Load<TextAsset>(CustomFolder + "/" + id);
         }
-
-        public static int Coins
-        {
-            get { return EconomyManager.Coins; }
-            set { EconomyManager.SetCoins(value, "set"); }
-        }
-        public static bool TrySpend(int amount) { return EconomyManager.TrySpend(amount, "spend"); }
 
         public static bool SoundOn
         {

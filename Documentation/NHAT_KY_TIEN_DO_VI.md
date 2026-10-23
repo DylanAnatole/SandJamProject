@@ -1875,3 +1875,23 @@ phía sau các nút của Home lúc thẻ nhỏ.
 - Tài liệu: bỏ phần nói về test và scene cấu trúc level.
 
 **Kiểm tra:** biên dịch không lỗi. Tự chơi (script tạm trên máy, dùng bộ giải) level 2, 68, 267: thắng cả 3.
+
+### Đợt 2: gộp code trùng lặp, bỏ lớp chuyển tiếp và code chết còn lại
+
+Tìm bằng máy quét: dòng dài giống hệt nhau ở nhiều file, hàm cùng tên ở nhiều file, thành viên `static` không
+ai gọi (tính cả lời gọi `Lớp.Tên`).
+
+- **Một hàm `Hex`:** `ColorPalette.Hex(string)` / `Hex(int)` thay cho 3 bản riêng (`OriginalLookStyler`,
+  `OriginalThemes`, `BuildVideoScene`).
+- **Một hàm tắt đổ bóng:** `RendererExtensions.NoShadows()` thay 6 chỗ lặp lại 2 dòng.
+- **Ẩn thanh xu:** Gallery, Sand Quest, Shop dùng `PopupScreens.HideCoinBar` thay vì tự lặp danh sách tên.
+- **Cập nhật số xu một chỗ:** `Show` gọi `RefreshPopupCoins`; `RefreshPageLives` không cập nhật xu nữa
+  (`Show` đã làm).
+- **Bỏ lớp chuyển tiếp:** `Campaign.Coins` / `TrySpend` / `WinReward` chỉ gọi sang `EconomyManager`; nơi dùng
+  gọi thẳng `EconomyManager.Coins`.
+- **Mô phỏng cát:** xoá `SandPourSimulation` (lớp bọc cũ cho bài test); struct `Grain` chuyển vào
+  `BurstSandSimulation` (bỏ trường `Dir` không dùng); bỏ chế độ chạy không Burst (`managed`).
+- **Code chết:** `OriginalThemes.ForLevel`, `LevelBootstrap.SceneName`.
+
+**Kiểm tra:** biên dịch không lỗi. Tự chơi level 2, 68, 267 thắng cả 3. Booster, luồng thua / chơi tiếp (ô 6) /
+bỏ cuộc / thử lại / về Home không lỗi. Ảnh Home và Shop không đổi.

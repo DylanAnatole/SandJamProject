@@ -201,7 +201,7 @@ namespace SandJamTest.Scene3D
             shell.transform.localPosition = new Vector3(0, .195f, 0); shell.transform.localRotation = pitch;
             shell.AddComponent<MeshFilter>().sharedMesh = iceMesh;
             var renderer = shell.AddComponent<MeshRenderer>(); renderer.sharedMaterial = iceMaterial;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false;
+            renderer.NoShadows();
             var label = Instantiate(actor.AmmoLabel, actor.AmmoLabel.transform.parent);
             // Same spot as the ammo count once CharacterSandVessel lifts it onto the front face.
             label.name = "Freeze remaining"; label.transform.localPosition = actor.AmmoLabel.transform.localPosition + new Vector3(0, .2f, -.05f);

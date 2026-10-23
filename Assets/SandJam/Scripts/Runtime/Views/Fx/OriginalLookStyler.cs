@@ -8,7 +8,7 @@ namespace SandJamTest.Scene3D
     // Applied at runtime so every baked level prefab picks it up without regeneration.
     public sealed class OriginalLookStyler : MonoBehaviour
     {
-        public static readonly Color BackdropTop = Hex(0xECEBF8), BackdropMiddle = Hex(0xE7E7F4), BackdropBottom = Hex(0xCBC8F2);
+        public static readonly Color BackdropTop = ColorPalette.Hex(0xECEBF8), BackdropMiddle = ColorPalette.Hex(0xE7E7F4), BackdropBottom = ColorPalette.Hex(0xCBC8F2);
         // Campaign levels use the original stage theme of their 15-level block (OriginalThemes): blue, lavender
         // (the tuned colours above) or dark — backdrop, picture frame and lane banks are recoloured.
         static readonly string[] FrameParts = { "Solid board frame", "Raised board frame", "Tray top", "Tray bevel", "Extruded plinth" };
@@ -378,10 +378,9 @@ namespace SandJamTest.Scene3D
             gradientMaterial = new Material(Shader.Find("Sprites/Default"));
             renderer.sharedMaterial = gradientMaterial;
             renderer.sortingOrder = -100;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false;
+            renderer.NoShadows();
         }
 
-        static Color Hex(int rgb) { return new Color(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f); }
 
         void OnDestroy()
         {

@@ -52,7 +52,7 @@ namespace SandJamTest.Scene3D
             trail.useWorldSpace = true; trail.positionCount = 2; trail.sharedMaterial = trailMaterial;
             trail.startWidth = PelletSize * .9f; trail.endWidth = PelletSize * .2f; trail.numCapVertices = 0; trail.sortingOrder = 30;
             trail.startColor = new Color(1, 1, 1, .55f); trail.endColor = new Color(1, 1, 1, 0);
-            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; trail.receiveShadows = false;
+            trail.NoShadows();
             return new Pellet { Root = go, Body = body, Trail = trail };
         }
 

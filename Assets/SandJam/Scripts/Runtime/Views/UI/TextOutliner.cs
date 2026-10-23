@@ -87,7 +87,7 @@ namespace SandJamTest.Scene3D
                 copies[i] = go.AddComponent<TextMesh>();
                 var r = go.GetComponent<MeshRenderer>();
                 r.sortingLayerID = mainRenderer.sortingLayerID; r.sortingOrder = mainRenderer.sortingOrder; // same order: depth puts it just behind the letters
-                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+                r.NoShadows();
             }
             Recolour(); // right away: code reading the label's colours this frame must not see default white copies
         }

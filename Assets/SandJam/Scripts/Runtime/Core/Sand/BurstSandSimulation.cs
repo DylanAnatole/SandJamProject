@@ -11,18 +11,18 @@ namespace SandJamTest.Scene3D
     // can reach (pockets above the mouth) are settled from the bottom once the mouth is buried.
     public sealed class BurstSandSimulation : IDisposable
     {
+        public struct Grain { public int Index, X, Y, Speed; }
         public const int MaxFallSpeed = 2;   // cells per step (gentle fall)
         public readonly int[] Rows,Cols;
         public readonly int Width,InletX,InletY;
         public NativeArray<byte> Filled;
-        public NativeArray<SandPourSimulation.Grain> Moving;
+        public NativeArray<Grain> Moving;
         NativeArray<int> rows,cols,cellAt,spawns,seep,state,topCell;
         readonly int minX,maxX;
         // Simulation step at which each cell settled (-1 = empty); drives the fresh-sand highlight.
         public NativeArray<int> SettleStep;
         NativeArray<byte> occupied;
         readonly int height;
-        readonly bool managed;
         JobHandle handle;bool pending,disposed;
         public int Emitted {get{return state[0];}}
         public int Settled {get{return state[1];}}
@@ -33,11 +33,9 @@ namespace SandJamTest.Scene3D
         // Column and row the stream currently falls from.
         public int MouthX {get{return state[9];}}
         public int MouthY {get{return state[10];}}
-        public BurstSandSimulation(int[] sourceRows,int[] sourceCols):this(sourceRows,sourceCols,false){}
-        internal BurstSandSimulation(int[] sourceRows,int[] sourceCols,bool runManaged)
+        public BurstSandSimulation(int[] sourceRows,int[] sourceCols)
         {
             var layout=new SandRegionFlowLayout(sourceRows,sourceCols);
-            managed=runManaged;
             Rows=sourceRows;Cols=sourceCols;Width=layout.Width;height=layout.Height;InletX=layout.InletX;InletY=layout.InletY;
             rows=new NativeArray<int>(Rows,Allocator.Persistent);cols=new NativeArray<int>(Cols,Allocator.Persistent);
             cellAt=new NativeArray<int>(layout.CellAt,Allocator.Persistent);
@@ -50,7 +48,7 @@ namespace SandJamTest.Scene3D
             state[5]=unchecked((int)(0x9E3779B9u^(uint)(Rows.Length*7919+InletX*131+InletY)));if(state[5]==0)state[5]=1;
             Filled=new NativeArray<byte>(Rows.Length,Allocator.Persistent);
             occupied=new NativeArray<byte>(Rows.Length,Allocator.Persistent);
-            Moving=new NativeArray<SandPourSimulation.Grain>(Rows.Length,Allocator.Persistent);
+            Moving=new NativeArray<Grain>(Rows.Length,Allocator.Persistent);
             SettleStep=new NativeArray<int>(Rows.Length,Allocator.Persistent);
             for(int i=0;i<Rows.Length;i++)SettleStep[i]=-1;
         }
@@ -73,7 +71,6 @@ namespace SandJamTest.Scene3D
         {
             CompleteSteps();if(steps<=0 || Complete)return;
             var job=new StepJob{TopCell=topCell,MinX=minX,MaxX=maxX,InletX=InletX,Rows=rows,Cols=cols,CellAt=cellAt,Spawns=spawns,Seep=seep,State=state,Filled=Filled,Moving=Moving,Occupied=occupied,SettleStep=SettleStep,Width=Width,Height=height,Steps=steps};
-            if(managed){job.Execute();return;}
             handle=job.Schedule();pending=true;
         }
         public void CompleteSteps(){if(!pending)return;handle.Complete();pending=false;}
@@ -104,11 +101,11 @@ namespace SandJamTest.Scene3D
             public NativeArray<int> State;
             public NativeArray<byte> Filled,Occupied;
             public NativeArray<int> SettleStep;
-            public NativeArray<SandPourSimulation.Grain> Moving;
+            public NativeArray<Grain> Moving;
             public int Width,Height,Steps;
             int Cell(int x,int y){return x<0 || x>=Width || y<0 || y>=Height?-1:CellAt[y*Width+x];}
             bool Free(int x,int y){int c=Cell(x,y);return c>=0 && Occupied[c]==0;}
-            void Move(ref SandPourSimulation.Grain g,int x,int y)
+            void Move(ref Grain g,int x,int y)
             {
                 Occupied[CellAt[g.Y*Width+g.X]]=0;g.X=x;g.Y=y;Occupied[CellAt[y*Width+x]]=1;
             }
@@ -173,7 +170,7 @@ namespace SandJamTest.Scene3D
                     if(spout>=0 && State[0]<State[2] && Occupied[spout]==0 && Filled[spout]==0)
                     {
                         Occupied[spout]=1;State[0]++;
-                        Moving[State[3]++]=new SandPourSimulation.Grain{Index=State[7]++,X=State[9],Y=State[10],Speed=1,Dir=0};
+                        Moving[State[3]++]=new Grain{Index=State[7]++,X=State[9],Y=State[10],Speed=1};
                     }
                 }
             }

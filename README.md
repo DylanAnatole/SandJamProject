@@ -20,7 +20,7 @@ Assets/
 │  │  ├─ Runtime/
 │  │  │  ├─ Core/                 Logic thuần, không phụ thuộc scene
 │  │  │  │  ├─ Domain/            Luật chơi: SandGame (+Boosters, Freeze), ChainPairing, thực thể
-│  │  │  │  ├─ Data/              LevelData, LevelCatalog, ColorPalette, OriginalConfig, SpriteSequence
+│  │  │  │  ├─ Data/              LevelData, LevelCatalog, ColorPalette (màu + Hex), OriginalConfig, SpriteSequence
 │  │  │  │  └─ Sand/              Mô phỏng cát rơi (Burst Job)
 │  │  │  ├─ Managers/             Campaign, SaveManager, EconomyManager, AudioManager, GameEvents,
 │  │  │  │                        GameServices, LevelBootstrap, LevelManager, LevelDataManager…

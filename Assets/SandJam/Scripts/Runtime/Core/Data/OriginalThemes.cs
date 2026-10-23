@@ -11,14 +11,13 @@ namespace SandJamTest
         public Color DisplayTop, DisplayMiddle, DisplayFrame, DisplaySide;
         public StageTheme(int bg1, int bg2, int frame, int side, int obstacle)
         {
-            Bg1 = Hex(bg1); Bg2 = Hex(bg2); Frame = Hex(frame); Side = Hex(side); Obstacle = Hex(obstacle);
+            Bg1 = ColorPalette.Hex(bg1); Bg2 = ColorPalette.Hex(bg2); Frame = ColorPalette.Hex(frame); Side = ColorPalette.Hex(side); Obstacle = ColorPalette.Hex(obstacle);
             DisplayTop = DisplayMiddle = Bg1; DisplayFrame = Frame; DisplaySide = Side;
         }
         public StageTheme Seen(int top, int middle, int frame, int side)
         {
-            var t = this; t.DisplayTop = Hex(top); t.DisplayMiddle = Hex(middle); t.DisplayFrame = Hex(frame); t.DisplaySide = Hex(side); return t;
+            var t = this; t.DisplayTop = ColorPalette.Hex(top); t.DisplayMiddle = ColorPalette.Hex(middle); t.DisplayFrame = ColorPalette.Hex(frame); t.DisplaySide = ColorPalette.Hex(side); return t;
         }
-        static Color Hex(int rgb) { return new Color(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f); }
     }
 
     public static class OriginalThemes
@@ -40,6 +39,5 @@ namespace SandJamTest
         static readonly int[] Cycle = { Lavender, Dark, Blue };
         public const int BlockSize = 15;
         public static int IndexForLevel(int level) { return Cycle[(Mathf.Max(1, level) / BlockSize) % Cycle.Length]; }
-        public static StageTheme ForLevel(int level) { return All[IndexForLevel(level)]; }
     }
 }

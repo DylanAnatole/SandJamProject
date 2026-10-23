@@ -87,7 +87,7 @@ namespace SandJamTest.Scene3D
         internal void RefreshPopupCoins()
         {
             if (!Open) return;
-            foreach (var label in Open.GetComponentsInChildren<TextMesh>(true)) if (label.name == "2040") label.text = Campaign.Coins.ToString();
+            foreach (var label in Open.GetComponentsInChildren<TextMesh>(true)) if (label.name == "2040") label.text = EconomyManager.Coins.ToString();
         }
     }
 }

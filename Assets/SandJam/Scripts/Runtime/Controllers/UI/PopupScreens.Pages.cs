@@ -45,7 +45,6 @@ namespace SandJamTest.Scene3D
             {
                 if (label.transform.parent != page.Root.transform) continue;
                 if (label.name == "5") label.text = LivesManager.Lives.ToString();
-                else if (label.name == "2040") label.text = Campaign.Coins.ToString(); // copied placeholder text
                 else if (label.name == "Full") label.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
             }
         }
