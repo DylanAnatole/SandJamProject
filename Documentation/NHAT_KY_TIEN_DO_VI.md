@@ -2025,3 +2025,19 @@ All Cards, nhận mốc thưởng Gallery (40, 60 xu, hộp quà), level 341 h�
   khối chạy lên ô chờ, bảng tắt.
 - Luồng booster (swap, rocket, select) và thua / chơi tiếp / bỏ cuộc không lỗi. Tự chơi level 68 thắng.
   Level 361 bộ giải không thắng được với 5 ô (cần booster, như trong video).
+
+### Âm thanh: mọi nút giao diện phát "pop" (video 3)
+
+**Đo** (video 3 có tiếng; so dạng sóng với các file âm thanh gốc, khớp 0,98–1,0)
+
+- `pop` ở 10,1 s (đóng Sand Quest), 25,9 / 44,4 / 45,3 / 70,3 s (chuyển tab SHOP / HOME / GALLERY), 53,7 s
+  (Claim All), 58,0 / 60,2 / 62,5 s (nhận mốc Gallery), 140,3 / 172,2 s (nút Home), 272,4 s.
+- `Input` chỉ khi chạm khối (48 lần), kể cả chạm khối bằng Select (215,9 s, một tiếng). Bấm nút booster: im
+  lặng. Thắng: `level completed panel` (240,6 s) rồi `Victory` khi bảng Level Complete hiện (245 s): khớp sẵn.
+- Bấm "Get Rewards" ở màn mốc thưởng có một tiếng không khớp file nào đã có (không có trong dữ liệu đã giải nén).
+- Bản mình: nút giao diện phát `Button.ogg`, thực ra là bản sao của tiếng chạm khối (`Select.ogg`); chỉ PLAY
+  phát pop.
+
+**Sửa** (`AudioManager`): `OnButton` luôn phát `Pop`; bỏ `Sfx.Button` (trùng tiếng chạm khối).
+
+**Kiểm tra:** biên dịch không lỗi; luồng booster / thua không lỗi; tự chơi level 2 thắng.
