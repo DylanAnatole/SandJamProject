@@ -2061,3 +2061,18 @@ bảng bộ sưu tập chỉ có 17 bộ.
 
 **Kiểm tra:** biên dịch không lỗi; 57/57 bộ có đủ ảnh màu + xám; ảnh chụp popup ở level 361 khớp video;
 tự chơi level 2, 18, 68 thắng; luồng booster / thua không lỗi.
+
+## 23/10/2026 — Luật chọn của booster Select
+
+**Yêu cầu người dùng:** Select chỉ chọn được khối đơn đã hiện rõ màu.
+
+**Sửa** (`SandGame.Boosters`): `CanSelectPriority` nhận mọi khối đơn còn trong hàng, ở bất kỳ vị trí nào,
+miễn là màu đang hiện (khối "?" chờ sau khối khác thì không), không bị đóng băng và còn ô trống. Bỏ điều kiện
+"phải đổ được ngay". Khối nối cặp không chọn được nữa nên bỏ `PairUnblocked` / `Find` và phần di chuyển cặp
+trong `SelectPriority`.
+
+**Kiểm tra:** level 361: mọi khối "?" ẩn bị loại, khối hiện màu chọn được; luồng booster (Select chọn được
+khối) không lỗi; tự chơi level 2, 68 thắng.
+
+**Dọn local:** xoá `Build/` và `Builds/` (~650 MB, bản build Windows cũ ngày 7/10, git đã bỏ qua, không code
+nào dùng; build lại được từ Unity).

@@ -38,50 +38,34 @@ namespace SandJamTest
             return true;
         }
 
+        // Select booster: any single cube still in a lane whose colour shows (not a chained pair, not a mystery cube
+        // waiting behind another, not frozen) jumps to the first free slot, whether or not it can pour yet.
         public bool CanSelectPriority(Shooter shooter)
         {
-            return State == GameState.Playing && Target(shooter) >= 0 && PrioritySlot(shooter) >= 0;
+            return State == GameState.Playing && PrioritySlot(shooter) >= 0;
         }
 
         int PrioritySlot(Shooter shooter)
         {
-            if (shooter == null || shooter.IsFrozen || (shooter.Partner != null && shooter.Partner.IsFrozen) || !Lanes.Any(l => l.Contains(shooter))) return -1;
-            if (shooter.Partner != null && !PairUnblocked(shooter)) return -1;
+            if (shooter == null || shooter.IsFrozen || shooter.Partner != null) return -1;
+            int lane = Array.FindIndex(Lanes, l => l.Contains(shooter));
+            if (lane < 0 || IsHidden(shooter, lane)) return -1;
             return FreeSlotFor(shooter);
-        }
-        // A chained pair only moves together when nothing stands in front of it: one behind the other at the
-        // front of the same lane, or both at the front of their lanes.
-        bool PairUnblocked(Shooter shooter)
-        {
-            int laneA, rowA, laneB, rowB;
-            if (!Find(shooter, out laneA, out rowA) || !Find(shooter.Partner, out laneB, out rowB)) return false;
-            if (laneA == laneB) return Math.Min(rowA, rowB) == 0 && Math.Abs(rowA - rowB) == 1;
-            return rowA == 0 && rowB == 0;
-        }
-        bool Find(Shooter shooter, out int lane, out int row)
-        {
-            for (lane = 0; lane < Lanes.Length; lane++)
-            {
-                row = 0;
-                foreach (var queued in Lanes[lane]) { if (queued == shooter) return true; row++; }
-            }
-            lane = row = -1; return false;
         }
 
         public bool SelectPriority(Shooter shooter)
         {
             if (!CanSelectPriority(shooter)) return false;
             int slot = PrioritySlot(shooter);
-            var pair = shooter.Partner;
-            // Preserve queue order for everyone except the selected member(s).
-            var ordered = Lanes.SelectMany(l => l).Where(s => s == shooter || s == pair).ToArray();
+            // Everyone else keeps their queue order.
             foreach (var lane in Lanes)
             {
-                var remaining = lane.Where(s => s != shooter && s != pair).ToArray();
+                if (!lane.Contains(shooter)) continue;
+                var remaining = lane.Where(s => s != shooter).ToArray();
                 lane.Clear(); foreach (var s in remaining) lane.Enqueue(s);
             }
-            for (int i = 0; i < ordered.Length; i++) { Slots[slot] = ordered[i]; slot = FreeSlot(slot + 1); }
-            AdvanceFreeze(ordered.Length);
+            Slots[slot] = shooter;
+            AdvanceFreeze(1);
             Moves++; Revision++;
             Evaluate();
             return true;
