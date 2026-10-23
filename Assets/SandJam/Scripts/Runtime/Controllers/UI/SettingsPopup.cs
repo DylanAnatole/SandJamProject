@@ -38,14 +38,19 @@ namespace SandJamTest.Scene3D
             if (action == "toggle-sound") Campaign.SoundOn = !Campaign.SoundOn;
             else if (action == "toggle-haptics") { SaveManager.Data.hapticsOn = !SaveManager.Data.hapticsOn; SaveManager.Save(); }
             // "privacy" / "restore": no store or web page in the clone.
-            RefreshSettings(); return true;
+            RefreshSettings(true); return true;
         }
-        public override void Tick() { if (Visible && Input.GetKeyDown(KeyCode.Escape)) Close(); }
+        public override void Tick()
+        {
+            if (!Visible) return;
+            if (Input.GetKeyDown(KeyCode.Escape)) Close();
+            foreach (var k in new[] { soundKnob, hapticKnob }) SlideKnob(k);
+        }
 
         public void ShowSettings()
         {
             bool inGame = screen.Current == VideoScreen.Page.Gameplay;
-            DestroyAll(settingsDynamic);
+            DestroyAll(settingsDynamic); knobSlides.Clear(); fitScale = 1;
             // Game: panel 1221.7 tall centred at y 130.75; MainMenu: 1081.5 tall at y 145.6 (260.6 - 115).
             settingsCentre = inGame ? new Vector2(0, 130.75f) : new Vector2(0, 145.6f);
             settingsHeight = inGame ? 1221.7f : 1081.5f;
@@ -68,8 +73,10 @@ namespace SandJamTest.Scene3D
             Show(settings);
         }
         // Scales the panel's pieces about the popup centre and moves them up (popup space, at its full size).
+        float fitScale = 1; // FitDynamic's scale: knob targets are computed in the panel's unscaled units
         void FitDynamic(float scale, float upPx)
         {
+            fitScale = scale;
             var k = new Vector3(scale, scale, 1);
             foreach (var o in settingsDynamic)
             {
@@ -114,20 +121,36 @@ namespace SandJamTest.Scene3D
             return r;
         }
         // Knob on the right, green, "ON" when on; on the left, grey, "OFF" when off (original SwipeOnPos / SwipeOffPos).
-        void SetToggle(SpriteRenderer knob, TextMesh text, bool on)
+        // Recording 2 (14.95-15.3 s): the knob takes its new look at once and slides across in ~0.33 s, easing out.
+        const float KnobSlideSeconds = .33f;
+        sealed class KnobSlide { public TextMesh Text; public float From, To, At = -1; } // At < 0: settled
+        readonly System.Collections.Generic.Dictionary<SpriteRenderer, KnobSlide> knobSlides = new System.Collections.Generic.Dictionary<SpriteRenderer, KnobSlide>();
+        void SetToggle(SpriteRenderer knob, TextMesh text, bool on, bool animate)
         {
             var sprite = Resources.Load<Sprite>(on ? "Settings/button-on" : "Settings/button-off");
             if (sprite) knob.sprite = sprite;
-            float x = (settingsCentre.x + 205.4f + (on ? 68 : -68)) * CanvasUnit;
-            knob.transform.localPosition = new Vector3(x, knob.transform.localPosition.y, knob.transform.localPosition.z);
-            text.transform.localPosition = new Vector3(x, text.transform.localPosition.y, text.transform.localPosition.z);
             text.text = on ? "ON" : "OFF"; text.color = on ? Color.white : new Color(.45f, .45f, .5f);
+            KnobSlide slide;
+            if (!knobSlides.TryGetValue(knob, out slide)) knobSlides[knob] = slide = new KnobSlide { Text = text };
+            slide.From = knob.transform.localPosition.x; slide.To = (settingsCentre.x + 205.4f + (on ? 68 : -68)) * CanvasUnit * fitScale;
+            slide.At = Time.unscaledTime;
+            if (!animate) slide.From = slide.To;
+            SlideKnob(knob);
         }
-        void RefreshSettings()
+        void SlideKnob(SpriteRenderer knob)
+        {
+            KnobSlide slide;
+            if (!knob || !knobSlides.TryGetValue(knob, out slide) || slide.At < 0) return; // settled: FitDynamic may move it
+            float t = slide.From == slide.To ? 1 : Mathf.Clamp01((Time.unscaledTime - slide.At) / KnobSlideSeconds);
+            if (t >= 1) slide.At = -1;
+            float x = Mathf.Lerp(slide.From, slide.To, 1 - (1 - t) * (1 - t));
+            foreach (var part in new[] { knob.transform, slide.Text.transform }) part.localPosition = new Vector3(x, part.localPosition.y, part.localPosition.z);
+        }
+        void RefreshSettings(bool animate = false)
         {
             if (!soundKnob) return;
-            SetToggle(soundKnob, soundKnobText, Campaign.SoundOn);
-            SetToggle(hapticKnob, hapticKnobText, SaveManager.Data.hapticsOn);
+            SetToggle(soundKnob, soundKnobText, Campaign.SoundOn, animate);
+            SetToggle(hapticKnob, hapticKnobText, SaveManager.Data.hapticsOn, animate);
         }
     }
 }

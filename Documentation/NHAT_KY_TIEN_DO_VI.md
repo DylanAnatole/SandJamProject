@@ -1811,3 +1811,23 @@ phía sau các nút của Home lúc thẻ nhỏ.
 - Level 268, lật trái: tên đổi ngay, thẻ Musician trượt vào từ trái, Accessories trượt sang phải, dừng sau
   ~0,25 s; không có khung chồng hình.
 - Luồng thua không lỗi. Run all checks qua 8/8.
+
+### Cài đặt: công tắc trượt khi bật/tắt
+
+**Đo** (video 2, giây 14,95–15,9: tắt rồi bật Vibration)
+
+- Bấm: nút đổi ngay hình (xanh "ON" ↔ xám "OFF"), rồi trượt 111 px trong ~0,33 s, nhanh lúc đầu, chậm dần
+  (623 → 605 → 589 → … → 512 px).
+- Bản mình: nút nhảy ngay sang chỗ mới.
+
+**Sửa** (`SettingsPopup`)
+
+- `SetToggle(…, animate)`: hình và chữ đổi ngay. Vị trí trượt trong `KnobSlideSeconds` 0,33 s với
+  `1 - (1 - t)²` (`KnobSlide`, `SlideKnob` trong `Tick`). Khi mở popup thì đặt thẳng, không trượt.
+- Đích trượt tính cả hệ số thu nhỏ 0,95 của popup ở Home (`fitScale`). Công tắc đứng yên thì `Tick` không động
+  vào. Trước đây công thức vị trí bỏ qua hệ số này, nên bấm một lần là nút lệch ~5%.
+
+**Kiểm tra**
+
+- Home: tắt → 1,251 → 0,628 trong ~0,33 s, chậm dần; bật lại → 1,251.
+- Run all checks qua 8/8. Save demo đặt lại (rung, âm thanh bật).
