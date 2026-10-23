@@ -130,6 +130,7 @@ namespace SandJamTest.Scene3D
             GalleryArt("header-top-cardCollection", 0, 4.0f, 3.2f, .44f, -6.3f);
             GalleryText(info.StyleName.ToUpperInvariant(), 0, 4.02f, .032f, -6.5f);
             // Carousel: neighbours first so the selected card draws on top.
+            int carouselFrom = galleryDynamic.Count;
             for (int side = -1; side <= 1; side += 2)
             {
                 int n = galleryIndex + side; if (n < 0 || n >= galleryList.Count) continue;
@@ -160,6 +161,8 @@ namespace SandJamTest.Scene3D
                     c.transform.localPosition = new Vector3(0, cy - g.bounds.size.y / 2, -6.4f);
                 }
             }
+            carousel.Clear(); carouselX.Clear();
+            for (int i = carouselFrom; i < galleryDynamic.Count; i++) { carousel.Add(galleryDynamic[i].transform); carouselX.Add(galleryDynamic[i].transform.localPosition.x); }
             if (galleryIndex > 0) GalleryArrow(-1);
             if (galleryIndex < galleryList.Count - 1) GalleryArrow(1);
             // Collection bar with milestone rewards.
@@ -269,6 +272,7 @@ namespace SandJamTest.Scene3D
         void RunGalleryAction(string action)
         {
             var info = galleryList[galleryIndex];
+            int before = galleryIndex;
             if (action == "gallery-prev") galleryIndex = Mathf.Max(0, galleryIndex - 1);
             else if (action == "gallery-next") galleryIndex = Mathf.Min(galleryList.Count - 1, galleryIndex + 1);
             else if (action == "gallery-claim-all") GalleryCollections.ClaimAllCards(info);
@@ -276,12 +280,28 @@ namespace SandJamTest.Scene3D
             else if (action.StartsWith("gallery-claim:")) GalleryCollections.ClaimMilestone(info, int.Parse(action.Substring(14)));
             RefreshPopupCoins();
             RefreshGallery();
+            // The new page is built in place, then slid in from where the old one stood.
+            if (galleryIndex != before) { slideFrom = (galleryIndex - before) * SideX; slideTime = 0; Slide(); }
+        }
+
+        // Recording 2 (26.3-26.5 s, 36.9-37.2 s): a page turn slides the covers one card across in ~0.25 s, fastest at
+        // once and slowing steadily to a stop; the category name changes at once.
+        const float SlideSeconds = .25f;
+        readonly List<Transform> carousel = new List<Transform>(); readonly List<float> carouselX = new List<float>();
+        float slideFrom, slideTime = 1;
+        void Slide()
+        {
+            float t = Mathf.Clamp01(slideTime), offset = slideFrom * (1 - t) * (1 - t);
+            for (int i = 0; i < carousel.Count; i++)
+                if (carousel[i]) { var p = carousel[i].localPosition; carousel[i].localPosition = new Vector3(carouselX[i] + offset, p.y, p.z); }
         }
 
         // Drag / wheel scrolling of the grid (only below the grid's top); buttons fire on release without a drag.
         public override void Tick()
         {
-            if (Open == gallery.Root && scroll.Tick(screen.UiCamera, RunGalleryAction, GridTop)) ClipGrid();
+            if (Open != gallery.Root) return;
+            if (scroll.Tick(screen.UiCamera, RunGalleryAction, GridTop)) ClipGrid();
+            if (slideTime < 1) { slideTime += Time.unscaledDeltaTime / SlideSeconds; Slide(); }
         }
     }
 }

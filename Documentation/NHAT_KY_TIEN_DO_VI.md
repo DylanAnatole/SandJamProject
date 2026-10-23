@@ -1789,3 +1789,25 @@ phía sau các nút của Home lúc thẻ nhỏ.
 
 - Shop, gán vận tốc thả tay -6: vị trí 23,84 → 20,76, vận tốc 5,43 → 3,41 sau 0,23 s (≈ e^-2t), dừng sau ~2,4 s.
 - Gán từ vị trí 1: dừng đúng ở 0. Mở Gallery không lỗi. Run all checks qua 8/8.
+
+### Gallery: băng thẻ trượt khi lật trang; trang dựng lại không còn chớp hình cũ
+
+**Đo** (video 2, giây 26,3–26,5 và 36,9–37,2; so khớp mẫu từng khung)
+
+- Lật trang: băng thẻ trượt ~455 px (một bước thẻ) trong ~0,25 s, nhanh nhất ngay lúc đầu (58 px/khung) rồi giảm
+  đều tới 0 (chậm dần bậc hai). Tên bộ sưu tập đổi ngay.
+- Bản mình: dựng trang mới tại chỗ, không trượt.
+
+**Sửa**
+
+- `GalleryPopup`: ghi lại các mảnh của băng thẻ khi dựng (`carousel`, `carouselX`). Khi lật trang, cả băng lệch
+  một bước `SideX` về phía cũ rồi về 0 trong `SlideSeconds` 0,25 s với `(1 - t)²`. Thẻ cũ chính là thẻ bên cạnh
+  của trang mới, nên trượt ra như bản gốc.
+- `PopupModule.DestroyAll`: ẩn ngay trước khi `Destroy`. Trước đây mảnh cũ còn vẽ thêm một khung (thấy hai tên
+  bộ sưu tập chồng nhau). Áp dụng cho mọi trang dựng lại (Gallery, Shop, Tasks…).
+
+**Kiểm tra**
+
+- Level 268, lật trái: tên đổi ngay, thẻ Musician trượt vào từ trái, Accessories trượt sang phải, dừng sau
+  ~0,25 s; không có khung chồng hình.
+- Luồng thua không lỗi. Run all checks qua 8/8.

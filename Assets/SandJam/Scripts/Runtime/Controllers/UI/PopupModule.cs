@@ -56,6 +56,8 @@ namespace SandJamTest.Scene3D
         protected static T Instantiate<T>(T original, Transform parent) where T : Object { return Object.Instantiate(original, parent); }
         protected static void Destroy(Object o) { Object.Destroy(o); }
         // Destroys the objects a popup built for its current content and empties the list.
-        protected static void DestroyAll(List<GameObject> objects) { foreach (var o in objects) if (o) Object.Destroy(o); objects.Clear(); }
+        // Hidden at once: Destroy waits for the end of the frame, so a page rebuilt in the same frame showed old and new
+        // pieces together for one frame.
+        protected static void DestroyAll(List<GameObject> objects) { foreach (var o in objects) if (o) { o.SetActive(false); Object.Destroy(o); } objects.Clear(); }
     }
 }
