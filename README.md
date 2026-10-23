@@ -6,7 +6,7 @@ Unity 2022.3.62f3 · Built-in render pipeline · Burst. Main scene: `Assets/Sand
 
 Repo chỉ chứa code, scene, editor tool, shader và tài liệu tự viết. Mọi thứ lấy từ game gốc Sand Jam (Voodoo)
 đều để lại trên máy và không đưa lên: `SourceData/` (code dịch ngược), `OriginalReference/`,
-`Assets/RecoveredOriginal/`, các thư mục con trong `Assets/SandJam/Resources/` (sprite, âm thanh, level,
+`Assets/RecoveredOriginal/`, các thư mục con trong `Assets/SandJam/Assets/Resources/`, `Prefabs/Resources/`, `ScriptableObjects/Resources/` (sprite, âm thanh, level,
 cấu hình), mesh/ảnh xem trước sinh từ level gốc và ảnh chụp màn hình. Vì vậy project tải từ repo sẽ thiếu
 asset và không chạy ngay được.
 
