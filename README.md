@@ -15,34 +15,50 @@ asset và không chạy ngay được.
 ```
 Assets/
 ├─ SandJam/                       Toàn bộ game
-│  ├─ Scenes/                     SandJamGame (chính, duy nhất trong Build Settings) + các scene test
-│  ├─ Scripts/
-│  │  ├─ Runtime/
-│  │  │  ├─ Core/                 Logic thuần, không phụ thuộc scene
-│  │  │  │  ├─ Domain/            Luật chơi: SandGame (+Boosters, Freeze), ChainPairing, thực thể
-│  │  │  │  ├─ Data/              LevelData, LevelCatalog, ColorPalette (màu + Hex), OriginalConfig, SpriteSequence
-│  │  │  │  └─ Sand/              Mô phỏng cát rơi (Burst Job)
-│  │  │  ├─ Managers/             Campaign, SaveManager, EconomyManager, AudioManager, GameEvents,
-│  │  │  │                        GameServices, LevelBootstrap, LevelManager, LevelDataManager…
-│  │  │  ├─ Controllers/          Gameplay (SandJamSceneController), Characters (hàng chờ), UI (màn hình, popup, booster)
-│  │  │  └─ Views/                Board (vùng màu), Characters (khối, chân, hộp kính), Fx (hiệu ứng), UI
+│  ├─ Scenes/                     SandJamGame.unity (scene duy nhất, nằm trong Build Settings)
+│  ├─ Scripts/Runtime/
+│  │  ├─ Core/                    Logic thuần, không phụ thuộc scene
+│  │  │  ├─ Domain/               Luật chơi: SandGame (+Boosters, Freeze), ChainPairing, thực thể
+│  │  │  ├─ Data/                 LevelData, LevelCatalog, ColorPalette (màu + Hex), OriginalConfig, OriginalThemes
+│  │  │  ├─ Sand/                 Mô phỏng cát rơi (Burst Job)
+│  │  │  ├─ Patterns/             Observer (GameEvent), Singleton, Pool (object pooling)
+│  │  │  └─ Rendering/            SpriteFactory, RendererExtensions (FitWorldSize, NoShadows…)
+│  │  ├─ Managers/                Dịch vụ chung: Campaign, SaveManager, GameEvents, GameServices, AudioManager,
+│  │  │                           HapticsManager, LevelBootstrap, LevelManager, LevelDataManager
+│  │  ├─ Meta/                    Tính năng quanh màn chơi: EconomyManager (xu, booster), LivesManager, DailyRewards,
+│  │  │                           TaskBoard, SandQuest, GalleryCollections, Collections
+│  │  ├─ Controllers/
+│  │  │  ├─ Gameplay/             SandJamSceneController (+Dynamic: dựng level từ JSON)
+│  │  │  ├─ Characters/           Hàng khối chờ
+│  │  │  └─ UI/                   VideoScreen (các trang), CampaignUi (HUD), BoosterController, GameplayFeedback
+│  │  │     └─ Popups/            PopupScreens (+Kit, +Pages), PopupModule và từng popup/trang, DragScroller
+│  │  └─ Views/                   Board (vùng màu), Characters (khối, chân, hộp kính, khối "?"),
+│  │                              Fx (hiệu ứng, viên cát bay), UI (chữ viền, font, nút)
 │  ├─ Editor/
 │  │  ├─ Tools/                   Game Manager, CampaignBuilder, LevelReplaySolver (bộ giải), tạo level, ViewCapture
-│  │  ├─ SceneBuilders/           Dựng prefab/scene mẫu từ code (Level001 là template)
-│  ├─ Resources/                  Dữ liệu load lúc chạy (đường dẫn Resources không đổi)
-│  │  ├─ Levels/                  Data/*.json (556 level gốc), LevelOrder.json, Campaign.json
-│  │  ├─ OriginalConfig/          colors / intros / difficulty (sinh từ dữ liệu gốc)
-│  │  ├─ OriginalGifs/            Ảnh động hướng dẫn (SpriteSequence)
-│  │  ├─ Original/                Âm thanh gốc
-│  │  ├─ LevelPack/Prefabs/       Level001 = template cảnh chơi
-│  │  └─ VideoUI, ReferenceUI…    Sprite UI
+│  │  └─ SceneBuilders/           Dựng prefab mẫu Level001 và scene SandJamGame từ code
+│  ├─ Levels/                     Ảnh pixel-art và template để tạo level mới
+│  ├─ Prefabs/                    Mẫu khởi đầu (GameplayLevelTemplate, PaintRegion, SandCube)
+│  ├─ Resources/                  Dữ liệu load lúc chạy (chỉ trên máy, trừ CustomLevels)
+│  │  ├─ Levels/                  Data/*.json (556 level gốc), Campaign.json
+│  │  ├─ CustomLevels/            Level tự thiết kế (có trên repo)
+│  │  ├─ OriginalConfig/, OriginalGifs/, Original/ (âm thanh), LevelPack/Prefabs/ (Level001 = template)…
 │  └─ Generated/                  Mesh/material sinh bởi SceneBuilders
 └─ RecoveredOriginal/             Asset gốc lấy từ game (texture, sprite, mesh, audio, font…)
 
-OriginalReference/                (ngoài Assets) cấu hình/prefab/scene gốc để tra cứu, Unity không import
-Builds/                           Bản build (ngoài Assets)
-TestResults/                      Ảnh và báo cáo kiểm tra
+Documentation/                    Bảng tiến độ, nhật ký, thiết kế level, kiến trúc game gốc; LuuTru/ = ghi chú cũ
+OriginalReference/, SourceData/   (ngoài Assets, chỉ trên máy) dữ liệu và code gốc để tra cứu
 ```
+
+## Mẫu thiết kế và helper dùng chung
+
+- **Observer** (`Core/Patterns/Observer.cs`, `Managers/GameEvents.cs`): hệ thống đăng ký sự kiện bằng `+=` / `-=`
+  thay vì hỏi trạng thái nhau. Thêm sự kiện: khai báo `GameEvent` và hàm `Raise…` trong `GameEvents`.
+- **Singleton** (`Singleton<T>`): `GameServices`, `AudioManager`.
+- **Object pooling** (`Pool<T>`): viên cát, bong bóng, đốm sáng được dùng lại; vòng chơi mỗi khung không cấp phát
+  bộ nhớ.
+- **Rendering**: `SpriteFactory` (sprite/material dựng sẵn), `RendererExtensions` (`FitWorldSize`, `SetLocalSize`,
+  `NoShadows`, `FindDeep`), `ColorPalette.Hex`. View mới dùng các helper này thay vì tự viết lại.
 
 ## Luồng chạy
 

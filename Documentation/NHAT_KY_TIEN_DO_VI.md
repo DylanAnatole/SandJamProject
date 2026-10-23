@@ -1895,3 +1895,21 @@ ai gọi (tính cả lời gọi `Lớp.Tên`).
 
 **Kiểm tra:** biên dịch không lỗi. Tự chơi level 2, 68, 267 thắng cả 3. Booster, luồng thua / chơi tiếp (ô 6) /
 bỏ cuộc / thử lại / về Home không lỗi. Ảnh Home và Shop không đổi.
+
+### Đợt 3: sắp xếp lại thư mục và tài liệu
+
+Chỉ di chuyển file (giữ nguyên GUID trong `.meta`, scene/prefab không mất liên kết):
+
+- `Scripts/Runtime/Meta/` (mới): EconomyManager, LivesManager, DailyRewards, TaskBoard, SandQuest,
+  GalleryCollections, Collections. `Managers/` chỉ còn dịch vụ chung (Save, Audio, Haptics, GameEvents,
+  Campaign, Level…).
+- `Controllers/UI/Popups/` (mới): PopupScreens (+Kit, +Pages), PopupModule, Popup, 9 popup/trang, DragScroller.
+  `Controllers/UI/` còn VideoScreen, CampaignUi, BoosterController, GameplayFeedbackController.
+- `ProjectileManager` → `Views/Fx/` (vẽ viên cát bay). `ReferenceQueueCover` → `Views/Characters/`.
+- `Editor/SceneBuilders/ReferenceUI/*` → `Editor/SceneBuilders/` (bỏ tầng thừa).
+- Tài liệu: 14 ghi chú theo mốc ngày / scene demo cũ chuyển vào `Documentation/LuuTru/` (không xoá).
+  README tiếng Anh trong `Assets/SandJam/` trùng nội dung README gốc nên bỏ; README gốc có sơ đồ thư mục mới
+  và mục "Mẫu thiết kế và helper dùng chung".
+
+**Kiểm tra:** biên dịch không lỗi. Tự chơi level 2, 68, 267 thắng cả 3. Booster, luồng thua / chơi tiếp (ô 6) /
+bỏ cuộc / thử lại / về Home không lỗi.
