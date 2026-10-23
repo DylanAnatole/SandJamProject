@@ -714,7 +714,7 @@ namespace SandJamTest.Scene3D
             if (!dim) return;
             Vector3 full;
             if (!backdrops.TryGetValue(dim, out full)) backdrops[dim] = full = dim.localScale;
-            float k = Mathf.Max(.05f, scale);
+            float k = Mathf.Max(.001f, scale); // same floor as the closing card: at .05 the dim shrank to a dark box at the end
             dim.localScale = new Vector3(full.x / k, full.y / k, full.z);
         }
         readonly System.Collections.Generic.Dictionary<Transform, Vector3> backdrops = new System.Collections.Generic.Dictionary<Transform, Vector3>();

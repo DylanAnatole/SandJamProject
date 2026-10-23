@@ -1754,3 +1754,17 @@ phía sau các nút của Home lúc thẻ nhỏ.
 - Luồng thua / chơi tiếp / bỏ cuộc / thử lại / về Home không lỗi. Run all checks qua 8/8.
 - Script kiểm tra cục bộ `flow.sh` chờ thêm khi đã thua nhưng popup chưa mở (dải OUT OF SPACE! 2,3 s). Trước đó
   thỉnh thoảng nó bấm "chơi tiếp" quá sớm và báo `False`.
+
+### Đóng popup: không còn ô tối sót lại giữa màn
+
+**Đo**
+
+- Video 2 (giây 20,1–20,55): thẻ thu nhỏ ~0,35 s, lớp tối giữ nguyên rồi biến mất một lần (độ sáng 78 → 177
+  trong một khung).
+- Bản mình: giống vậy, nhưng ~0,05 s cuối lớp tối co lại thành một ô chữ nhật tối nhỏ giữa màn (thấy rõ ở khung
+  1,217 s khi đóng popup hết tim). Hệ số bù kích thước bị chặn ở 0,05, trong khi thẻ thu tới 0,001.
+
+**Sửa:** `PopupScreens.SetPopScale` chặn ở 0,001, bằng ngưỡng của thẻ.
+
+**Kiểm tra:** đóng popup hết tim hai lần: không còn ô tối. Luồng thua / chơi tiếp không lỗi. Run all checks qua
+8/8.
