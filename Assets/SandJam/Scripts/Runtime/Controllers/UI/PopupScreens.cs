@@ -701,7 +701,7 @@ namespace SandJamTest.Scene3D
         // Recording 2 (21.17-21.57 s open, 20.22-20.55 s close): cards grow from ~1/10 of their size to full in
         // ~0.4 s, about evenly and without overshoot, and shrink away in ~0.33 s (fast at first, easing out) before
         // the dim layer goes.
-        const float PopStart = .1f, PopTime = .4f, SlowPopTime = .5f, CloseTime = .33f;
+        const float PopStart = .1f, PopTime = .4f, SlowPopTime = .5f, FastPopTime = .13f, CloseTime = .33f;
         GameObject closing; float closedAt; Collider[] closingHits;
         // The dimmed backdrop always covers the whole screen; only the card zooms.
         void FitBackdrop(GameObject root, float scale)
@@ -817,7 +817,9 @@ namespace SandJamTest.Scene3D
             if (Open == failed.Root && Time.frameCount % 15 == 0) { failed.Big.text = TimerText; LayoutTimerRow(); }
             // Pop-in (see PopStart); the HARD / BONUS level cards grow a little more slowly (recording of level 260).
             bool page = IsPage(Open);
-            float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / (intros.SlowPopIn ? SlowPopTime : PopTime));
+            bool fast = congrats.FastPopIn;
+            float t = Mathf.Clamp01((Time.unscaledTime - shownAt) / (intros.SlowPopIn ? SlowPopTime : fast ? FastPopTime : PopTime));
+            if (fast) t = 1 - (1 - t) * (1 - t);
             float s = page ? 1 : PopStart + (1 - PopStart) * t;
             Open.transform.localScale = Vector3.one * s;
             FitBackdrop(Open, s);

@@ -13,6 +13,8 @@ namespace SandJamTest.Scene3D
         const float CoverWidth = 2.5f, CoverHeight = 3.15f, CoverY = .17f;
         const float CardShortenPx = 116;
         static readonly Color RaysColor = Color.white; // the art at full strength (its own yellow)
+        // Recording 1 (774.75-774.87 s): the CONGRATS card snaps open in ~0.12 s, easing out.
+        public bool FastPopIn { get { return IsOpen(congrats); } }
         public override void Build()
         {
             congrats = Blank("Congrats popup");

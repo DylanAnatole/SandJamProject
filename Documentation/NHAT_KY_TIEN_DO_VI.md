@@ -1688,3 +1688,22 @@ checks qua 8/8.
 
 - Level 2: chờ 0,8 s không có xu; bấm Next → xu bay 1,2–1,7 s, số xu đếm lên, ~1 s sau sang CONGRATS.
 - Tự chơi level 12, 68 thắng. Run all checks qua 8/8.
+
+### CONGRATS bật ra nhanh như bản gốc
+
+**Đo** (video 1, giây 774,6–774,9)
+
+- Bảng Level Complete tắt ngay (màn tối ~0,1 s). Dải CONGRATS lớn từ 180 lên 807 px trong ~0,12 s, chậm dần ở
+  cuối.
+- Bản mình dùng chung nhịp 0,4 s đều của các popup khác.
+
+**Sửa**
+
+- `CongratsPopup.FastPopIn`.
+- `PopupScreens.Update`: khi CONGRATS mở thì dùng `FastPopTime` 0,13 s với ease-out, giống cách `SlowPopIn` của
+  thẻ Hard/Bonus.
+
+**Kiểm tra**
+
+- Level 2, bấm Next: CONGRATS 79 → 734 → 805 px trong 1,90–2,00 s.
+- Luồng thua / thử lại không lỗi. Run all checks qua 8/8.
