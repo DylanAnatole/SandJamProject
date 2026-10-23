@@ -280,7 +280,8 @@ namespace SandJamTest.Scene3D
             RefreshPopupCoins();
             RefreshGallery();
             // The new page is built in place, then slid in from where the old one stood.
-            if (galleryIndex != before) { slideFrom = (galleryIndex - before) * SideX; slideTime = 0; Slide(); }
+            if (galleryIndex != before) { slideFrom = (galleryIndex - before) * SideX + heldOffset; slideTime = 0; Slide(); }
+            heldOffset = 0;
         }
 
         // Recording 2 (26.3-26.5 s, 36.9-37.2 s): a page turn slides the covers one card across in ~0.25 s, fastest at
@@ -288,11 +289,32 @@ namespace SandJamTest.Scene3D
         const float SlideSeconds = .25f;
         readonly List<Transform> carousel = new List<Transform>(); readonly List<float> carouselX = new List<float>();
         float slideFrom, slideTime = 1;
-        void Slide()
+        void Slide() { float t = Mathf.Clamp01(slideTime); MoveCarousel(slideFrom * (1 - t) * (1 - t)); }
+        void MoveCarousel(float offset)
         {
-            float t = Mathf.Clamp01(slideTime), offset = slideFrom * (1 - t) * (1 - t);
             for (int i = 0; i < carousel.Count; i++)
                 if (carousel[i]) { var p = carousel[i].localPosition; carousel[i].localPosition = new Vector3(carouselX[i] + offset, p.y, p.z); }
+        }
+
+        // Swiping the carousel (as in the original): the covers follow the finger (half as far where there is no next
+        // cover), and on release turn a page when dragged a third of a card or flicked, otherwise slide back.
+        const float SwipeBottom = CarouselY - 1.3f, TurnDistance = SideX / 3, TurnSpeed = 4f;
+        float heldOffset;
+        void Swipe()
+        {
+            float x = scroll.SwipeX;
+            if (x != 0)
+            {
+                bool more = x < 0 ? galleryIndex < galleryList.Count - 1 : galleryIndex > 0;
+                heldOffset = more ? x : x * .5f; slideTime = 1; MoveCarousel(heldOffset);
+                return;
+            }
+            if (!scroll.SwipeReleased || heldOffset == 0) return;
+            float flick = scroll.SwipeSpeed;
+            int dir = heldOffset < -TurnDistance || flick < -TurnSpeed ? 1 : heldOffset > TurnDistance || flick > TurnSpeed ? -1 : 0;
+            int target = Mathf.Clamp(galleryIndex + dir, 0, galleryList.Count - 1);
+            if (dir != 0 && target != galleryIndex) RunGalleryAction(dir > 0 ? "gallery-next" : "gallery-prev");
+            else { slideFrom = heldOffset; slideTime = 0; heldOffset = 0; }
         }
 
         // Drag / wheel scrolling of the grid (only below the grid's top); buttons fire on release without a drag.
@@ -300,6 +322,7 @@ namespace SandJamTest.Scene3D
         {
             if (Open != gallery.Root) return;
             if (scroll.Tick(screen.UiCamera, RunGalleryAction, GridTop)) ClipGrid();
+            if (scroll.SwipeStartY > SwipeBottom) Swipe();
             if (slideTime < 1) { slideTime += Time.unscaledDeltaTime / SlideSeconds; Slide(); }
         }
     }

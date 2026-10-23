@@ -6,11 +6,19 @@ namespace SandJamTest.Scene3D
     // press: they Hold() their action, which runs on release only if the pointer was not dragged.
     // A flick keeps gliding and slows like the original's ScrollRect (recording 2, Shop 4.0-10.7 s: the speed falls
     // ~e^-2t, Unity's default deceleration 0.135 a second) and stops dead at either end (no bounce).
+    // A drag that starts sideways scrolls nothing: it is reported as a swipe (SwipeX while held, Released on release)
+    // for the page to use, e.g. the Gallery carousel.
     public sealed class DragScroller
     {
         public float Value, Max;
-        bool pressing, dragged;
-        float pressY, pressValue, velocity, lastValue;
+        bool pressing, dragged, sideways;
+        float pressY, pressX, pressValue, velocity, lastValue, swipeVelocity;
+        // Sideways drag in world units while held (0 otherwise), where it started, and its speed when let go.
+        public float SwipeX { get; private set; }
+        public float SwipeStartY { get { return pressY; } }
+        public float SwipeSpeed { get { return swipeVelocity; } }
+        public bool SwipeReleased { get; private set; }
+        const float DragStart = .12f;
         const float Deceleration = .135f, StopSpeed = .05f; // world units a second
         string held;
 
@@ -31,12 +39,21 @@ namespace SandJamTest.Scene3D
             }
             var pointer = Input.mousePosition;
             if (float.IsInfinity(pointer.x) || float.IsNaN(pointer.x) || float.IsInfinity(pointer.y) || float.IsNaN(pointer.y)) return Value != before; // no pointer (unfocused editor)
-            float y = cam.ScreenToWorldPoint(pointer).y;
-            if (Input.GetMouseButtonDown(0)) { pressing = true; dragged = false; pressY = y; pressValue = Value; velocity = 0; lastValue = Value; }
-            if (pressing && Input.GetMouseButton(0) && y < dragTop)
+            var world = cam.ScreenToWorldPoint(pointer); float y = world.y;
+            SwipeReleased = false;
+            if (Input.GetMouseButtonDown(0)) { pressing = true; dragged = sideways = false; pressY = y; pressX = world.x; pressValue = Value; velocity = swipeVelocity = 0; lastValue = Value; SwipeX = 0; }
+            if (pressing && Input.GetMouseButton(0) && !dragged && !sideways && Mathf.Abs(world.x - pressX) > DragStart && Mathf.Abs(world.x - pressX) > Mathf.Abs(y - pressY))
+                sideways = true;
+            if (sideways && pressing && Input.GetMouseButton(0))
+            {
+                float x = world.x - pressX;
+                if (dt > 0) swipeVelocity = Mathf.Lerp(swipeVelocity, (x - SwipeX) / dt, Mathf.Clamp01(dt * 10));
+                SwipeX = x;
+            }
+            else if (pressing && Input.GetMouseButton(0) && y < dragTop)
             {
                 float delta = y - pressY;
-                if (Mathf.Abs(delta) > .12f) dragged = true;
+                if (Mathf.Abs(delta) > DragStart) dragged = true;
                 if (dragged) Value = Mathf.Clamp(pressValue + delta, 0, Max);
                 // Finger speed, smoothed as ScrollRect does, carried on after release.
                 if (dt > 0) velocity = Mathf.Lerp(velocity, (Value - lastValue) / dt, Mathf.Clamp01(dt * 10));
@@ -46,8 +63,10 @@ namespace SandJamTest.Scene3D
             {
                 pressing = false;
                 var action = held; held = null;
+                if (sideways) { SwipeReleased = true; dragged = true; }
                 if (!dragged) velocity = 0;
                 if (!dragged && action != null) run(action);
+                SwipeX = 0;
             }
             float wheel = Input.mouseScrollDelta.y;
             if (Mathf.Abs(wheel) > .01f) Value = Mathf.Clamp(Value - wheel * .6f, 0, Max);

@@ -1934,3 +1934,19 @@ bỏ cuộc / thử lại / về Home không lỗi.
 **Kiểm tra:** biên dịch không lỗi. `Resources.Load` tìm thấy catalog, prefab Level001, 14 ảnh động, CharacterVisual,
 Campaign.json, shader. Tự chơi level 2, 68, 267 thắng cả 3. Booster, luồng thua / chơi tiếp (ô 6) / bỏ cuộc /
 thử lại / về Home không lỗi. Màn chơi level 259 (khối "?", ô khóa) hiển thị đúng.
+
+### Gallery: vuốt ngang để lật băng thẻ
+
+**Đo:** bản gốc lật băng thẻ bằng vuốt (video 2, giây 26,3 và 36,9). Bản mình chỉ có hai nút mũi tên.
+
+**Sửa**
+
+- `DragScroller`: lần kéo bắt đầu theo chiều ngang thì không cuộn trang, mà báo là vuốt (`SwipeX` khi đang giữ,
+  `SwipeSpeed`, `SwipeReleased` khi thả). Nút đang giữ bị huỷ khi đã vuốt, như khi cuộn dọc.
+- `GalleryPopup.Swipe`: vuốt bắt đầu trên băng thẻ thì băng thẻ đi theo ngón tay (đi một nửa khi không còn bộ ở
+  phía đó). Thả ra: kéo quá 1/3 bước thẻ hoặc vuốt nhanh (> 4 đơn vị/s) thì lật trang, trượt tiếp từ đúng vị trí
+  ngón tay; không thì bật về. Dùng lại `Slide` (tách `MoveCarousel`) và `RunGalleryAction`.
+
+**Kiểm tra:** mô phỏng vuốt ở level 268 (gán độ vuốt qua từng khung): vuốt 1,4 thì lật sang bộ trước, trượt liền
+mạch; vuốt 0,5 thì bật về; vuốt về phía không còn bộ thì không lật. Cuộn dọc Shop vẫn trượt có quán tính. Tự chơi
+level 68 thắng; luồng thua không lỗi.
