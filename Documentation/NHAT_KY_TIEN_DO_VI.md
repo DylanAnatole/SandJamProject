@@ -2092,3 +2092,24 @@ JOIN. Art xám và icon khoá chép từ dữ liệu gốc vào `Resources/Video
 
 **Kiểm tra:** ảnh chụp Home ở level 68 (khoá) và 362 (JOIN) khớp ảnh gốc; luồng booster / thua không lỗi;
 tự chơi level 2, 68 thắng.
+
+## 23/10/2026 — Hộp quà mốc cuối Gallery mở ra như gốc; quà 150 xu
+
+**So với video 3 (63,6–67 s):** thanh xu 3695 → 3735 → 3795 → 3945: ba mốc là 40, 60 và 150 xu; hộp quà chỉ có
+xu. Bản mình cho 100 xu + 3 booster (đoán, không có nguồn) và hiện icon hộp quà đứng yên.
+
+**Dữ liệu gốc:** prefab `popup_gallery_reward_gift` (thân hộp `Group 10082`, nắp `Group 10083`) và clip
+`gift_open` (1 s): hộp nén còn 48% chiều cao và rung ±4° (0,17–0,73 s), bật lên 135% (0,83 s) rồi về 100%; nắp
+bay lên trái (x 7 → −241, y 316 → 417 → 46 đơn vị canvas) và xoay 64° (0,83–1,12 s).
+
+**Sửa:**
+- `CongratsPopup.BuildGift` / `TickGift`: dựng hộp + nắp bằng art gốc (chép vào `Resources/GalleryPage`, chỉ
+  local) và chạy đúng các đường cong trên; đồng xu kèm số trồi từ miệng hộp (y 920 → 712, 1,3–1,65 s); nút
+  "Get Rewards" / x2 hiện sau 1,9 s.
+- `GalleryCollections`: mốc cuối 150 xu, bỏ 3 booster.
+
+**Kiểm tra:** chụp từng mốc thời gian của hoạt cảnh; khung cuối khớp vị trí hộp, nắp, xu với video; luồng
+booster / thua không lỗi; tự chơi level 2, 68 thắng.
+
+**Còn khác:** gốc 4% ở thẻ CONGRATS sau level 361, mình 6% (dữ liệu gốc ghi 15 level / bộ; có thể bản live đã
+đổi). Chưa sửa vì chưa đủ bằng chứng.

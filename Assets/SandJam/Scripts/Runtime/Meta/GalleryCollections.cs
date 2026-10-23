@@ -115,7 +115,7 @@ namespace SandJamTest
         // collections, 40/60/gift afterwards). Gift contents are remote in the original; estimated here.
         public static int MilestoneCoins(Info info, int milestone)
         {
-            if (milestone == 2) return 100;
+            if (milestone == 2) return 150; // recording 3 (65-67 s): the gift adds 150 coins, nothing else
             return info.Index <= 3 ? (milestone == 0 ? 20 : 30) : (milestone == 0 ? 40 : 60);
         }
         public static bool MilestoneReached(Info info, int milestone)
@@ -129,7 +129,6 @@ namespace SandJamTest
             if (!MilestoneReached(info, milestone) || MilestoneClaimed(info, milestone)) return false;
             SaveManager.Data.galleryClaims.Add(info.Index + ":" + milestone);
             EconomyManager.Add(MilestoneCoins(info, milestone), "gallery");
-            if (milestone == 2) foreach (var b in new[] { "rocket", "swap", "select" }) EconomyManager.AddBooster(b, 1, "gallery");
             SaveManager.Save();
             GameEvents.RaiseGalleryChanged();
             return true;

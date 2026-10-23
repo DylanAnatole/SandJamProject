@@ -52,7 +52,8 @@ namespace SandJamTest.Scene3D
         // Gallery milestone reward (recording 3, 58.1-62 s): over the dimmed Gallery, the CONGRATS ribbon, a glowing coin
         // pile (or the gift) with its amount, "Get Rewards" and a coin x2 button. Measured at 59.3 s: ribbon at y 490,
         // pile ~400 px wide at y 960, amount at y 1080, buttons centred at x 242 / 655, y 1355.
-        Popup reward; SpriteRenderer rewardCoins, rewardGift; TextMesh[] rewardAmount; int rewardCoinsShown;
+        Popup reward; SpriteRenderer rewardCoins; TextMesh[] rewardAmount; int rewardCoinsShown; bool rewardIsGift;
+        GameObject[] rewardButtons;
         static Vector3 Spot(float xPx, float yPx, float z) { return new Vector3((xPx - 444) * VideoScreen.Px, (960 - yPx) * VideoScreen.Px, z); }
         void BuildReward()
         {
@@ -63,8 +64,9 @@ namespace SandJamTest.Scene3D
             SpinningLight.Add(reward.Root.transform, reward.Root.transform.TransformPoint(Spot(444, 930, -6.1f)), 4.2f);
             Ribbon(reward, (960 - 490) * VideoScreen.Px);
             rewardCoins = Art(reward, "VideoUI/icon-coin-reward", Spot(440, 955, -6.4f), 2.24f);
-            rewardGift = Art(reward, "GalleryPage/icon-gift", Spot(444, 940, -6.4f), 2f);
             rewardAmount = OutlinedLabel(reward, "Reward amount", Spot(444, 1080, -6.8f), .08f);
+            BuildGift();
+            int before = reward.Root.transform.childCount;
             Art(reward, "VideoUI/button-green-v2", Spot(242, 1355, -6.5f), 2.18f);
             SetText(OutlinedLabel(reward, "Get rewards label", Spot(242, 1352, -6.8f), .042f), "Get Rewards");
             Hit(reward, Spot(242, 1355, -8.5f), new Vector2(2.18f, .62f), "reward-collect");
@@ -72,13 +74,66 @@ namespace SandJamTest.Scene3D
             Art(reward, "VideoUI/icon-coin", Spot(600, 1360, -6.6f), .36f);
             SetText(OutlinedLabel(reward, "Double label", Spot(690, 1357, -6.8f), .05f), "X2");
             Hit(reward, Spot(655, 1360, -8.5f), new Vector2(1.68f, .62f), "reward-double");
+            rewardButtons = new GameObject[reward.Root.transform.childCount - before];
+            for (int i = 0; i < rewardButtons.Length; i++) rewardButtons[i] = reward.Root.transform.GetChild(before + i).gameObject;
+        }
+
+        // Last milestone: the original's gift (popup_gallery_reward_gift, clip gift_open, recording 3 at 63.6-65.5 s).
+        // The box squashes to 48% and shakes, springs up to 135%, the lid flies off to the left turning 64 degrees, a
+        // coin with the amount rises out of it, and the buttons come last. Box and lid are the prefab's art; positions
+        // are its canvas units (box 291 wide, here 280 px: bottom of the box at y 1200, x 440).
+        Transform giftRoot, giftLid, giftCoin;
+        const float GiftUnitPx = 280f / 291f, GiftButtonsAt = 1.9f;
+        static readonly float[] LidTimes = { 0, .833f, .917f, 1.033f, 1.117f }, LidX = { 7, 7, -91, -194, -241 }, LidY = { 316, 316, 417, 258, 46 };
+        Vector3 GiftUnits(float x, float y, float z) { return new Vector3(x * GiftUnitPx * VideoScreen.Px, y * GiftUnitPx * VideoScreen.Px, z); }
+        void BuildGift()
+        {
+            giftRoot = new GameObject("Gift").transform;
+            giftRoot.SetParent(reward.Root.transform, false);
+            giftRoot.localPosition = Spot(440, 1200, -6.4f);
+            Transform Part(string sprite, float width, Vector3 at)
+            {
+                var r = Art(reward, sprite, Vector3.zero, width * GiftUnitPx * VideoScreen.Px);
+                r.transform.SetParent(giftRoot, false); r.transform.localPosition = at;
+                return r.transform;
+            }
+            Part("GalleryPage/gift-box", 291, GiftUnits(0, 165, 0));
+            giftLid = Part("GalleryPage/gift-lid", 280, GiftUnits(7, 316, -.05f));
+            giftCoin = new GameObject("Gift coin").transform;
+            giftCoin.SetParent(reward.Root.transform, false);
+            var coin = Art(reward, "VideoUI/icon-coin", Spot(444, 712, -6.6f), .55f);
+            coin.transform.SetParent(giftCoin, true);
+            foreach (var t in OutlinedLabel(reward, "Gift amount", Spot(444, 760, -6.8f), .04f)) t.transform.SetParent(giftCoin, true);
+        }
+        void TickGift(float t)
+        {
+            // Squash (chest_origin scale y) about the box bottom, a shake while squashed, then the spring.
+            float sy = t < .167f ? Mathf.Lerp(1, .67f, t / .167f) : t < .317f ? Mathf.Lerp(.67f, .482f, (t - .167f) / .15f)
+                : t < .733f ? .482f : t < .833f ? Mathf.Lerp(.482f, 1.35f, (t - .733f) / .1f) : Mathf.Lerp(1.35f, 1, Mathf.Clamp01((t - .833f) / .184f));
+            float shake = t > .317f && t < .733f ? 1.6f + 2.8f * Mathf.Sin((t - .317f) * Mathf.PI * 20) : t >= .733f && t < .833f ? 4.2f * (.833f - t) / .1f : 0;
+            giftRoot.localScale = new Vector3(1, sy, 1);
+            giftRoot.localRotation = Quaternion.Euler(0, 0, shake);
+            int k = 1; while (k < LidTimes.Length - 1 && t > LidTimes[k]) k++;
+            float f = Mathf.Clamp01((t - LidTimes[k - 1]) / (LidTimes[k] - LidTimes[k - 1]));
+            giftLid.localPosition = GiftUnits(Mathf.Lerp(LidX[k - 1], LidX[k], f), Mathf.Lerp(LidY[k - 1], LidY[k], f), -.05f);
+            giftLid.localRotation = Quaternion.Euler(0, 0, 64.3f * Mathf.SmoothStep(0, 1, (t - .833f) / .284f));
+            // The coin rises from the box mouth (y 920) to y 712 between 1.3 and 1.65 s.
+            float c = Mathf.Clamp01((t - 1.3f) / .35f);
+            giftCoin.gameObject.SetActive(c > 0);
+            giftCoin.localPosition = new Vector3(0, -(920 - 712) * VideoScreen.Px * (1 - c) * (1 - c), 0);
+            foreach (var b in rewardButtons) if (b.activeSelf != t >= GiftButtonsAt) b.SetActive(t >= GiftButtonsAt);
         }
         public void ShowGalleryReward(int coins, bool gift)
         {
             rewardCoinsShown = coins;
-            rewardCoins.gameObject.SetActive(!gift); rewardGift.gameObject.SetActive(gift);
+            rewardIsGift = gift;
+            rewardCoins.gameObject.SetActive(!gift); giftRoot.gameObject.SetActive(gift);
             SetText(rewardAmount, gift ? "" : coins.ToString());
+            SetText(giftCoin.GetComponentsInChildren<TextMesh>(true), coins.ToString());
+            foreach (var b in rewardButtons) b.SetActive(true);
+            giftCoin.gameObject.SetActive(false);
             Show(reward);
+            if (gift) TickGift(0);
         }
 
         public override bool Handles(string action) { return action == "congrats-continue" || action.StartsWith("reward-"); }
@@ -175,6 +230,7 @@ namespace SandJamTest.Scene3D
         }
         public override void Tick()
         {
+            if (IsOpen(reward) && rewardIsGift) TickGift(Time.unscaledTime - ShownAt);
             if (!IsOpen(congrats)) return;
             if (congratsRays) congratsRays.localRotation = Quaternion.Euler(0, 0, Time.unscaledTime * 12f);
             if (!coverMask) return;
