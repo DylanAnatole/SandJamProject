@@ -139,7 +139,7 @@ namespace SandJamTest.Scene3D
             mark.transform.SetParent(root, false); mark.transform.localPosition = new Vector3(0, 0, -.02f);
             mark.text = "!"; mark.anchor = TextAnchor.MiddleCenter; mark.alignment = TextAlignment.Center; mark.fontSize = 64;
             mark.characterSize = d * .11f / s; mark.color = Color.white;
-            UiFont.Apply(mark); mark.GetComponent<MeshRenderer>().sortingOrder = 42;
+            UiFont.Apply(mark); mark.GetComponent<MeshRenderer>().sortingOrder = renderer.sortingOrder; // depth-sorted with the disc, so pages cover it
             root.gameObject.SetActive(false);
             return root.gameObject;
         }

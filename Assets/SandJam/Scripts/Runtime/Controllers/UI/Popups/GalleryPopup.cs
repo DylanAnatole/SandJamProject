@@ -43,12 +43,6 @@ namespace SandJamTest.Scene3D
         {
             return frame && frame.sprite ? gallery.Root.transform.InverseTransformPoint(frame.bounds.center).y : 2.57f;
         }
-        SpriteRenderer GalleryPicture(Sprite sprite, float x, float y, float maxW, float maxH, float z, Transform parent = null)
-        {
-            var r = Child<SpriteRenderer>(gallery, "Picture", new Vector3(x, y, z)); r.sprite = sprite;
-            if (sprite) { float k = Mathf.Min(maxW / sprite.bounds.size.x, maxH / sprite.bounds.size.y); r.transform.localScale = new Vector3(k, k, 1); }
-            return Track(r, parent);
-        }
         // Original cards: the picture fills the card's opening and is clipped to its rounded shape by the card
         // mask, leaving the blue slot frame around it.
         SpriteRenderer MaskedPicture(Sprite sprite, float x, float y, float w, float h, float z, Transform parent = null)
@@ -101,7 +95,9 @@ namespace SandJamTest.Scene3D
             var backdrop = gallery.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>();
             backdrop.color = new Color(.1f, .3f, .55f, 1);
             var top = Art(gallery, "GalleryPage/bg-topTexture-cardCollection", new Vector3(0, 3.2f, -6.05f), 5.8f);
-            var bottom = Art(gallery, "GalleryPage/bg-bottom-cardCollection", new Vector3(0, -2.4f, -6.08f), 5.8f);
+            // The plain blue grid band starts right under the collection bar (y 840 px on recording 3), the diamond
+            // texture only behind the carousel.
+            var bottom = Art(gallery, "GalleryPage/bg-bottom-cardCollection", new Vector3(0, -2.13f, -6.08f), 5.8f);
             bottom.SetLocalSize(5.8f, 5.6f);
             AddPageChrome(gallery, "icon-cards");
         }
@@ -114,6 +110,7 @@ namespace SandJamTest.Scene3D
             if (Open) return;
             galleryList = GalleryCollections.Unlocked();
             galleryIndex = Mathf.Max(0, galleryList.Count - 1);
+            var next = GalleryCollections.NextLocked(galleryList); if (next != null) galleryList.Add(next);
             Show(gallery); RefreshPageLives(gallery);
             scroll.Value = 0; RefreshGallery();
         }
@@ -136,33 +133,16 @@ namespace SandJamTest.Scene3D
             for (int side = -1; side <= 1; side += 2)
             {
                 int n = galleryIndex + side; if (n < 0 || n >= galleryList.Count) continue;
-                var sideFrame = GalleryArt("bg-cards-top-carCollection", side * SideX, CarouselY, 1.45f * CardGrowX, 1.8f * CardGrowY, -6.25f);
+                var sideFrame = GalleryArt(CardFrame(galleryList[n], won), side * SideX, CarouselY, 1.45f * CardGrowX, 1.8f * CardGrowY, -6.25f);
                 float sy = FrameCentreY(sideFrame); var ss = FrameInner(sideFrame, 1.33f * CardGrowX, 1.67f * CardGrowY);
-                Sprite c, g; StyleCover(galleryList[n], out c, out g);
-                MaskedPicture(c, side * SideX, sy, ss.x, ss.y, -6.27f);
+                CoverPicture(galleryList[n], side * SideX, sy, ss, -6.27f, .3f);
             }
             // The card art does not pivot on its centre: pictures are centred on the frame as drawn (they used to sit
             // high, overflowing the top edge with a gap at the bottom).
-            var mainFrame = GalleryArt("bg-cards-top-carCollection", 0, CarouselY, 1.72f * CardGrowX, 2.13f * CardGrowY, -6.3f);
+            var mainFrame = GalleryArt(CardFrame(info, won), 0, CarouselY, 1.72f * CardGrowX, 2.13f * CardGrowY, -6.3f);
             float cy = FrameCentreY(mainFrame); var cs = FrameInner(mainFrame, 1.58f * CardGrowX, 1.98f * CardGrowY);
-            Sprite colour, grey; StyleCover(info, out colour, out grey);
+            CoverPicture(info, 0, cy, cs, -6.35f, .5f);
             float fraction = (float)info.Completed(won) / info.Count;
-            if (fraction >= 1 || !grey) MaskedPicture(colour, 0, cy, cs.x, cs.y, -6.35f);
-            else
-            {
-                // Grey cover with the coloured part rising from the bottom, both clipped to the rounded card.
-                var g = MaskedPicture(grey, 0, cy, cs.x, cs.y, -6.35f);
-                if (fraction > 0 && colour)
-                {
-                    var rect = colour.textureRect;
-                    var slice = Sprite.Create(colour.texture, new Rect(rect.x, rect.y, rect.width, Mathf.Max(1, Mathf.Round(rect.height * fraction))), new Vector2(.5f, 0), colour.pixelsPerUnit);
-                    runtimeArt.Add(slice);
-                    var c = GalleryPicture(slice, 0, 0, 1, 1, -6.4f);
-                    c.sharedMaterial = g.sharedMaterial; c.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
-                    c.transform.localScale = g.transform.localScale;
-                    c.transform.localPosition = new Vector3(0, cy - g.bounds.size.y / 2, -6.4f);
-                }
-            }
             carousel.Clear(); carouselX.Clear();
             for (int i = carouselFrom; i < galleryDynamic.Count; i++) { carousel.Add(galleryDynamic[i].transform); carouselX.Add(galleryDynamic[i].transform.localPosition.x); }
             if (galleryIndex > 0) GalleryArrow(-1);
@@ -177,7 +157,7 @@ namespace SandJamTest.Scene3D
                 bool claimed = GalleryCollections.MilestoneClaimed(info, m), reached = GalleryCollections.MilestoneReached(info, m);
                 GalleryArt("bg-reward", mx[m], 1.24f, .42f, .5f, -6.45f);
                 if (claimed) GalleryArt("Tasks/icon-done", mx[m], 1.27f, .32f, .27f, -6.5f);
-                else if (m == 2) GalleryArt("icon-gift", mx[m], 1.27f, .26f, .32f, -6.5f);
+                else if (m == 2) { GalleryArt("icon-gift", mx[m], 1.33f, .42f, .48f, -6.5f); GalleryText("Gift", mx[m], 1.15f, .024f, -6.55f); }
                 else { GalleryArt("Shop/icon-coin_1", mx[m], 1.32f, .2f, .2f, -6.5f); GalleryText(GalleryCollections.MilestoneCoins(info, m).ToString(), mx[m], 1.17f, .024f, -6.55f); }
                 if (reached && !claimed)
                 {
@@ -205,8 +185,8 @@ namespace SandJamTest.Scene3D
                 // the art has a transparent strip at the bottom, so that area sits above the sprite's centre).
                 float vw = cw * 300f / 324f, vh = ch * 372f / 450f, vy = y + ch * (.5f - (12f + 384f) / 2f / 450f), rim = cw * .025f;
                 if (waiting) { ClaimCard(level, x, y, vy, vw, vh, cw, ch); KeepCard(level, x, firstPiece); continue; }
-                var slot = GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
-                if (!done) continue;
+                if (!done) { GoldCard(x, y, vw, vh, cw, ch); continue; }
+                var slot = GalleryArt("bg-cardSlot-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
                 vy = InnerCardY(slot);
                 string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
                 MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
@@ -225,13 +205,20 @@ namespace SandJamTest.Scene3D
             return gallery.Root.transform.InverseTransformPoint(new Vector3(0, b.max.y - b.size.y * (12f + 384f) / 2f / 450f, 0)).y;
         }
 
-        // A won level's card still face down (original): the "?" card in a gold frame with a "Claim" strip.
+        // A card still face down (original, both recordings): the "?" card in a gold frame.
+        float GoldCard(float x, float y, float cardW, float cardH, float cw, float ch)
+        {
+            float cardY = InnerCardY(GalleryArt("bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid));
+            var gold = Track(Child<SpriteRenderer>(gallery, "Card frame", new Vector3(x, cardY, -6.29f)), galleryGrid);
+            // Thin rim (~6 px) following the card's round corners.
+            gold.sprite = SpriteFactory.Rounded(128, 44, 260); gold.drawMode = SpriteDrawMode.Sliced;
+            gold.size = new Vector2(cardW + .07f, cardH + .07f); gold.color = new Color(1f, .82f, .38f);
+            return cardY;
+        }
+        // A won level's card waiting to be claimed: the gold "?" card with a "Claim" strip.
         void ClaimCard(int level, float x, float y, float cardY, float cardW, float cardH, float cw, float ch)
         {
-            cardY = InnerCardY(GalleryArt("bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid));
-            var gold = Track(Child<SpriteRenderer>(gallery, "Claim frame", new Vector3(x, cardY, -6.29f)), galleryGrid);
-            gold.sprite = SpriteFactory.Rounded(64, 22, 260); gold.drawMode = SpriteDrawMode.Sliced;
-            gold.size = new Vector2(cardW + .14f, cardH + .14f); gold.color = new Color(1f, .78f, .22f);
+            cardY = GoldCard(x, y, cardW, cardH, cw, ch);
             GalleryArt("GalleryPage/Group 10298", x, cardY - cardH * .36f, cardW * .9f, .3f, -6.36f, galleryGrid);
             GalleryText("Claim", x, cardY - cardH * .36f, .032f, -6.4f, galleryGrid);
             GalleryHit(x, y, cw, ch, "gallery-card:" + level, galleryGrid);
@@ -246,18 +233,32 @@ namespace SandJamTest.Scene3D
             GalleryHit(x, CarouselY - .1f, .65f, .65f, direction < 0 ? "gallery-prev" : "gallery-next");
         }
 
-        void StyleCover(GalleryCollections.Info info, out Sprite colour, out Sprite grey) { CoverPair(info.StyleCover, info.StyleRenderId, out colour, out grey); }
+        // Carousel covers are always in colour (recordings 2 and 3). An unfinished collection has the gold frame, a
+        // finished one the blue; the next, locked collection is dimmed to ~40% under a white padlock.
+        static string CardFrame(GalleryCollections.Info info, int won)
+        {
+            return !info.Locked && info.Completed(won) >= info.Count ? "bg-cards-top-carCollection" : "bg-cards-top-carCollection-gold";
+        }
+        void CoverPicture(GalleryCollections.Info info, float x, float y, Vector2 size, float z, float lockWidth)
+        {
+            Sprite colour, grey; CoverPair(info.StyleCover, info.StyleRenderId, out colour, out grey);
+            var picture = MaskedPicture(colour, x, y, size.x, size.y, z);
+            if (!info.Locked) return;
+            picture.color = new Color(.4f, .4f, .4f);
+            GalleryArt("VideoUI/icon-lock", x, y, lockWidth, lockWidth, z - .05f).color = new Color(1, 1, 1, .7f);
+        }
 
         // Cards scrolled out of the grid band are hidden (the original uses a mask).
         void ClipGrid()
         {
             if (!galleryGrid) return;
             galleryGrid.localPosition = new Vector3(0, scroll.Value, 0);
-            // A card (1.46 tall) shows while its centre keeps it mostly inside the band.
+            // A card (1.46 tall) shows while its centre keeps it mostly under the button; at the bottom the original
+            // lets the next row run on behind the navbar.
             foreach (Transform card in galleryGrid)
             {
                 float y = card.position.y;
-                card.gameObject.SetActive(y < GridTop - .55f && y > GridBottom + .55f);
+                card.gameObject.SetActive(y < GridTop - .55f && y > GridBottom - .55f);
             }
         }
 

@@ -12,6 +12,7 @@ namespace SandJamTest
         public sealed class Info
         {
             public int Index, Start, Count;      // Start/Count = the block being played
+            public bool Locked;                  // the next collection, shown dark with a padlock on the Gallery
             public string Name, Cover;           // Cover = "Gallery/cover-N" or null (use RenderId)
             public string RenderId;              // first picture of the unlocked style
             // The block's own art style, as shown on the GALLERY page (recording: "MUSICIAN" page = the
@@ -109,6 +110,15 @@ namespace SandJamTest
                 var info = ForLevel(level); list.Add(info); level = info.Start + info.Count;
             }
             return list;
+        }
+        // The collection after the last unlocked one, for the Gallery's locked preview (null past the last style).
+        public static Info NextLocked(System.Collections.Generic.List<Info> unlocked)
+        {
+            if (unlocked.Count == 0) return null;
+            var last = unlocked[unlocked.Count - 1];
+            if (last.Index >= Styles.Length) return null;
+            var info = ForLevel(last.Start + last.Count); info.Locked = true;
+            return info;
         }
 
         // Milestones at 1/3, 2/3 and the full collection (original GalleryConfig: 20/30/gift for the first three

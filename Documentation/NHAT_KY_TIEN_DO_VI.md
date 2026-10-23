@@ -2113,3 +2113,26 @@ booster / thua không lỗi; tự chơi level 2, 68 thắng.
 
 **Còn khác:** gốc 4% ở thẻ CONGRATS sau level 361, mình 6% (dữ liệu gốc ghi 15 level / bộ; có thể bản live đã
 đổi). Chưa sửa vì chưa đủ bằng chứng.
+
+## 23/10/2026 — Trang Gallery theo gốc: bìa màu, khung vàng, bộ kế bị khoá, thẻ "?" viền vàng
+
+**So với video 3 (69,5 s, level 361) và video 2 (28–34 s):**
+- Bìa các bộ đã mở luôn có màu. Bộ chưa xong có khung vàng, bộ đã xong khung xanh. Bản mình hiện bìa xám với
+  phần màu dâng dần (không có trong video nào) và luôn khung xanh.
+- Bên phải bộ đang chơi là bộ kế bị khoá: khung vàng, ảnh tối ~40%, ổ khoá trắng mờ; có mũi tên phải. Bản mình
+  không có.
+- Thẻ "?" chưa mở có viền vàng mảnh, bo tròn; bản mình là ô tối không viền. Hàng thứ 3 lộ một phần sau thanh
+  điều hướng; bản mình ẩn.
+- Có chữ "Gift" dưới hộp quà; nền ca-rô chỉ sau carousel, dưới thanh mốc là nền xanh trơn.
+- Trên trang Gallery không có badge "!"; bản mình lọt chữ "!" của Home (đè lên mọi lớp, `sortingOrder` 42).
+
+**Sửa:**
+- `GalleryCollections.NextLocked` + `Info.Locked`: bộ kế được thêm vào cuối carousel.
+- `GalleryPopup`: `CardFrame` (vàng nếu chưa xong hoặc bị khoá, art gốc `bg-cards-top-carCollection - gold`
+  chép local), `CoverPicture` (bìa màu; bộ khoá tối + `VideoUI/icon-lock`); bỏ ảnh xám dâng màu và
+  `GalleryPicture` không còn dùng. `GoldCard` dùng chung cho thẻ "?" và thẻ chờ nhận (viền ~6 px, bo tròn). Chữ
+  "Gift", hộp quà to hơn. Nền dưới bắt đầu ngay dưới thanh mốc; hàng thẻ kế tiếp hiện sau thanh điều hướng.
+- `CampaignUi.AlertBadge`: chữ "!" cùng thứ tự vẽ với đĩa đỏ nên trang che được.
+
+**Kiểm tra:** chụp Gallery ở level 361 so với video (khớp bố cục); bấm sang bộ khoá "Iconic Realms" hiện ảnh
+tối + ổ khoá; badge Home vẫn đủ đĩa đỏ và "!"; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
