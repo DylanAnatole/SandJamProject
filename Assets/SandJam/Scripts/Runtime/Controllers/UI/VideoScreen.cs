@@ -54,11 +54,11 @@ namespace SandJamTest.Scene3D
 
         // Home closer to the original recording (level 267): brighter level sign and stage, and a soft spotlight
         // falling from the walkway onto the PLAY button.
-        // Walkway crossing (local units of the Home page), edge to edge. The original crosses the visible screen in
-        // ~2.1 s (~2.25 units/s) in a quick trot: a 0.46 s step cycle (the walk clip lasts 0.83 s). The whole
-        // character turns toward where it walks (MascotYaw, degrees from facing the camera), so the walk clip plays
-        // in its natural profile; the cube reads the same from the side.
-        const float MascotEdgeX=3.3f, MascotWalk=3f, MascotLap=3.7f, MascotEnter=1f, MascotYaw=70f, MascotAnimSpeed=1.8f;
+        // Walkway crossing (local units of the Home page), edge to edge. The original crosses at ~480 px/s on screen
+        // (recording 2, 1.02-2.72 s: x 852 -> 40) in a quick trot; ours walked ~390 px/s, so walk and step cycle are
+        // 1.24x quicker, with the same ~0.7 s off screen between passes. The whole character turns toward where it
+        // walks (MascotYaw, degrees from facing the camera), so the walk clip plays in its natural profile.
+        const float MascotEdgeX=3.3f, MascotWalk=2.42f, MascotLap=3.12f, MascotEnter=1f, MascotYaw=70f, MascotAnimSpeed=2.23f;
         int mascotLap=-1,mascotPasses; float mascotDirection=1;
         static readonly Color[] MascotColors={new Color(0f,.64f,1f),new Color(1f,.8f,0f),new Color(.75f,.09f,.09f),new Color(.83f,0f,.78f),
             new Color(.11f,.79f,0f),new Color(1f,.53f,0f),new Color(.44f,0f,.93f)};

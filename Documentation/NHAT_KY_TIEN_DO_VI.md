@@ -1950,3 +1950,16 @@ thử lại / về Home không lỗi. Màn chơi level 259 (khối "?", ô khóa
 **Kiểm tra:** mô phỏng vuốt ở level 268 (gán độ vuốt qua từng khung): vuốt 1,4 thì lật sang bộ trước, trượt liền
 mạch; vuốt 0,5 thì bật về; vuốt về phía không còn bộ thì không lật. Cuộn dọc Shop vẫn trượt có quán tính. Tự chơi
 level 68 thắng; luồng thua không lỗi.
+
+### Home: nhân vật trên lối đi đi nhanh như bản gốc
+
+**Đo**
+
+- Video 2, giây 0–3,4: trên Home chỉ có nhân vật đi qua lối đi chuyển động (nút PLAY, rương, đèn đứng yên).
+  Nhân vật đi từ x 852 tới x 40 trong 1,7 s ≈ 480 px/s.
+- Bản mình (đo vị trí trên màn hình từng khung): ≈ 390 px/s, chậm hơn 1,24 lần.
+
+**Sửa** (`VideoScreen`): `MascotWalk` 3 → 2,42 s, `MascotLap` 3,7 → 3,12 s (giữ ~0,7 s ngoài màn giữa hai lượt),
+`MascotAnimSpeed` 1,8 → 2,23 (bước chân nhanh cùng tỉ lệ, không bị trượt chân).
+
+**Kiểm tra:** đo lại: x −84 → 879 trong 1,97 s ≈ 490 px/s.
