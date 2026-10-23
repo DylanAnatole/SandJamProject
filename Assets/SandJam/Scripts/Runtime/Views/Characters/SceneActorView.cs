@@ -76,6 +76,8 @@ namespace SandJamTest.Scene3D
         const float PourYaw = 30f, PourTilt = 3f;
         static readonly Vector3 PourPivot = new Vector3(0, .42f, 0); // block centre in Visual space
         public void Pour(Vector3 target) { pourTarget = target; }
+        // Side-to-side rock in degrees (on screen), set from outside, e.g. while the Select booster waits for a pick.
+        public float Rock;
         // Recording 2 (155.6-155.9 s and 48.6-49.3 s, zoomed): both legs come out of the middle of the block's base,
         // thick, ~0.6 of its height, with bent knees; turned toward the run they hid behind each other.
         const float RunLegYaw = 0f, RunLegDrop = 35f, RunLegStretch = 1.45f;
@@ -126,7 +128,7 @@ namespace SandJamTest.Scene3D
                 pose.localRotation = poseBase;
                 pose.localPosition = posePosition;
                 var label = AmmoLabel ? AmmoLabel.transform : null;
-                bool turned = yaw != 0 || aimYaw != 0 || roll != 0;
+                bool turned = yaw != 0 || aimYaw != 0 || roll != 0 || Rock != 0;
                 if (label && !turned)
                 {
                     if (labelMoved) { label.localPosition = labelRest; label.localRotation = labelRestRotation; labelMoved = false; }
@@ -141,7 +143,7 @@ namespace SandJamTest.Scene3D
                     if (!viewCamera) viewCamera = SpriteFactory.CameraForLayer(gameObject.layer);
                     var axis = viewCamera ? (centre - viewCamera.transform.position).normalized : Vector3.forward;
                     pose.RotateAround(centre, Vector3.up, yaw + aimYaw);
-                    pose.RotateAround(centre, axis, roll + yaw * RunUpright);
+                    pose.RotateAround(centre, axis, roll + yaw * RunUpright + Rock);
                     // The number is printed on the box's back face, but it is not part of the rig: as the box turns it
                     // slides toward the face's far edge (recording 2, 48.9 s: ~3/4 across on a run to the left) and
                     // turns part of the way with it.

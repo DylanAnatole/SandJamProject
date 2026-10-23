@@ -17,8 +17,60 @@ namespace SandJamTest.Scene3D
         public bool PickerOpen { get; private set; }
         public bool Busy { get; private set; }
         int pickerOpenedFrame;
-        Vector3 selectButtonScale;
         GameObject rocket;
+
+        // Select booster armed (recording 3, 209.6-214.5 s): a see-through purple card over the waiting slots,
+        // "SELECT ANY SHOOTER" / "Tap on any shooter you want" with a red close button, and every cube that can be
+        // picked rocks side to side (~3.5 deg, 0.53 s). Measured at 211.5 s: card x 158-730, y 1108-1295 px.
+        const float RockDegrees = 3.5f, RockSeconds = .53f;
+        GameObject selectCard;
+        void ShowSelectCard(bool show)
+        {
+            if (show && !selectCard) selectCard = BuildSelectCard();
+            if (selectCard) selectCard.SetActive(show);
+        }
+        GameObject BuildSelectCard()
+        {
+            var cam = screen.UiCamera; var anchor = buttons["select"];
+            System.Func<float, float, Vector3> spot = (x, y) => new Vector3(cam.transform.position.x + (x - 444) * VideoScreen.Px, cam.transform.position.y + (960 - y) * VideoScreen.Px, anchor.position.z - .4f);
+            var root = new GameObject("Select booster card") { layer = anchor.gameObject.layer };
+            root.transform.SetParent(anchor.parent, true); root.transform.position = spot(444, 1201);
+            SpriteRenderer Panel(string name, Color colour, float w, float h, float dz)
+            {
+                var r = new GameObject(name) { layer = root.layer }.AddComponent<SpriteRenderer>();
+                r.transform.SetParent(root.transform, false); r.transform.localPosition = new Vector3(0, 0, dz);
+                r.sprite = SpriteFactory.Rounded(64, 24, 120); r.drawMode = SpriteDrawMode.Sliced; r.size = new Vector2(w, h); r.color = colour;
+                r.sharedMaterial = SpriteFactory.PlainSprite; return r;
+            }
+            float w = 572 * VideoScreen.Px, h = 187 * VideoScreen.Px;
+            // See-through like the original (the slots show through): one tinted card, measured 168,160,208 over the slots.
+            Panel("Card", new Color32(168, 153, 230, 128), w, h, 0);
+            var line = Panel("Line", new Color(.4f, .3f, .75f, .8f), 330 * VideoScreen.Px, .02f, -.02f); line.transform.position = spot(400, 1200) + Vector3.forward * -.02f;
+            TextMesh Text(string text, float x, float y, float size)
+            {
+                var t = new GameObject(text) { layer = root.layer }.AddComponent<TextMesh>();
+                t.transform.SetParent(root.transform, true); t.transform.position = spot(x, y) + Vector3.forward * -.05f;
+                t.text = text; t.fontSize = 64; t.characterSize = size; t.anchor = TextAnchor.MiddleCenter; t.alignment = TextAlignment.Center; t.color = Color.white;
+                if (controller.InterfaceFont) { t.font = controller.InterfaceFont; t.GetComponent<MeshRenderer>().sharedMaterial = controller.InterfaceFont.material; }
+                OutlinedText.Add(t, TextOutliner.Ink); return t;
+            }
+            Text("SELECT ANY SHOOTER", 388, 1163, .033f);
+            Text("Tap on any shooter you want", 390, 1238, .021f);
+            var close = Resources.Load<Sprite>("VideoUI/button-exit-v2");
+            if (close)
+            {
+                var x = new GameObject("Close") { layer = root.layer }.AddComponent<SpriteRenderer>();
+                x.transform.SetParent(root.transform, true); x.transform.position = spot(655, 1195) + Vector3.forward * -.05f;
+                x.sprite = close; x.SetLocalHeight(110 * VideoScreen.Px / Mathf.Max(.0001f, root.transform.lossyScale.y));
+            }
+            return root.gameObject;
+        }
+        void RockCubes(bool on)
+        {
+            float rock = on ? RockDegrees * Mathf.Sin(Time.unscaledTime * 2 * Mathf.PI / RockSeconds) : 0;
+            foreach (var actor in controller.Characters)
+                if (actor) actor.Rock = on && actor.Shooter != null && controller.Game.CanSelectPriority(actor.Shooter) ? rock : 0;
+        }
 
         public void Initialize(VideoScreen owner)
         {
@@ -182,7 +234,7 @@ namespace SandJamTest.Scene3D
             {
                 if (!controller.Game.Lanes.SelectMany(l=>l).Any(controller.Game.CanSelectPriority)) return false;
                 PickerOpen = true; pickerOpenedFrame = Time.frameCount; controller.BoosterInputBlocked = true;
-                selectButtonScale = buttons["select"].localScale;
+                ShowSelectCard(true);
                 return true;
             }
             if (action == "rocket")
@@ -225,8 +277,8 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             if (!PickerOpen) return;
-            // The armed booster button pulses gently until a cube is chosen.
-            buttons["select"].localScale = selectButtonScale * (1 + .08f * Mathf.Sin(Time.unscaledTime * 8f));
+            // The game waits while the player picks; a zero step still poses the cubes, so they rock.
+            RockCubes(true); controller.Advance(0);
             if (Time.frameCount == pickerOpenedFrame || !Input.GetMouseButtonDown(0)) return;
             RaycastHit hit;
             var cam = controller.GameCamera;
@@ -238,7 +290,7 @@ namespace SandJamTest.Scene3D
         public void Cancel()
         {
             StopAllCoroutines(); if (rocket) Destroy(rocket);
-            if (PickerOpen) buttons["select"].localScale = selectButtonScale;
+            if (PickerOpen) { ShowSelectCard(false); RockCubes(false); if (controller) controller.Advance(0); }
             PickerOpen = false; Busy = false;
             if (controller) { controller.BoosterInputBlocked = false; controller.SuppressInputThisFrame(); }
         }

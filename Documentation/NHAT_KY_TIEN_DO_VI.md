@@ -1997,3 +1997,31 @@ All Cards, nhận mốc thưởng Gallery (40, 60 xu, hộp quà), level 341 h�
 - Nhận mốc 0: màn 40 xu đè lên Gallery tối; x2 thì xu 200 → 240 → 280; Get Rewards thì về đúng bộ (dấu tích).
   Mốc 2: hộp quà, +100 xu và 3 booster.
 - Popup khác giữ nguyên chiều sâu (z −5). Tự chơi level 2, 68 thắng; luồng thua / chơi tiếp / bỏ cuộc không lỗi.
+
+### Booster Select: bảng "SELECT ANY SHOOTER", khối chọn được lắc lư (video 3)
+
+**Đo** (video 3, giây 209,6–216,3, level 361)
+
+- Bấm Select: bảng tím trong suốt hiện đè lên hàng ô chờ (x 158–730, y 1108–1295 px; màu đo 168,160,208 trên
+  nền ô 168,167,186). Trên bảng: "SELECT ANY SHOOTER", đường kẻ, "Tap on any shooter you want", nút X đỏ ở bên
+  phải. Nút booster không nhấp nháy.
+- Khối chọn được lắc qua lại ±3,5°, chu kỳ ~0,53 s.
+- Chạm khối ở hàng sau: khối nhảy ra khỏi làn, chạy vòng ra ngoài rồi lên ô chờ. Số booster giảm 6 → 5.
+- Bản mình: bật Select không hiện gì (chỉ nút booster nhấp nháy), khối không lắc. Lý do khối không động đậy:
+  `SandJamSceneController.Update` dừng cả game khi booster đang chờ thao tác (`BoosterInputBlocked`).
+- Hai lần lóe sáng trên tranh (giây 217, 229) là hiệu ứng mở vùng, không phải booster.
+- Nút booster có badge số vàng ở góc dưới trái: khớp sẵn.
+
+**Sửa**
+
+- `BoosterController`: `BuildSelectCard` (dựng một lần, theo số đo) và `ShowSelectCard`; `RockCubes` cho các
+  khối `CanSelectPriority` lắc; bỏ nhấp nháy nút. Trong lúc chờ chọn, gọi `controller.Advance(0)` để khối được
+  dựng dáng mà game vẫn đứng (không đổ cát). Chạm ra ngoài khối hoặc nút X thì huỷ như trước.
+- `SceneActorView.Rock`: độ lắc (độ) cộng vào phép nghiêng quanh hướng nhìn camera đang có trong `ApplyYaw`.
+
+**Kiểm tra**
+
+- Level 361: bảng hiện đúng chỗ, nhìn xuyên thấy ô chờ; khối chọn được lắc; chọn khối hồng ở hàng sau thì
+  khối chạy lên ô chờ, bảng tắt.
+- Luồng booster (swap, rocket, select) và thua / chơi tiếp / bỏ cuộc không lỗi. Tự chơi level 68 thắng.
+  Level 361 bộ giải không thắng được với 5 ô (cần booster, như trong video).
