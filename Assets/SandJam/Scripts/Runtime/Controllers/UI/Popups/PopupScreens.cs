@@ -27,6 +27,23 @@ namespace SandJamTest.Scene3D
         SettingsPopup settingsPopup; LevelIntroPopups intros; CongratsPopup congrats; SandQuestPopup sandQuest; ShopPopup shop; LivesPopup lives; TasksPopup tasks; GalleryPopup gallery;
         public void OpenShop() { shop.OpenShop(); }
         public void OpenGallery() { gallery.OpenGallery(); }
+        internal void ResumeGallery()
+        {
+            gallery.ResumeGallery(); // also ends the reward card's closing
+            if (overPage) { overPage.localPosition -= Vector3.forward * OverPageZ; overPage = null; }
+        }
+        // The reward card opens over the Gallery page, which stays on screen (dimmed) under it.
+        internal void ShowGalleryReward(int coins, bool gift)
+        {
+            var page = Open;
+            congrats.ShowGalleryReward(coins, gift);
+            if (!page || page == Open) return;
+            page.SetActive(true);
+            overPage = Open.transform; overPage.localPosition += Vector3.forward * OverPageZ;
+        }
+        Transform overPage;
+        // In front of a page left under it (page art sits around z -11 to -17.5).
+        const float OverPageZ = -12f;
         public void OpenSandQuest() { sandQuest.OpenSandQuest(); }
         public void ShowSandQuestOnHome() { sandQuest.ShowSandQuestOnHome(); }
         public void OpenDailyRewards() { tasks.OpenDailyRewards(); }

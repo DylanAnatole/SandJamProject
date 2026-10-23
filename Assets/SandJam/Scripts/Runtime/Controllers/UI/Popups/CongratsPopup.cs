@@ -17,6 +17,7 @@ namespace SandJamTest.Scene3D
         public bool FastPopIn { get { return IsOpen(congrats); } }
         public override void Build()
         {
+            BuildReward();
             congrats = Blank("Congrats popup");
             congrats.Root.transform.Find("Next").gameObject.SetActive(false); // the whole screen continues instead
             // The original card sits on an even, opaque dark navy (#141225): nothing of the board shows.
@@ -33,8 +34,7 @@ namespace SandJamTest.Scene3D
             cardBw = Child<SpriteRenderer>(congrats, "Cover grey", new Vector3(0, CoverY, -6.4f));
             cardColor = Child<SpriteRenderer>(congrats, "Cover colour", new Vector3(0, CoverY, -6.45f));
             // Ribbon, title and captions placed as measured on recording 2 (145 s).
-            Art(congrats, "Congrats/ribbon-yellow-v2", new Vector3(0, 2.59f, -6.6f), 4.74f);
-            Art(congrats, "Congrats/text-congrats-v2", new Vector3(0, 2.65f, -6.7f), 3.17f);
+            Ribbon(congrats, 2.59f);
             cardName = OutlinedLabel(congrats, "Collection name", new Vector3(0, 1.98f, -6.8f), .042f);
             cardPercent = OutlinedLabel(congrats, "Collection percent", new Vector3(0, -1.574f, -6.8f), .037f);
             SetText(OutlinedLabel(congrats, "Tap to continue", new Vector3(0, -3.32f, -6.8f), .044f), "Tap To Continue");
@@ -43,8 +43,52 @@ namespace SandJamTest.Scene3D
             hit.gameObject.layer = 9; hit.size = new Vector3(30, 40, .2f);
             hit.gameObject.AddComponent<VideoUiButton>().Action = "congrats-continue";
         }
-        public override bool Handles(string action) { return action == "congrats-continue"; }
-        public override bool Handle(string action) { Close(); screen.Levels.LoadNext(); return true; }
+        void Ribbon(Popup p, float y)
+        {
+            Art(p, "Congrats/ribbon-yellow-v2", new Vector3(0, y, -6.6f), 4.74f);
+            Art(p, "Congrats/text-congrats-v2", new Vector3(0, y + .06f, -6.7f), 3.17f);
+        }
+
+        // Gallery milestone reward (recording 3, 58.1-62 s): over the dimmed Gallery, the CONGRATS ribbon, a glowing coin
+        // pile (or the gift) with its amount, "Get Rewards" and a coin x2 button. Measured at 59.3 s: ribbon at y 490,
+        // pile ~400 px wide at y 960, amount at y 1080, buttons centred at x 242 / 655, y 1355.
+        Popup reward; SpriteRenderer rewardCoins, rewardGift; TextMesh[] rewardAmount; int rewardCoinsShown;
+        static Vector3 Spot(float xPx, float yPx, float z) { return new Vector3((xPx - 444) * VideoScreen.Px, (960 - yPx) * VideoScreen.Px, z); }
+        void BuildReward()
+        {
+            reward = Blank("Gallery reward popup");
+            reward.Root.transform.Find("Next").gameObject.SetActive(false);
+            reward.Root.transform.Find("Dark backdrop").GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, .66f);
+            PopupScreens.DimCoinBar(reward, .38f);
+            SpinningLight.Add(reward.Root.transform, reward.Root.transform.TransformPoint(Spot(444, 930, -6.1f)), 4.2f);
+            Ribbon(reward, (960 - 490) * VideoScreen.Px);
+            rewardCoins = Art(reward, "VideoUI/icon-coin-reward", Spot(440, 955, -6.4f), 2.24f);
+            rewardGift = Art(reward, "GalleryPage/icon-gift", Spot(444, 940, -6.4f), 2f);
+            rewardAmount = OutlinedLabel(reward, "Reward amount", Spot(444, 1080, -6.8f), .08f);
+            Art(reward, "VideoUI/button-green-v2", Spot(242, 1355, -6.5f), 2.18f);
+            SetText(OutlinedLabel(reward, "Get rewards label", Spot(242, 1352, -6.8f), .042f), "Get Rewards");
+            Hit(reward, Spot(242, 1355, -8.5f), new Vector2(2.18f, .62f), "reward-collect");
+            Art(reward, "VideoUI/button-yellow-v2", Spot(655, 1360, -6.5f), 1.68f);
+            Art(reward, "VideoUI/icon-coin", Spot(600, 1360, -6.6f), .36f);
+            SetText(OutlinedLabel(reward, "Double label", Spot(690, 1357, -6.8f), .05f), "X2");
+            Hit(reward, Spot(655, 1360, -8.5f), new Vector2(1.68f, .62f), "reward-double");
+        }
+        public void ShowGalleryReward(int coins, bool gift)
+        {
+            rewardCoinsShown = coins;
+            rewardCoins.gameObject.SetActive(!gift); rewardGift.gameObject.SetActive(gift);
+            SetText(rewardAmount, gift ? "" : coins.ToString());
+            Show(reward);
+        }
+
+        public override bool Handles(string action) { return action == "congrats-continue" || action.StartsWith("reward-"); }
+        public override bool Handle(string action)
+        {
+            if (action == "congrats-continue") { Close(); screen.Levels.LoadNext(); return true; }
+            // The original's x2 is a rewarded ad; here it simply doubles the coins, as on Level Complete.
+            if (action == "reward-double") EconomyManager.Add(rewardCoinsShown, "double");
+            Close(); Host.ResumeGallery(); return true;
+        }
 
         public bool ShowCongrats()
         {

@@ -1963,3 +1963,37 @@ level 68 thắng; luồng thua không lỗi.
 `MascotAnimSpeed` 1,8 → 2,23 (bước chân nhanh cùng tỉ lệ, không bị trượt chân).
 
 **Kiểm tra:** đo lại: x −84 → 879 trong 1,97 s ≈ 490 px/s.
+
+### Video 3 (23/10, level 341, có tiếng): Gallery lật thẻ khi nhận; màn thưởng mốc bộ sưu tập
+
+Video mới: `ScreenRecording_10-23-2026 13-59-00_1.mp4` (275 s, 50 fps, có tiếng). Có các cảnh chưa từng có: Claim
+All Cards, nhận mốc thưởng Gallery (40, 60 xu, hộp quà), level 341 hết chỗ hai lần.
+
+**Đo**
+
+- Claim All (giây 53,45–54,1): cả lưới thẻ "?" co ngang về 0 (~0,4 s, kèm lấp lánh), rồi mặt tranh giãn ra
+  (~0,15 s). Bản mình đổi thẳng sang tranh.
+- Nhận mốc (giây 58,1–62): nền tối, Gallery vẫn thấy phía dưới; quầng sáng xoay; dải CONGRATS ở y 490; chồng xu
+  ~400 px ở y 960 kèm số (y 1080); nút "Get Rewards" (x 242) và "x2" (x 655) ở y 1355; mốc cuối là hộp quà.
+  Bản mình chỉ cộng xu, không có màn nào.
+- Dựng lại lưới thẻ luôn đưa thanh cuộn về đầu (nhận một thẻ phía dưới là nhảy lên trên).
+
+**Sửa**
+
+- `GalleryPopup`:
+  - lật thẻ khi nhận một thẻ hoặc Claim All: `KeepCard` ghi các mảnh của mỗi thẻ; `FoldCards` co / giãn ngang
+    quanh tâm thẻ (`FoldSeconds` 0,4, `UnfoldSeconds` 0,15); trong lúc lật không nhận thao tác khác;
+  - cuộn chỉ về đầu khi mở Gallery hoặc lật trang, không về đầu khi nhận thẻ;
+  - nhận mốc mở màn thưởng; `ResumeGallery` quay lại đúng bộ, đúng vị trí cuộn.
+- `CongratsPopup`: màn thưởng mốc (`BuildReward`, `ShowGalleryReward`), dùng chung dải CONGRATS (`Ribbon`) với
+  thẻ CONGRATS sau màn; quầng sáng `SpinningLight`, chồng xu `icon-coin-reward` hoặc `icon-gift`. Nút x2 nhân đôi
+  xu như ở Level Complete (bản gốc là xem quảng cáo).
+- `PopupScreens.ShowGalleryReward`: giữ trang Gallery hiện bên dưới, đưa màn thưởng lên trước (`OverPageZ`), trả
+  lại khi quay về Gallery.
+
+**Kiểm tra**
+
+- Level 268, Claim All: thẻ co về 0 rồi tranh mở ra.
+- Nhận mốc 0: màn 40 xu đè lên Gallery tối; x2 thì xu 200 → 240 → 280; Get Rewards thì về đúng bộ (dấu tích).
+  Mốc 2: hộp quà, +100 xu và 3 booster.
+- Popup khác giữ nguyên chiều sâu (z −5). Tự chơi level 2, 68 thắng; luồng thua / chơi tiếp / bỏ cuộc không lỗi.

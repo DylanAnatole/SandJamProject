@@ -115,13 +115,16 @@ namespace SandJamTest.Scene3D
             galleryList = GalleryCollections.Unlocked();
             galleryIndex = Mathf.Max(0, galleryList.Count - 1);
             Show(gallery); RefreshPageLives(gallery);
-            RefreshGallery();
+            scroll.Value = 0; RefreshGallery();
         }
+
+        // Back from the milestone reward: same collection, same scroll.
+        public void ResumeGallery() { Show(gallery); RefreshPageLives(gallery); RefreshGallery(); }
 
         void RefreshGallery()
         {
             DestroyAll(galleryDynamic);
-            scroll.Value = 0;
+            cardPieces.Clear();
             if (galleryList.Count == 0) { GalleryText("Beat level 15 to unlock\nyour first collection!", 0, 1.5f, .05f, -6.6f); return; }
             var info = galleryList[galleryIndex];
             int won = Campaign.LevelNumber - 1;
@@ -195,17 +198,19 @@ namespace SandJamTest.Scene3D
             for (int i = 0; i < info.Count; i++)
             {
                 int level = info.Start + i; bool done = level <= won;
+                int firstPiece = galleryGrid.childCount;
                 float x = (i % 3 - 1) * gx, y = firstRow - (i / 3) * gy;
                 bool waiting = done && GalleryCollections.CardWaiting(level);
                 // Inside the slot frame's blue rim: rows 12-383 and columns 12-311 of the 324x450 art (measured top down;
                 // the art has a transparent strip at the bottom, so that area sits above the sprite's centre).
                 float vw = cw * 300f / 324f, vh = ch * 372f / 450f, vy = y + ch * (.5f - (12f + 384f) / 2f / 450f), rim = cw * .025f;
-                if (waiting) { ClaimCard(level, x, y, vy, vw, vh, cw, ch); continue; }
+                if (waiting) { ClaimCard(level, x, y, vy, vw, vh, cw, ch); KeepCard(level, x, firstPiece); continue; }
                 var slot = GalleryArt(done ? "bg-cardSlot-cardCollection" : "bg-cardSlot-cover-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
                 if (!done) continue;
                 vy = InnerCardY(slot);
                 string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
                 MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
+                KeepCard(level, x, firstPiece);
             }
             int rows = (info.Count + 2) / 3;
             scroll.Max = Mathf.Max(0, -firstRow + rows * gy - (GridTop - GridBottom));
@@ -271,15 +276,21 @@ namespace SandJamTest.Scene3D
         void RunGalleryAction(string action)
         {
             var info = galleryList[galleryIndex];
+            if (flipPhase == 0 && StartFlip(action, info)) return;
             int before = galleryIndex;
             if (action == "gallery-prev") galleryIndex = Mathf.Max(0, galleryIndex - 1);
             else if (action == "gallery-next") galleryIndex = Mathf.Min(galleryList.Count - 1, galleryIndex + 1);
             else if (action == "gallery-claim-all") GalleryCollections.ClaimAllCards(info);
             else if (action.StartsWith("gallery-card:")) GalleryCollections.ClaimCard(int.Parse(action.Substring(13)));
-            else if (action.StartsWith("gallery-claim:")) GalleryCollections.ClaimMilestone(info, int.Parse(action.Substring(14)));
+            else if (action.StartsWith("gallery-claim:"))
+            {
+                int m = int.Parse(action.Substring(14));
+                if (GalleryCollections.ClaimMilestone(info, m)) { Host.ShowGalleryReward(GalleryCollections.MilestoneCoins(info, m), m == 2); return; }
+            }
             RefreshPopupCoins();
             RefreshGallery();
             // The new page is built in place, then slid in from where the old one stood.
+            if (galleryIndex != before) scroll.Value = 0;
             if (galleryIndex != before) { slideFrom = (galleryIndex - before) * SideX + heldOffset; slideTime = 0; Slide(); }
             heldOffset = 0;
         }
@@ -294,6 +305,67 @@ namespace SandJamTest.Scene3D
         {
             for (int i = 0; i < carousel.Count; i++)
                 if (carousel[i]) { var p = carousel[i].localPosition; carousel[i].localPosition = new Vector3(carouselX[i] + offset, p.y, p.z); }
+        }
+
+        // Claiming cards (recording 3, 53.45-54.1 s, Claim All): the "?" cards fold shut across (~0.4 s), then the
+        // pictures unfold (~0.15 s). One card claimed alone does the same.
+        const float FoldSeconds = .4f, UnfoldSeconds = .15f;
+        sealed class CardPiece { public Transform T; public float X, ScaleX, CentreX; }
+        readonly Dictionary<int, List<CardPiece>> cardPieces = new Dictionary<int, List<CardPiece>>();
+        readonly List<int> flipping = new List<int>();
+        int flipPhase; float flipTime; string flipAction; // phase 1 folding, 2 unfolding
+        void KeepCard(int level, float centreX, int firstPiece)
+        {
+            var list = new List<CardPiece>();
+            for (int c = firstPiece; c < galleryGrid.childCount; c++)
+            {
+                var t = galleryGrid.GetChild(c);
+                list.Add(new CardPiece { T = t, X = t.localPosition.x, ScaleX = t.localScale.x, CentreX = centreX });
+            }
+            cardPieces[level] = list;
+        }
+        void FoldCards(float k)
+        {
+            k = Mathf.Max(.001f, k);
+            foreach (int level in flipping)
+            {
+                List<CardPiece> list;
+                if (!cardPieces.TryGetValue(level, out list)) continue;
+                foreach (var p in list)
+                {
+                    if (!p.T) continue;
+                    var pos = p.T.localPosition; p.T.localPosition = new Vector3(p.CentreX + (p.X - p.CentreX) * k, pos.y, pos.z);
+                    var sc = p.T.localScale; p.T.localScale = new Vector3(p.ScaleX * k, sc.y, sc.z);
+                }
+            }
+        }
+        bool StartFlip(string action, GalleryCollections.Info info)
+        {
+            flipping.Clear();
+            if (action.StartsWith("gallery-card:")) flipping.Add(int.Parse(action.Substring(13)));
+            else if (action == "gallery-claim-all")
+                for (int level = info.Start; level < info.Start + info.Count; level++) if (cardPieces.ContainsKey(level) && GalleryCollections.CardWaiting(level)) flipping.Add(level);
+            if (flipping.Count == 0) return false;
+            flipAction = action; flipPhase = 1; flipTime = 0;
+            return true;
+        }
+        void TickFlip()
+        {
+            if (flipPhase == 0) return;
+            flipTime += Time.unscaledDeltaTime;
+            if (flipPhase == 1)
+            {
+                float t = Mathf.Clamp01(flipTime / FoldSeconds);
+                FoldCards(1 - t * t);
+                if (t < 1) return;
+                flipPhase = 2; flipTime = 0;
+                RunGalleryAction(flipAction); // claims and rebuilds the grid (pictures now)
+                FoldCards(0);
+                return;
+            }
+            float u = Mathf.Clamp01(flipTime / UnfoldSeconds);
+            FoldCards(1 - (1 - u) * (1 - u));
+            if (u >= 1) flipPhase = 0;
         }
 
         // Swiping the carousel (as in the original): the covers follow the finger (half as far where there is no next
@@ -321,7 +393,8 @@ namespace SandJamTest.Scene3D
         public override void Tick()
         {
             if (Open != gallery.Root) return;
-            if (scroll.Tick(screen.UiCamera, RunGalleryAction, GridTop)) ClipGrid();
+            if (scroll.Tick(screen.UiCamera, flipPhase == 0 ? RunGalleryAction : (System.Action<string>)(a => { }), GridTop)) ClipGrid();
+            TickFlip();
             if (scroll.SwipeStartY > SwipeBottom) Swipe();
             if (slideTime < 1) { slideTime += Time.unscaledDeltaTime / SlideSeconds; Slide(); }
         }
