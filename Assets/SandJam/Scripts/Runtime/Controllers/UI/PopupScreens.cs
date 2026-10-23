@@ -770,6 +770,7 @@ namespace SandJamTest.Scene3D
             bool fullPage = IsPage(p.Root);
             SetPopScale(p.Root, fullPage ? 1 : PopStart);
             StartDimFade(p.Root);
+            if (fullPage) StartPageSlide(p.Root);
             if (screen.Controller) screen.Controller.BoosterInputBlocked = true;
         }
 
@@ -777,6 +778,7 @@ namespace SandJamTest.Scene3D
         {
             ReleaseCard(); EndDimFade();
             if (!Open) return;
+            LeavePage(Open);
             if (closing) FinishClosing();
             // The card shrinks away (pages go at once); its touch areas are off meanwhile. Open is cleared now, so
             // the game carries on as before.
@@ -852,7 +854,7 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             if (!screen.Feedback.FailureVisible) gaveUp = false;
-            TickClosing(); TickDimFade();
+            TickClosing(); TickDimFade(); TickPageSlide();
             if (!Open) { UpdateOutOfSpace(); return; }
             if (Open == failed.Root && Time.frameCount % 15 == 0) { failed.Big.text = TimerText; LayoutTimerRow(); }
             // Pop-in (see PopStart); the HARD / BONUS level cards grow a little more slowly (recording of level 260).

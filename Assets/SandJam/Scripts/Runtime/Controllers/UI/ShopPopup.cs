@@ -194,9 +194,9 @@ namespace SandJamTest.Scene3D
         public void OpenShop()
         {
             if (Open) return;
-            // The original opens on the BOOSTERS section at the end of the list (recording 2, 6 s and 11 s); the
-            // real-money packs are above it.
-            scroll.Reset(); scroll.Value = scroll.Max; shopContent.localPosition = new Vector3(0, scroll.Value, 0);
+            // The original opens at the top of the list (recording 2, 3.45 s: SAND SHOP, Remove Ads); the player then
+            // scrolled down to BOOSTERS (6.2 s), the frames once taken for the opening view.
+            scroll.Reset(); shopContent.localPosition = Vector3.zero;
             Show(shop); RefreshPageLives(shop);
         }
         void RefreshShopCoins() { RefreshPopupCoins(); }

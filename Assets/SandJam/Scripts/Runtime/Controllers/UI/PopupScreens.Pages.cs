@@ -50,6 +50,44 @@ namespace SandJamTest.Scene3D
             }
         }
 
+        // Recording 2 (3.2-3.45 s, Home -> Shop): a page slides in from its tab's side (Shop from the left, Gallery from
+        // the right) over what was on screen, a whole screen width in ~0.25 s, slowing steadily to a stop (last frames
+        // -150, -95, -60, -34, -15, -3, 0 px). The top bar and the navbar stay put.
+        const float PageSlideSeconds = .25f;
+        int pageTab = 1; // 0 Shop, 1 Home, 2 Gallery
+        readonly System.Collections.Generic.List<Transform> sliding = new System.Collections.Generic.List<Transform>();
+        readonly System.Collections.Generic.List<float> slidingX = new System.Collections.Generic.List<float>();
+        float pageSlideFrom, pageSlideAt = -1;
+        int TabOf(GameObject root) { return shop.IsPage(root) ? 0 : gallery.IsPage(root) ? 2 : -1; }
+        void StartPageSlide(GameObject root)
+        {
+            EndPageSlide();
+            int tab = TabOf(root);
+            if (tab < 0) return;
+            if (tab != pageTab)
+            {
+                pageSlideFrom = Mathf.Sign(tab - pageTab) * 888 * VideoScreen.Px; pageSlideAt = Time.unscaledTime;
+                foreach (Transform child in root.transform)
+                {
+                    if (!child.gameObject.activeSelf || System.Array.IndexOf(TopBarParts, child.name) >= 0 || System.Array.IndexOf(NavbarParts, child.name) >= 0 || child.name.StartsWith("Hit area - nav-")) continue;
+                    sliding.Add(child); slidingX.Add(child.localPosition.x);
+                }
+                TickPageSlide();
+            }
+            pageTab = tab;
+        }
+        void TickPageSlide()
+        {
+            if (pageSlideAt < 0) return;
+            float t = Mathf.Clamp01((Time.unscaledTime - pageSlideAt) / PageSlideSeconds), offset = pageSlideFrom * (1 - t) * (1 - t);
+            for (int i = 0; i < sliding.Count; i++)
+                if (sliding[i]) { var p = sliding[i].localPosition; sliding[i].localPosition = new Vector3(slidingX[i] + offset, p.y, p.z); }
+            if (t >= 1) { pageSlideAt = -1; sliding.Clear(); slidingX.Clear(); }
+        }
+        void EndPageSlide() { if (pageSlideAt >= 0) { pageSlideAt = Time.unscaledTime - PageSlideSeconds; TickPageSlide(); } }
+        // A page closing returns to Home's tab.
+        void LeavePage(GameObject root) { if (TabOf(root) >= 0) { EndPageSlide(); pageTab = 1; } }
+
         bool HandleNav(string action)
         {
             Close();

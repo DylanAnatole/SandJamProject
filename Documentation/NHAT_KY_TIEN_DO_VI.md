@@ -1831,3 +1831,28 @@ phía sau các nút của Home lúc thẻ nhỏ.
 
 - Home: tắt → 1,251 → 0,628 trong ~0,33 s, chậm dần; bật lại → 1,251.
 - Run all checks qua 8/8. Save demo đặt lại (rung, âm thanh bật).
+
+### Shop / Gallery trượt vào theo hướng tab; Shop mở ở đầu trang
+
+**Đo** (video 2, giây 3,2–6,5)
+
+- Bấm SHOP ở Home: trang Shop trượt vào từ trái, đè lên Home. Đoạn cuối lệch −150 → −95 → −60 → −34 → −15 →
+  −3 → 0 px theo từng khung, tốc độ giảm đều; ngoại suy cả màn (888 px) trong ~0,25 s. Thanh trên và thanh điều
+  hướng đứng yên.
+- Shop mở ở **đầu trang** (3,45 s: SAND SHOP, Remove Ads); người chơi cuộn xuống tới BOOSTERS lúc 6,2 s. Kết luận cũ
+  "mở ở BOOSTERS" dựa trên khung 6 s và 11 s, lúc đó người chơi đã cuộn, nên sai.
+
+**Sửa**
+
+- `PopupScreens.Pages`: `StartPageSlide` (gọi trong `Show` cho trang Shop/Gallery), `TickPageSlide`,
+  `EndPageSlide`, `LeavePage` (`Close`). Nội dung trang, trừ thanh trên, thanh điều hướng và vùng chạm của
+  thanh điều hướng, lệch một bề ngang màn về phía tab (`Sign(tab mới − tab cũ)`; Shop 0, Home 1, Gallery 2),
+  rồi về 0 trong `PageSlideSeconds` 0,25 s với `(1 − t)²`.
+- `ShopPopup.OpenShop`: mở ở đầu trang (`scroll.Reset()`, nội dung ở 0).
+- Bảng tiến độ: dòng Sand Shop cập nhật.
+
+**Kiểm tra**
+
+- Level 268: Home → Shop trượt từ trái (Home còn thấy bên phải lúc 0,26 s); Shop → Gallery trượt từ phải; thanh
+  điều hướng đứng yên. Shop mở đúng như video (SAND SHOP, Remove Ads, No Ads Pack, Starter Pack).
+- Luồng thua không lỗi. Run all checks qua 8/8.
