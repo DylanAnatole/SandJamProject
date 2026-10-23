@@ -1668,3 +1668,23 @@ checks qua 8/8.
 
 - Màn chơi đứng yên 8,3 KB (bằng nền editor); một khung đang chơi, phần của game chỉ ~0,5 KB.
 - Tự chơi level 2, 68, 267: thắng cả 3. Run all checks qua 8/8.
+
+### Bảng Level Complete: xu bay khi bấm Next, như bản gốc
+
+**Đo** (video 1, giây 93,3–94,5 và 217,9–220,2)
+
+- Bảng hiện ra rồi đứng yên, không có xu bay (người chơi chờ 2,3 s ở giây 218–220 cũng không có).
+- Bấm Next: nút xám đi. Từ 93,78 đến 94,35 s xu bay thành dòng từ nút Next lên thanh xu, mỗi đồng ~0,2 s. Sau
+  đó bảng tắt, CONGRATS bật ra. Từ lúc bấm tới lúc chuyển ~1 s.
+- Bản mình: xu tự bay từ hộp thưởng ngay khi bảng hiện; bấm Next là chuyển ngay.
+
+**Sửa**
+
+- `ResultFx.Collect(done)`: xu bay từ nút Next (`CoinStart` 0,3, `Spread` 0,05, `Flight` 0,22, đường bay thấp
+  hơn), nút mờ trong lúc bay, bay xong gọi `done`. Không bấm thì không bay. Bấm lại trong lúc bay không có tác dụng.
+- `VideoScreen` "next-level": gọi `Collect(NextAfterResult)`; nếu không có hình xu thì chuyển ngay như cũ.
+
+**Kiểm tra**
+
+- Level 2: chờ 0,8 s không có xu; bấm Next → xu bay 1,2–1,7 s, số xu đếm lên, ~1 s sau sang CONGRATS.
+- Tự chơi level 12, 68 thắng. Run all checks qua 8/8.

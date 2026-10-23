@@ -520,6 +520,7 @@ namespace SandJamTest.Scene3D
                 if(button)HandleButton(button.Action);
             }
         }
+        void NextAfterResult(){if(!Popups.ShowCongrats())Levels.LoadNext();}
         void HandleButton(string action)
         {
             if(action.StartsWith("booster:")){Boosters.Activate(action.Substring(8));return;}
@@ -539,7 +540,10 @@ namespace SandJamTest.Scene3D
                 case "daily-tasks":Popups.OpenTasks(TaskBoard.Kind.Daily);break;
                 case "weekly-tasks":Popups.OpenTasks(TaskBoard.Kind.Weekly);break;
                 // Original: the collection card (CONGRATS · category · % completed) comes before the next level.
-                case "next-level":if(!Popups.ShowCongrats())Levels.LoadNext();break;
+                case "next-level":
+                    var fx=Result.GetComponent<ResultFx>();
+                    if(!fx || !fx.Collect(NextAfterResult))NextAfterResult();
+                    break;
                 case "double":Levels.DoubleReward();break;
                 case "settings":Ui.OpenSettings();break;
             }
