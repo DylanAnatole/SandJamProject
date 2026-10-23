@@ -18,7 +18,10 @@ namespace SandJamTest.Scene3D
         Color badgeColor = Color.white;
         int shownCoins = -1, shownLevel = -1;
         TextMesh[] joinLabels = new TextMesh[0];
-        GameObject[] questParts = new GameObject[0];
+        // Sand Quest chest while locked (original SandQuestUWidgetSlot): grey chest and plaque, padlock, "Lv. N".
+        SpriteRenderer chestArt, plaqueArt; Sprite chestOpen, plaqueOpen; GameObject padlock; Vector3[] joinPlaces;
+        int shownLocked = -1;
+        static readonly Color LockedInk = new Color32(70, 70, 70, 255);
         bool shownDoubled;
         public bool SettingsOpen { get { return screen.Popups.Open; } }
 
@@ -55,8 +58,7 @@ namespace SandJamTest.Scene3D
             var chest = owner.Home.transform.Find("Chest_Enable");
             if (chest) AddHit(chest, "sand-quest");
             joinLabels = owner.Home.GetComponentsInChildren<TextMesh>(true).Where(t => t.text == "JOIN").ToArray();
-            // The chest and its plaque appear only once the event is unlocked (SandQuest.StartLevel).
-            questParts = new[] { chest, owner.Home.transform.Find("Join label") }.Concat(joinLabels.Select(l => l.transform)).Where(t => t).Select(t => t.gameObject).ToArray();
+            BuildQuestLock(chest, owner.Home.transform.Find("Join label"));
             // Navbar SHOP opens the Sand Shop page.
             var shopIcon = owner.Home.transform.Find("icon-shop");
             if (shopIcon) AddHit(shopIcon, "shop");
@@ -265,16 +267,56 @@ namespace SandJamTest.Scene3D
             if (Time.unscaledTime < nextLivesRefresh) return;
             nextLivesRefresh = Time.unscaledTime + .5f;
             if (livesCount) livesCount.text = LivesManager.Lives.ToString();
-            string join = SandQuest.Joined ? SandQuest.StepsDone + "/" + SandQuest.Steps : "JOIN";
+            ShowQuestLock(!SandQuest.Unlocked);
+            string join = !SandQuest.Unlocked ? "Lv. " + SandQuest.StartLevel : SandQuest.Joined ? SandQuest.StepsDone + "/" + SandQuest.Steps : "JOIN";
+            var ink = SandQuest.Unlocked ? VideoScreen.JoinInk : LockedInk;
             foreach (var label in joinLabels)
             {
                 if (!label) continue;
                 label.text = join;
                 var edge = label.GetComponent<OutlinedText>();
-                if (edge && edge.Ink != VideoScreen.JoinInk) edge.SetInk(VideoScreen.JoinInk);
+                if (edge && edge.Ink != ink) edge.SetInk(ink);
             }
-            foreach (var part in questParts) if (part && part.activeSelf != SandQuest.Unlocked) part.SetActive(SandQuest.Unlocked);
             if (livesStatus) livesStatus.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
+        }
+
+        // Before SandQuest.StartLevel the original keeps the chest on Home, locked: its disabled art (Chest_Disable,
+        // Chest_Label_Disable), a padlock on the plaque's left (65x90 of the 262x111 plaque, 87 left of centre) and
+        // "Lv. N" 12 right of centre in place of JOIN. A locked chest does not respond to taps.
+        void BuildQuestLock(Transform chest, Transform plaque)
+        {
+            chestArt = chest ? chest.GetComponent<SpriteRenderer>() : null; plaqueArt = plaque ? plaque.GetComponent<SpriteRenderer>() : null;
+            if (chestArt) chestOpen = chestArt.sprite;
+            if (plaqueArt) plaqueOpen = plaqueArt.sprite;
+            joinPlaces = joinLabels.Select(l => l.transform.position).ToArray();
+            var lockArt = Resources.Load<Sprite>("VideoUI/icon-lock-quest");
+            if (!plaqueArt || !lockArt) return;
+            var b = plaqueArt.bounds;
+            var r = new GameObject("Quest padlock").AddComponent<SpriteRenderer>();
+            r.sprite = lockArt; r.sharedMaterial = SpriteFactory.PlainSprite; r.sortingOrder = plaqueArt.sortingOrder;
+            r.gameObject.layer = plaque.gameObject.layer; r.transform.SetParent(plaque, true);
+            r.transform.position = new Vector3(b.center.x - b.size.x * 87 / 262, b.center.y + b.size.y * 7 / 111, plaque.position.z - .02f);
+            r.FitWorldSize(b.size.x * 65 / 262, b.size.y * 90 / 111);
+            padlock = r.gameObject;
+        }
+        void ShowQuestLock(bool locked)
+        {
+            if (shownLocked == (locked ? 1 : 0)) return;
+            shownLocked = locked ? 1 : 0;
+            if (chestArt)
+            {
+                var art = locked ? Resources.Load<Sprite>("VideoUI/Chest_Disable") : chestOpen;
+                if (art) chestArt.sprite = art;
+                var hit = chestArt.GetComponent<Collider>(); if (hit) hit.enabled = !locked;
+            }
+            if (plaqueArt)
+            {
+                var art = locked ? Resources.Load<Sprite>("VideoUI/chest-label-locked") : plaqueOpen;
+                if (art) plaqueArt.sprite = art;
+            }
+            if (padlock) padlock.SetActive(locked);
+            float shift = locked && plaqueArt ? plaqueArt.bounds.size.x * 12 / 262 : 0;
+            for (int i = 0; i < joinLabels.Length; i++) if (joinLabels[i]) joinLabels[i].transform.position = joinPlaces[i] + new Vector3(shift, 0, 0);
         }
 
         public void OpenSettings()

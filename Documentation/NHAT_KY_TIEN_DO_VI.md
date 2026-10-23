@@ -2076,3 +2076,19 @@ khối) không lỗi; tự chơi level 2, 68 thắng.
 
 **Dọn local:** xoá `Build/` và `Builds/` (~650 MB, bản build Windows cũ ngày 7/10, git đã bỏ qua, không code
 nào dùng; build lại được từ Unity).
+
+## 23/10/2026 — Rương Sand Quest (JOIN) khi chưa mở khoá
+
+**Người dùng báo** (kèm ảnh gốc ở level 362): gốc luôn có rương ở Home; trước khi mở khoá rương xám và ghi
+level mở khoá. Bản mình ẩn hẳn rương trước level 85.
+
+**Dữ liệu gốc** (`MainMenu_Basic`, `SandQuestUWidgetSlot`): nút rương bị tắt dùng `Chest_Disable`, bảng dùng
+`Chest_Label_Disable`, thêm `Locked` (icon-lock, 65x90 trên bảng 262x111, lệch trái 87) và `NeedLevel`
+("Lv. N", lệch phải 12).
+
+**Sửa** (`CampaignUi.BuildQuestLock` / `ShowQuestLock`): rương luôn hiện. Khi chưa mở khoá: rương và bảng xám,
+icon khoá bên trái, chữ "Lv. 85" viền xám thay JOIN, rương không nhận chạm. Mở khoá thì về lại art vàng và
+JOIN. Art xám và icon khoá chép từ dữ liệu gốc vào `Resources/VideoUI` (chỉ local).
+
+**Kiểm tra:** ảnh chụp Home ở level 68 (khoá) và 362 (JOIN) khớp ảnh gốc; luồng booster / thua không lỗi;
+tự chơi level 2, 68 thắng.
