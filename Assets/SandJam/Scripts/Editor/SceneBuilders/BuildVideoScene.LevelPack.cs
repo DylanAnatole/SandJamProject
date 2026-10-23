@@ -13,7 +13,7 @@ namespace SandJamTest.Editor
         static void PrepareCatalog()
         {
             AssetDatabase.Refresh();
-            const string path="Assets/SandJam/Resources/LevelPack/Catalog.asset";
+            const string path=ProjectPaths.Catalog;
             packCatalog=AssetDatabase.LoadAssetAtPath<LevelCatalog>(path);
             if(!packCatalog){packCatalog=ScriptableObject.CreateInstance<LevelCatalog>();AssetDatabase.CreateAsset(packCatalog,path);}
             // Seed once. Later builds preserve entries edited in the catalog inspector.
@@ -43,7 +43,7 @@ namespace SandJamTest.Editor
         public static void CreateLevelPack()
         {
             PrepareCatalog();CharacterVesselMeshBuilder.Generate();
-            Directory.CreateDirectory("Assets/SandJam/Resources/LevelPack/Prefabs");AssetDatabase.Refresh();
+            Directory.CreateDirectory(ProjectPaths.PrefabResources+"/LevelPack/Prefabs");AssetDatabase.Refresh();
             var temporaryScenes=new System.Collections.Generic.List<string>();
             try
             {
@@ -52,14 +52,14 @@ namespace SandJamTest.Editor
                     packEntry=entry;Create();temporaryScenes.Add(Scene);
                     entry.PrefabResource="LevelPack/Prefabs/Level"+entry.Number.ToString("D3");
                     var root=UnityEngine.Object.FindObjectOfType<VideoScreen>();
-                    PrefabUtility.SaveAsPrefabAsset(root.gameObject,"Assets/SandJam/Resources/"+entry.PrefabResource+".prefab");
+                    PrefabUtility.SaveAsPrefabAsset(root.gameObject,ProjectPaths.PrefabResources+"/"+entry.PrefabResource+".prefab");
                 }
             }
             finally{packEntry=null;}
             EditorUtility.SetDirty(packCatalog);AssetDatabase.SaveAssets();
             var scene=UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,UnityEditor.SceneManagement.NewSceneMode.Single);
             var bootstrap=new GameObject("Level bootstrap").AddComponent<LevelBootstrap>();bootstrap.Catalog=packCatalog;
-            const string gameScene="Assets/SandJam/Scenes/SandJamGame.unity";
+            const string gameScene=ProjectPaths.GameScene;
             UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene,gameScene);
             foreach(var path in temporaryScenes)AssetDatabase.DeleteAsset(path);
             var existing=EditorBuildSettings.scenes.Where(s=>File.Exists(s.path) && s.path!=gameScene).ToList();
@@ -70,7 +70,7 @@ namespace SandJamTest.Editor
         {
             CreateLevelPack();Directory.CreateDirectory("BuildLevelPack");
             PlayerSettings.defaultScreenWidth=483;PlayerSettings.defaultScreenHeight=1075;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.runInBackground=true;QualitySettings.antiAliasing=4;
-            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{"Assets/SandJam/Scenes/SandJamGame.unity"},locationPathName="BuildLevelPack/SandJam-LevelPack.exe",target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
+            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ProjectPaths.GameScene},locationPathName="BuildLevelPack/SandJam-LevelPack.exe",target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
             if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Level pack build failed");
         }
     }

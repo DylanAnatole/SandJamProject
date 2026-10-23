@@ -14,8 +14,8 @@ namespace SandJamTest.Editor
     public static class OriginalDataImporter
     {
         const string Reference = "OriginalReference";
-        const string ConfigOut = "Assets/SandJam/Resources/OriginalConfig";
-        const string GifOut = "Assets/SandJam/Resources/OriginalGifs";
+        const string ConfigOut = ProjectPaths.Resources + "/OriginalConfig";
+        const string GifOut = ProjectPaths.ObjectResources + "/OriginalGifs";
         static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         [Serializable] sealed class Colors { public OriginalConfig.ColorEntry[] colors; }

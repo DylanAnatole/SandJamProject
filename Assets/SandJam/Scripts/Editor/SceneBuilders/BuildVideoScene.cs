@@ -14,8 +14,8 @@ namespace SandJamTest.Editor
     {
         // Builds the level template for one catalog entry (CreateLevelPack saves it as a prefab).
         static LevelEntry packEntry;
-        static string Folder { get { return "Assets/SandJam/Generated/LevelPack/Level"+packEntry.Number.ToString("D3"); } }
-        static string Scene { get { return "Assets/SandJam/Scenes/"+packEntry.SceneName+".unity"; } }
+        static string Folder { get { return ProjectPaths.Generated+"/LevelPack/Level"+packEntry.Number.ToString("D3"); } }
+        static string Scene { get { return ProjectPaths.Scenes+"/"+packEntry.SceneName+".unity"; } }
         static Color VideoColor(int id){switch(id){case 1: return new Color(0.74509805f,0.09411765f,0.09411765f,1.0f);case 2: return new Color(0.11372549f,0.7921569f,0.0f,1.0f);case 3: return new Color(0.0f,0.6392157f,1.0f,1.0f);case 4: return new Color(1.0f,0.8039216f,0.0f,1.0f);case 5: return new Color(1.0f,0.5294118f,0.0f,1.0f);case 6: return new Color(0.83137256f,0.0f,0.78039217f,1.0f);case 7: return new Color(0.43529412f,0.0f,0.9254902f,1.0f);case 8: return new Color(0.07450981f,0.07450981f,0.07450981f,1.0f);case 9: return new Color(0.8666667f,0.8666667f,0.8666667f,1.0f);case 10: return new Color(0.6509804f,0.40392157f,0.22352941f,1.0f);default:return new Color(.6f,.6f,.65f,1);}}
         static Font font; static Material spriteMaterial;
         static Sprite rounded, pad;
@@ -30,7 +30,7 @@ namespace SandJamTest.Editor
         }
         static Sprite Asset(string name)
         {
-            string path="Assets/SandJam/Resources/VideoUI/"+name+".png";
+            string path=ProjectPaths.Resources+"/VideoUI/"+name+".png";
             var importer=(TextureImporter)AssetImporter.GetAtPath(path);importer.textureType=TextureImporterType.Sprite;importer.mipmapEnabled=false;importer.alphaIsTransparency=true;importer.filterMode=FilterMode.Bilinear;importer.spritePixelsPerUnit=100;importer.textureCompression=TextureImporterCompression.Uncompressed;importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
@@ -128,7 +128,7 @@ namespace SandJamTest.Editor
             var preview=Group("Editor board preview",board);preview.localPosition=new Vector3(0,4.6f,-.02f);preview.localScale=Vector3.one*7.5f;
             reference.EditorPreview=preview.gameObject.AddComponent<SpriteRenderer>();reference.EditorPreview.sprite=AssetDatabase.LoadAssetAtPath<Sprite>(previewPath);reference.EditorPreview.sharedMaterial=spriteMaterial;
             var actors=Group("Characters - copied original mesh",root);controller.LaneStarts=new Transform[3];var actorViews=new List<SceneActorView>();
-                        var source=AssetDatabase.LoadAssetAtPath<Mesh>("Assets/SandJam/Resources/ReferenceUI/RoundedCube.asset");
+                        var source=AssetDatabase.LoadAssetAtPath<Mesh>(ProjectPaths.Resources+"/ReferenceUI/RoundedCube.asset");
             var mesh=UnityEngine.Object.Instantiate(source);var vertices=mesh.vertices;var bounds=mesh.bounds;
             for(int i=0;i<vertices.Length;i++)vertices[i]=new Vector3((vertices[i].x-bounds.center.x)/bounds.size.x,(vertices[i].y-bounds.min.y)/bounds.size.y,(vertices[i].z-bounds.center.z)/bounds.size.z);
             mesh.vertices=vertices;mesh.RecalculateBounds();mesh=Save(mesh,"OriginalRoundedCubeNormalized.asset");
@@ -147,7 +147,7 @@ namespace SandJamTest.Editor
                     actorViews.Add(view);
                 }
             }
-            controller.Characters=actorViews.ToArray();controller.ProjectileRoot=Group("Pooled sand projectiles",root);controller.ProjectilePrefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SandJam/Generated/Scene3D/SandProjectile.prefab");
+            controller.Characters=actorViews.ToArray();controller.ProjectileRoot=Group("Pooled sand projectiles",root);controller.ProjectilePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(ProjectPaths.Root+"/Prefabs/Gameplay/SandProjectile.prefab");
             controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");
             var camera=Group("Main Camera",root).gameObject.AddComponent<Camera>();camera.tag="MainCamera";camera.transform.position=new Vector3(0,0,-30);camera.orthographic=true;camera.orthographicSize=5.375f;camera.nearClipPlane=.1f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=Hex("DDD8F8");camera.gameObject.AddComponent<AudioListener>();controller.GameCamera=camera;
             ComposeScreens(root,reference,controller);ApplyDepth(root,reference,controller);

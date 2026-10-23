@@ -6,7 +6,7 @@ màu và các làn khối, nên thêm level mới không cần tạo scene hay p
 ## Tạo level từ ảnh pixel-art (cách nhanh nhất)
 
 1. Vẽ một ảnh PNG kích thước **84 × 112 px**, mỗi pixel là một ô của bức tranh. Đặt ảnh trong
-   `Assets/SandJam/Levels/Pictures/`; ảnh mẫu là `Sunset.png`.
+   `Assets/SandJam/Assets/Levels/Pictures/`; ảnh mẫu là `Sunset.png`.
    - Mỗi mảng liền nhau cùng một màu sẽ thành một vùng. Màu trong ảnh được quy về màu gần nhất của game.
    - Pixel trong suốt, pixel đen hoặc pixel màu tím nhạt giống đường viền của game sẽ thành tường.
    - Mảng nhỏ hơn 20 ô được coi là pixel lạc và chuyển thành tường.
@@ -32,12 +32,12 @@ màu và các làn khối, nên thêm level mới không cần tạo scene hay p
      chơi tiếp theo.
 4. Bấm Play để chơi thử. Muốn chỉnh độ khó thì sửa file JSON vừa tạo: thứ tự khối, khối đặc biệt, ô chờ bị khóa.
 
-Code: `Editor/Tools/LevelFromPicture.cs`.
+Code: `Scripts/Editor/Tools/LevelFromPicture.cs`.
 
 ## Tạo level từ template
 
 1. Vào menu **Sand Jam → Levels → New level from template**.
-   - Lệnh này chép template đầu tiên trong `Assets/SandJam/Levels/Templates/` thành
+   - Lệnh này chép template đầu tiên trong `Assets/SandJam/Assets/Levels/Templates/` thành
      `Resources/CustomLevels/Custom_NNN.json`.
    - Level mới được thêm vào cuối `Campaign.json` và đặt làm level sẽ chơi tiếp theo.
 2. Sửa file JSON vừa tạo, rồi bấm Play để chơi thử.
@@ -47,7 +47,7 @@ Code: `Editor/Tools/LevelFromPicture.cs`.
    - có thể thắng với 5 ô chờ (`LevelReplaySolver`).
 
 Code liên quan:
-- `Editor/Tools/LevelAuthoring.cs`: tạo level và kiểm tra.
+- `Scripts/Editor/Tools/LevelAuthoring.cs`: tạo level và kiểm tra.
 - `Scripts/Runtime/Core/Data/LevelData.cs`: định dạng file.
 - `Core/Domain/SandGame.cs`: luật chơi.
 

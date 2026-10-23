@@ -1913,3 +1913,24 @@ Chỉ di chuyển file (giữ nguyên GUID trong `.meta`, scene/prefab không m�
 
 **Kiểm tra:** biên dịch không lỗi. Tự chơi level 2, 68, 267 thắng cả 3. Booster, luồng thua / chơi tiếp (ô 6) /
 bỏ cuộc / thử lại / về Home không lỗi.
+
+### Đợt 4: cấu trúc Assets / Prefabs / ScriptableObjects / Scripts (yêu cầu người dùng)
+
+- `Assets/SandJam/` giờ chỉ có 4 thư mục:
+  - **Assets/**: Scenes, Resources (ảnh, âm thanh, level, shader, font), Generated, Levels, Fonts;
+  - **Prefabs/**: Gameplay (thêm SandProjectile chuyển từ Generated), Characters, Resources (LevelPack/Prefabs,
+    Original/CharacterVisual);
+  - **ScriptableObjects/**: Resources (LevelPack/Catalog, OriginalGifs);
+  - **Scripts/**: Runtime, Editor (chuyển từ `SandJam/Editor`).
+- Di chuyển bằng `AssetDatabase.MoveAsset` (giữ GUID, tham chiếu trong scene/prefab còn nguyên); Build Settings
+  tự cập nhật. Prefab và ScriptableObject nạp bằng `Resources.Load` nằm trong thư mục `Resources/` của loại đó,
+  nên đường dẫn nạp trong code không đổi.
+- `Scripts/Editor/Tools/ProjectPaths.cs`: mọi đường dẫn file mà công cụ editor dùng nằm ở một chỗ (thay 17 chuỗi
+  viết cứng ở 6 file).
+- `.gitignore` cập nhật theo đường dẫn mới; `Prefabs/Resources` và `ScriptableObjects/Resources` (dựng từ nội
+  dung gốc) chỉ để trên máy. Git ghi nhận 266 file đổi chỗ, không file nào bị xoá.
+- README (sơ đồ thư mục) và `THIET_KE_LEVEL_VI.md` cập nhật đường dẫn.
+
+**Kiểm tra:** biên dịch không lỗi. `Resources.Load` tìm thấy catalog, prefab Level001, 14 ảnh động, CharacterVisual,
+Campaign.json, shader. Tự chơi level 2, 68, 267 thắng cả 3. Booster, luồng thua / chơi tiếp (ô 6) / bỏ cuộc /
+thử lại / về Home không lỗi. Màn chơi level 259 (khối "?", ô khóa) hiển thị đúng.

@@ -9,7 +9,7 @@ namespace SandJamTest.Editor
     // Filter in the editor: the recovered mesh has CPU read access disabled in players.
     public static class CharacterVesselMeshBuilder
     {
-        const string Path="Assets/SandJam/Resources/CharacterAnimation/CharacterLegs.asset";
+        const string Path=ProjectPaths.Resources+"/CharacterAnimation/CharacterLegs.asset";
         [MenuItem("Sand Jam/Prepare vessel legs")]
         public static void Generate()
         {

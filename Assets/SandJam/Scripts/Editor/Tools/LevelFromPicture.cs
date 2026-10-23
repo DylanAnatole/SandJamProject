@@ -12,7 +12,7 @@ namespace SandJamTest.Editor
     // are cut from the regions in the order they open (bottom regions first, then their neighbours), 400 sand each,
     // and dealt across the three lanes. A Style then makes it harder: cubes shuffled within their lanes, mystery,
     // chained and frozen cubes, locked waiting slots. LevelAuthoring checks the result (sand totals, solver) and adds
-    // it to the campaign. Pictures live in Assets/SandJam/Levels/Pictures; see Documentation/THIET_KE_LEVEL_VI.md.
+    // it to the campaign. Pictures live in Assets/SandJam/Assets/Levels/Pictures; see Documentation/THIET_KE_LEVEL_VI.md.
     public static class LevelFromPicture
     {
         const int Columns = 84, Rows = 112, Lanes = 3, Divider = 20, CubeSand = 400;

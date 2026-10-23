@@ -8,13 +8,13 @@ namespace SandJamTest.Editor
 {
     // Building new levels. A level is one JSON file (LevelData) in Resources/CustomLevels plus its id in
     // Resources/Levels/Campaign.json; the gameplay prefab builds the picture, regions and cube lanes from it at
-    // runtime. Templates live in Assets/SandJam/Levels/Templates; the format and workflow are described in
+    // runtime. Templates live in Assets/SandJam/Assets/Levels/Templates; the format and workflow are described in
     // Documentation/THIET_KE_LEVEL_VI.md.
     public static class LevelAuthoring
     {
-        const string TemplateFolder = "Assets/SandJam/Levels/Templates";
-        const string DataFolder = "Assets/SandJam/Resources/" + Campaign.CustomFolder; // in the repository (see .gitignore)
-        const string CampaignPath = "Assets/SandJam/Resources/Levels/Campaign.json";
+        const string TemplateFolder = ProjectPaths.Levels + "/Templates";
+        const string DataFolder = ProjectPaths.Resources + "/" + Campaign.CustomFolder; // in the repository (see .gitignore)
+        const string CampaignPath = ProjectPaths.Resources + "/Levels/Campaign.json";
         [Serializable] sealed class CampaignFile { public string[] levels; }
 
         [MenuItem("Sand Jam/Levels/New level from template")]

@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/SandJam/Scenes/SandJamGame.unity
+    path: Assets/SandJam/Assets/Scenes/SandJamGame.unity
     guid: 0e61107f1151ca241822961d08f5091f
   m_configObjects: {}

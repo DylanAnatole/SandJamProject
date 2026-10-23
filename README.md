@@ -1,6 +1,6 @@
 # Sand Jam (clone) — sandjamproject
 
-Unity 2022.3.62f3 · Built-in render pipeline · Burst. Main scene: `Assets/SandJam/Scenes/SandJamGame.unity`.
+Unity 2022.3.62f3 · Built-in render pipeline · Burst. Main scene: `Assets/SandJam/Assets/Scenes/SandJamGame.unity`.
 
 ## Nội dung không có trong repo
 
@@ -12,39 +12,40 @@ asset và không chạy ngay được.
 
 ## Thư mục
 
+`Assets/SandJam/` chia theo 4 loại: **Assets** (tài nguyên), **Prefabs**, **ScriptableObjects**, **Scripts**.
+Thứ gì nạp bằng `Resources.Load` nằm trong thư mục con `Resources/` của loại đó. Unity gộp mọi thư mục
+`Resources`, nên đường dẫn nạp trong code (`"LevelPack/Catalog"`, `"VideoUI/..."`) không đổi.
+
 ```
 Assets/
-├─ SandJam/                       Toàn bộ game
-│  ├─ Scenes/                     SandJamGame.unity (scene duy nhất, nằm trong Build Settings)
-│  ├─ Scripts/Runtime/
-│  │  ├─ Core/                    Logic thuần, không phụ thuộc scene
-│  │  │  ├─ Domain/               Luật chơi: SandGame (+Boosters, Freeze), ChainPairing, thực thể
-│  │  │  ├─ Data/                 LevelData, LevelCatalog, ColorPalette (màu + Hex), OriginalConfig, OriginalThemes
-│  │  │  ├─ Sand/                 Mô phỏng cát rơi (Burst Job)
-│  │  │  ├─ Patterns/             Observer (GameEvent), Singleton, Pool (object pooling)
-│  │  │  └─ Rendering/            SpriteFactory, RendererExtensions (FitWorldSize, NoShadows…)
-│  │  ├─ Managers/                Dịch vụ chung: Campaign, SaveManager, GameEvents, GameServices, AudioManager,
-│  │  │                           HapticsManager, LevelBootstrap, LevelManager, LevelDataManager
-│  │  ├─ Meta/                    Tính năng quanh màn chơi: EconomyManager (xu, booster), LivesManager, DailyRewards,
-│  │  │                           TaskBoard, SandQuest, GalleryCollections, Collections
-│  │  ├─ Controllers/
-│  │  │  ├─ Gameplay/             SandJamSceneController (+Dynamic: dựng level từ JSON)
-│  │  │  ├─ Characters/           Hàng khối chờ
-│  │  │  └─ UI/                   VideoScreen (các trang), CampaignUi (HUD), BoosterController, GameplayFeedback
-│  │  │     └─ Popups/            PopupScreens (+Kit, +Pages), PopupModule và từng popup/trang, DragScroller
-│  │  └─ Views/                   Board (vùng màu), Characters (khối, chân, hộp kính, khối "?"),
-│  │                              Fx (hiệu ứng, viên cát bay), UI (chữ viền, font, nút)
-│  ├─ Editor/
-│  │  ├─ Tools/                   Game Manager, CampaignBuilder, LevelReplaySolver (bộ giải), tạo level, ViewCapture
-│  │  └─ SceneBuilders/           Dựng prefab mẫu Level001 và scene SandJamGame từ code
-│  ├─ Levels/                     Ảnh pixel-art và template để tạo level mới
-│  ├─ Prefabs/                    Mẫu khởi đầu (GameplayLevelTemplate, PaintRegion, SandCube)
-│  ├─ Resources/                  Dữ liệu load lúc chạy (chỉ trên máy, trừ CustomLevels)
-│  │  ├─ Levels/                  Data/*.json (556 level gốc), Campaign.json
-│  │  ├─ CustomLevels/            Level tự thiết kế (có trên repo)
-│  │  ├─ OriginalConfig/, OriginalGifs/, Original/ (âm thanh), LevelPack/Prefabs/ (Level001 = template)…
-│  └─ Generated/                  Mesh/material sinh bởi SceneBuilders
-└─ RecoveredOriginal/             Asset gốc lấy từ game (texture, sprite, mesh, audio, font…)
+├─ SandJam/
+│  ├─ Assets/                     Tài nguyên
+│  │  ├─ Scenes/                  SandJamGame.unity (scene duy nhất, nằm trong Build Settings)
+│  │  ├─ Resources/               Ảnh, âm thanh, level JSON, shader, font (chỉ trên máy, trừ shader/font/CustomLevels)
+│  │  │  ├─ Levels/               Data/*.json (556 level gốc), Campaign.json
+│  │  │  ├─ CustomLevels/         Level tự thiết kế (có trên repo)
+│  │  │  └─ VideoUI/, Shop/, Gallery/, Original/ (âm thanh)…
+│  │  ├─ Generated/               Mesh/material sinh bởi công cụ dựng prefab
+│  │  ├─ Levels/                  Ảnh pixel-art và template để tạo level mới
+│  │  └─ Fonts/                   Giấy phép font
+│  ├─ Prefabs/
+│  │  ├─ Gameplay/                GameplayLevelTemplate, PaintRegion, SandProjectile
+│  │  ├─ Characters/              SandCube
+│  │  └─ Resources/               Prefab nạp theo đường dẫn: LevelPack/Prefabs/Level001 (template màn chơi),
+│  │                              Original/CharacterVisual (chỉ trên máy)
+│  ├─ ScriptableObjects/
+│  │  └─ Resources/               LevelPack/Catalog, OriginalGifs (ảnh động hướng dẫn) (chỉ trên máy)
+│  └─ Scripts/
+│     ├─ Runtime/
+│     │  ├─ Core/                 Domain (luật chơi), Data, Sand (Burst), Patterns, Rendering
+│     │  ├─ Managers/             Dịch vụ chung: Campaign, Save, GameEvents, Audio, Haptics, Level…
+│     │  ├─ Meta/                 Xu/booster, tim, quà, nhiệm vụ, Sand Quest, bộ sưu tập
+│     │  ├─ Controllers/          Gameplay, Characters, UI (+ UI/Popups)
+│     │  └─ Views/                Board, Characters, Fx, UI
+│     └─ Editor/
+│        ├─ Tools/                Game Manager, tạo level, bộ giải, ProjectPaths (mọi đường dẫn công cụ dùng)
+│        └─ SceneBuilders/        Dựng prefab Level001 và scene SandJamGame từ code
+└─ RecoveredOriginal/             Asset gốc lấy từ game (chỉ trên máy)
 
 Documentation/                    Bảng tiến độ, nhật ký, thiết kế level, kiến trúc game gốc; LuuTru/ = ghi chú cũ
 OriginalReference/, SourceData/   (ngoài Assets, chỉ trên máy) dữ liệu và code gốc để tra cứu

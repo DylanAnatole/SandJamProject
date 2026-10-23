@@ -13,8 +13,8 @@ namespace SandJamTest.Editor
     // Runs incrementally so the editor stays responsive.
     public static class CampaignBuilder
     {
-        const string OrderPath = "Assets/SandJam/Resources/Levels/LevelOrder.json";
-        const string OutputPath = "Assets/SandJam/Resources/Levels/Campaign.json";
+        const string OrderPath = ProjectPaths.Resources + "/Levels/LevelOrder.json";
+        const string OutputPath = ProjectPaths.Resources + "/Levels/Campaign.json";
         const string ReportPath = "TestResults/Campaign/report.txt";
         [Serializable] sealed class Order { public string[] levelOrder; }
         [Serializable] sealed class CampaignFile { public string[] levels; }

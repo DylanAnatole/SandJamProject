@@ -39,24 +39,29 @@ Thumbs.db
 /OriginalReference/
 /Assets/RecoveredOriginal/
 /Assets/RecoveredOriginal.meta
-/Assets/SandJam/Resources/*/
-/Assets/SandJam/Resources/*.meta
-!/Assets/SandJam/Resources/*.shader.meta
-!/Assets/SandJam/Resources/Inter.ttf.meta
-!/Assets/SandJam/Resources/LilitaOne-Regular.ttf.meta
+/Assets/SandJam/Assets/Resources/*/
+/Assets/SandJam/Assets/Resources/*.meta
+!/Assets/SandJam/Assets/Resources/*.shader.meta
+!/Assets/SandJam/Assets/Resources/Inter.ttf.meta
+!/Assets/SandJam/Assets/Resources/LilitaOne-Regular.ttf.meta
 # Levels designed for this project (not from the original game) are kept.
-!/Assets/SandJam/Resources/CustomLevels/
-!/Assets/SandJam/Resources/CustomLevels.meta
-/Assets/SandJam/Resources/Tutorial.json
+!/Assets/SandJam/Assets/Resources/CustomLevels/
+!/Assets/SandJam/Assets/Resources/CustomLevels.meta
+/Assets/SandJam/Assets/Resources/Tutorial.json
+# Prefabs and ScriptableObjects loaded by Resources path are built from original content: local only.
+/Assets/SandJam/Prefabs/Resources/
+/Assets/SandJam/Prefabs/Resources.meta
+/Assets/SandJam/ScriptableObjects/Resources/
+/Assets/SandJam/ScriptableObjects/Resources.meta
 /recovered-assets-*.log
 # Data derived from the original levels/art: region meshes, picture previews, level JSON copies,
 # meshes/poses extracted from the original, and screenshots showing the original pictures.
-/Assets/SandJam/Generated/**/PaintalbePart_*
-/Assets/SandJam/Generated/**/Region_*
-/Assets/SandJam/Generated/**/Obstacles.asset*
-/Assets/SandJam/Generated/**/*BoardPreview.png*
-/Assets/SandJam/Generated/**/*Playable.json*
-/Assets/SandJam/Generated/**/Original*
+/Assets/SandJam/Assets/Generated/**/PaintalbePart_*
+/Assets/SandJam/Assets/Generated/**/Region_*
+/Assets/SandJam/Assets/Generated/**/Obstacles.asset*
+/Assets/SandJam/Assets/Generated/**/*BoardPreview.png*
+/Assets/SandJam/Assets/Generated/**/*Playable.json*
+/Assets/SandJam/Assets/Generated/**/Original*
 /Documentation/**/*.png
 /Documentation/**/*.jpg
 
