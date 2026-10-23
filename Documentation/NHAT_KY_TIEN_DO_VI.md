@@ -1732,3 +1732,25 @@ phía sau các nút của Home lúc thẻ nhỏ.
 - Level 90: về Home thì tối ngay, Home tối đều suốt; 0,75 s sau thẻ bật sáng rõ, đủ cỡ sau ~0,45 s.
 - Luồng thua / chơi tiếp (ô 6) / bỏ cuộc / thử lại / về Home không lỗi. Tự chơi level 2 thắng.
 - Run all checks qua 8/8.
+
+### Lớp tối của popup mờ dần vào như bản gốc
+
+**Đo** (video 1)
+
+- Hết chỗ (giây 1327,9–1328,15): dải "OUT OF SPACE!" biến mất, màn mờ tối dần, độ sáng trung bình
+  136 → 112 → 91 → 69 → 49 trong ~0,25 s. Sau đó thẻ mới bật.
+- Hết tim (giây 1331,24–1331,45): Home tối dần 168 → 77.
+- Bản mình: lớp tối hiện đủ ngay trong một khung.
+
+**Sửa** (`PopupScreens`)
+
+- `StartDimFade` (gọi trong `Show`), `TickDimFade` (mỗi khung), `EndDimFade` (`Close`): lớp tối trong suốt mờ dần
+  từ 0 tới độ đậm riêng của nó trong `DimFade` 0,25 s.
+- Lớp nền đặc (CONGRATS) và các trang (Shop, Gallery) vẫn cắt cứng như bản gốc.
+
+**Kiểm tra**
+
+- Popup hết tim: độ sáng 164 → 123 → 92 → 69 trong 0,29 s.
+- Luồng thua / chơi tiếp / bỏ cuộc / thử lại / về Home không lỗi. Run all checks qua 8/8.
+- Script kiểm tra cục bộ `flow.sh` chờ thêm khi đã thua nhưng popup chưa mở (dải OUT OF SPACE! 2,3 s). Trước đó
+  thỉnh thoảng nó bấm "chơi tiếp" quá sớm và báo `False`.

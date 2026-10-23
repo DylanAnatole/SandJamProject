@@ -733,6 +733,27 @@ namespace SandJamTest.Scene3D
         }
         void ReleaseCard() { foreach (var g in heldCard) if (g) g.SetActive(true); heldCard.Clear(); }
 
+        // Recording 1 (1327.9-1328.15 s out of space, 1331.24-1331.45 s no lives): a see-through dim layer fades in over
+        // ~0.25 s rather than appearing at once. Opaque screens (CONGRATS, pages) cut in as before.
+        const float DimFade = .25f;
+        SpriteRenderer fadingDim; Color fadingColor; float dimmedAt;
+        void StartDimFade(GameObject root)
+        {
+            EndDimFade();
+            var dim = root.transform.Find("Dark backdrop"); var r = dim ? dim.GetComponent<SpriteRenderer>() : null;
+            if (!r || r.color.a >= 1 || IsPage(root)) return;
+            fadingDim = r; fadingColor = r.color; dimmedAt = Time.unscaledTime;
+            r.color = new Color(fadingColor.r, fadingColor.g, fadingColor.b, 0);
+        }
+        void TickDimFade()
+        {
+            if (!fadingDim) return;
+            float k = Mathf.Clamp01((Time.unscaledTime - dimmedAt) / DimFade);
+            fadingDim.color = new Color(fadingColor.r, fadingColor.g, fadingColor.b, fadingColor.a * k);
+            if (k >= 1) fadingDim = null;
+        }
+        void EndDimFade() { if (fadingDim) fadingDim.color = fadingColor; fadingDim = null; }
+
         internal void Show(Popup p)
         {
             ReleaseCard();
@@ -748,12 +769,13 @@ namespace SandJamTest.Scene3D
             p.Root.SetActive(true);
             bool fullPage = IsPage(p.Root);
             SetPopScale(p.Root, fullPage ? 1 : PopStart);
+            StartDimFade(p.Root);
             if (screen.Controller) screen.Controller.BoosterInputBlocked = true;
         }
 
         public void Close()
         {
-            ReleaseCard();
+            ReleaseCard(); EndDimFade();
             if (!Open) return;
             if (closing) FinishClosing();
             // The card shrinks away (pages go at once); its touch areas are off meanwhile. Open is cleared now, so
@@ -830,7 +852,7 @@ namespace SandJamTest.Scene3D
         void Update()
         {
             if (!screen.Feedback.FailureVisible) gaveUp = false;
-            TickClosing();
+            TickClosing(); TickDimFade();
             if (!Open) { UpdateOutOfSpace(); return; }
             if (Open == failed.Root && Time.frameCount % 15 == 0) { failed.Big.text = TimerText; LayoutTimerRow(); }
             // Pop-in (see PopStart); the HARD / BONUS level cards grow a little more slowly (recording of level 260).
