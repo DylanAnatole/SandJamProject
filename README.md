@@ -26,11 +26,9 @@ Assets/
 │  │  │  │                        GameServices, LevelBootstrap, LevelManager, LevelDataManager…
 │  │  │  ├─ Controllers/          Gameplay (SandJamSceneController), Characters (hàng chờ), UI (màn hình, popup, booster)
 │  │  │  └─ Views/                Board (vùng màu), Characters (khối, chân, hộp kính), Fx (hiệu ứng), UI
-│  │  └─ Testing/                 LevelReplaySolver, LevelStructureViewer, AutoPlayer (chỉ phục vụ kiểm tra)
 │  ├─ Editor/
-│  │  ├─ Tools/                   Game Manager, CampaignBuilder, OriginalDataImporter, ViewCapture
+│  │  ├─ Tools/                   Game Manager, CampaignBuilder, LevelReplaySolver (bộ giải), tạo level, ViewCapture
 │  │  ├─ SceneBuilders/           Dựng prefab/scene mẫu từ code (Level001 là template)
-│  │  └─ Validation/              Kiểm tra cát, Burst, shader, booster, freeze, chain…
 │  ├─ Resources/                  Dữ liệu load lúc chạy (đường dẫn Resources không đổi)
 │  │  ├─ Levels/                  Data/*.json (556 level gốc), LevelOrder.json, Campaign.json
 │  │  ├─ OriginalConfig/          colors / intros / difficulty (sinh từ dữ liệu gốc)
@@ -110,8 +108,7 @@ badge HUD đỏ có đầu lâu, nền tối (`OriginalLookStyler.Hard*`).
 | Đóng băng (IsFreeze) | Số trên băng giảm 1 mỗi khối khác được đưa lên ô chờ (cặp nối: 2); về 0 thì vỡ | 17/19 |
 | Ổ khóa (IsUnlocker / IsUnlockerPart → IsUnlockedPart) | Vùng sọc + ổ khóa; chỉ khối có chìa khóa cùng màu bắn vào ổ khóa; về 0 thì vùng bị khóa mở cho khối thường | 20/20 |
 
-Xem cấu trúc một level: scene `Assets/SandJam/Scenes/LevelStructure.unity`. Kiểm tra cơ chế: menu
-**Sand Jam → Tests → Run all checks**.
+Kiểm tra level tự làm: menu **Sand Jam → Levels → Check custom levels** (dữ liệu, tổng cát, bộ giải).
 
 ## Lưu ý
 

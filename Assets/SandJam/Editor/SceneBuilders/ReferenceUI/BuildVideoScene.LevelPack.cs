@@ -22,13 +22,9 @@ namespace SandJamTest.Editor
             foreach(var entry in packCatalog.Levels)
             {
                 var data=LevelDataManager.Load(entry.Json);entry.SourceId=data.sceneName;
-                var replay=LevelReplaySolver.Solve(data);string replayPath="Assets/SandJam/Resources/LevelPack/Replay"+entry.Number.ToString("D3")+".json";
-                File.WriteAllText(replayPath,JsonUtility.ToJson(new LevelReplay{lanes=replay},true));AssetDatabase.ImportAsset(replayPath);
-                entry.TestReplay=AssetDatabase.LoadAssetAtPath<TextAsset>(replayPath);
-                Debug.Log("PASS Level "+entry.Number+": "+data.sceneName+", replay "+replay.Length+" moves");
+                LevelReplaySolver.Solve(data); // throws when the level cannot be won
             }
             packCatalog.Validate();EditorUtility.SetDirty(packCatalog);AssetDatabase.SaveAssets();
-            LevelPackChecks.Run(packCatalog);
         }
         static void ConfigureLevelPack(Transform root,VideoScreen screen,SandJamSceneController controller)
         {
@@ -72,7 +68,7 @@ namespace SandJamTest.Editor
         [MenuItem("Sand Jam/Levels/Build catalog levels")]
         public static void CreateLevelPackAndBuild()
         {
-            BurstSandChecks.Run();CreateLevelPack();Directory.CreateDirectory("BuildLevelPack");
+            CreateLevelPack();Directory.CreateDirectory("BuildLevelPack");
             PlayerSettings.defaultScreenWidth=483;PlayerSettings.defaultScreenHeight=1075;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.runInBackground=true;QualitySettings.antiAliasing=4;
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{"Assets/SandJam/Scenes/SandJamGame.unity"},locationPathName="BuildLevelPack/SandJam-LevelPack.exe",target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
             if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Level pack build failed");

@@ -12,10 +12,10 @@ namespace SandJamTest.Editor
 {
     public static partial class BuildVideoScene
     {
-        static string Folder { get { return packEntry!=null ? "Assets/SandJam/Generated/LevelPack/Level"+packEntry.Number.ToString("D3") : video201 ? "Assets/SandJam/Generated/Video201" : freezeDemo ? "Assets/SandJam/Generated/FreezeTest" : chainDemo ? "Assets/SandJam/Generated/ChainTest" : "Assets/SandJam/Generated/VideoUI"; } }
-        static bool chainDemo, freezeDemo, video201;
+        // Builds the level template for one catalog entry (CreateLevelPack saves it as a prefab).
         static LevelEntry packEntry;
-        static string Scene { get { return packEntry!=null ? "Assets/SandJam/Scenes/"+packEntry.SceneName+".unity" : video201 ? "Assets/SandJam/Scenes/SandJamVideo201.unity" : freezeDemo ? "Assets/SandJam/Scenes/SandJamFreezeTest.unity" : chainDemo ? "Assets/SandJam/Scenes/SandJamChainTest.unity" : "Assets/SandJam/Scenes/SandJamVideoUI.unity"; } }
+        static string Folder { get { return "Assets/SandJam/Generated/LevelPack/Level"+packEntry.Number.ToString("D3"); } }
+        static string Scene { get { return "Assets/SandJam/Scenes/"+packEntry.SceneName+".unity"; } }
         static Color VideoColor(int id){switch(id){case 1: return new Color(0.74509805f,0.09411765f,0.09411765f,1.0f);case 2: return new Color(0.11372549f,0.7921569f,0.0f,1.0f);case 3: return new Color(0.0f,0.6392157f,1.0f,1.0f);case 4: return new Color(1.0f,0.8039216f,0.0f,1.0f);case 5: return new Color(1.0f,0.5294118f,0.0f,1.0f);case 6: return new Color(0.83137256f,0.0f,0.78039217f,1.0f);case 7: return new Color(0.43529412f,0.0f,0.9254902f,1.0f);case 8: return new Color(0.07450981f,0.07450981f,0.07450981f,1.0f);case 9: return new Color(0.8666667f,0.8666667f,0.8666667f,1.0f);case 10: return new Color(0.6509804f,0.40392157f,0.22352941f,1.0f);default:return new Color(.6f,.6f,.65f,1);}}
         static Font font; static Material spriteMaterial;
         static Sprite rounded, pad;
@@ -103,16 +103,11 @@ namespace SandJamTest.Editor
                 float y=811+i*78;int price=i==0?150:i==1?500:700;var p=Placeholder(hud,"Booster "+(i+1)+" - UI only",i==0?"rocket":i==1?"swap":"select",price);controls.Add(p);
                 Image("Purple booster button",Asset("button-booster"),p.transform,448,y,74,57,Color.white,-1);
                 Image("Booster icon",Asset("icon-booster-"+(3-i)),p.transform,448,y-19,49,49,Color.white,-1.1f);
-                if(!video201 || i<2){Image("Price coin",Asset("icon-coin_0"),p.transform,434,y+12,15,15,Color.white,-1.2f);Text("Price",price.ToString(),p.transform,461,y+12,17,Color.white,-1.3f);}
-                else {Image("Quantity badge",Asset("bg-booster-quantity"),p.transform,415,y+13,25,25,Color.white,-1.2f);Text("Quantity","1",p.transform,415,y+13,20,Color.white,-1.3f);}
+                Image("Price coin",Asset("icon-coin_0"),p.transform,434,y+12,15,15,Color.white,-1.2f);Text("Price",price.ToString(),p.transform,461,y+12,17,Color.white,-1.3f);
             }
             reference.Placeholders=controls.ToArray();reference.Status=Text("Game result","",hud,241,731,18,Color.white,-1.5f,false);
-            var data=LevelDataManager.Load(packEntry!=null?packEntry.Json:Resources.Load<TextAsset>(video201?"VideoUI/Level201Original":"VideoUI/PopArtOriginal"));
-            // The video uses the special variant's fifth-slot threshold. Keep both exports unchanged.
-            if(!video201 && packEntry==null)data.gridSlotNeedAmmoCount=JsonUtility.FromJson<LevelData>(Resources.Load<TextAsset>("VideoUI/PopArtSecretReference").text).gridSlotNeedAmmoCount;
-            if (chainDemo) ConfigureChainDemo(data);
-            if (freezeDemo) ConfigureFreezeDemo(data);
-            string playable = Folder + (chainDemo ? "/ChainPlayable.json" : "/ReferencePlayable.json");
+            var data=LevelDataManager.Load(packEntry.Json);
+            string playable = Folder + "/ReferencePlayable.json";
             File.WriteAllText(playable,JsonUtility.ToJson(data,true));AssetDatabase.ImportAsset(playable);controller.LevelJson=AssetDatabase.LoadAssetAtPath<TextAsset>(playable);SandGame.Validate(data);
             var board=Group("Pop Art face - grid texture",root);board.position=new Vector3(0,-.695f-.4f*(3.60f/6.3f),0);board.localScale=Vector3.one*(3.60f/6.3f);
             controller.Regions=new SceneRegionView[data.parts.Length];
@@ -132,7 +127,6 @@ namespace SandJamTest.Editor
             var previewImporter=(TextureImporter)AssetImporter.GetAtPath(previewPath);previewImporter.textureType=TextureImporterType.Sprite;previewImporter.mipmapEnabled=false;previewImporter.filterMode=FilterMode.Point;previewImporter.spritePixelsPerUnit=100;previewImporter.textureCompression=TextureImporterCompression.Uncompressed;previewImporter.SaveAndReimport();
             var preview=Group("Editor board preview",board);preview.localPosition=new Vector3(0,4.6f,-.02f);preview.localScale=Vector3.one*7.5f;
             reference.EditorPreview=preview.gameObject.AddComponent<SpriteRenderer>();reference.EditorPreview.sprite=AssetDatabase.LoadAssetAtPath<Sprite>(previewPath);reference.EditorPreview.sharedMaterial=spriteMaterial;
-            var secretData=JsonUtility.FromJson<LevelData>(Resources.Load<TextAsset>("VideoUI/PopArtSecretReference").text);
             var actors=Group("Characters - copied original mesh",root);controller.LaneStarts=new Transform[3];var actorViews=new List<SceneActorView>();
                         var source=AssetDatabase.LoadAssetAtPath<Mesh>("Assets/SandJam/Resources/ReferenceUI/RoundedCube.asset");
             var mesh=UnityEngine.Object.Instantiate(source);var vertices=mesh.vertices;var bounds=mesh.bounds;
@@ -150,11 +144,6 @@ namespace SandJamTest.Editor
                     view.Motion=AnimatedCharacter(pose,info.ColorType,1.18f);view.Visual=pose;
                     var label=Text("Ammo",DisplayAmount.Units(info.AmmoCount,data.uiDivider).ToString(),actor,0,0,21,Color.white,-.7f,true);label.transform.localPosition=new Vector3(0,.06f,-.75f);view.AmmoLabel=label;
                     view.ClickCollider=actor.gameObject.AddComponent<BoxCollider>();view.ClickCollider.center=new Vector3(0,.30f,0);view.ClickCollider.size=new Vector3(.73f,.84f,1.5f);
-                    if(packEntry==null && !chainDemo && !freezeDemo && !video201 && secretData.laneData[lane].ColorAmmoDatas[order].IsSecret)
-                    {
-                        var coverRoot=MysteryCube(actor);var q=actor.gameObject.AddComponent<ReferenceQueueCover>();q.Actor=view;q.Controller=controller;q.Cover=coverRoot;q.MaskedRenderers=pose.GetComponentsInChildren<Renderer>();
-                    }
-                    if(info.IsFreeze) AddFreezeView(view);
                     actorViews.Add(view);
                 }
             }
@@ -162,52 +151,8 @@ namespace SandJamTest.Editor
             controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");
             var camera=Group("Main Camera",root).gameObject.AddComponent<Camera>();camera.tag="MainCamera";camera.transform.position=new Vector3(0,0,-30);camera.orthographic=true;camera.orthographicSize=5.375f;camera.nearClipPlane=.1f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=Hex("DDD8F8");camera.gameObject.AddComponent<AudioListener>();controller.GameCamera=camera;
             ComposeScreens(root,reference,controller);ApplyDepth(root,reference,controller);
-            if(video201) ConfigureVideo201(root,reference,controller);
-            if(packEntry!=null) ConfigureLevelPack(root,reference,controller);
+            ConfigureLevelPack(root,reference,controller);
             EditorSceneManager.SaveScene(scene,Scene);AssetDatabase.SaveAssets();
-        }
-        public static void CreateAndBuild()
-        {
-            CharacterVesselMeshBuilder.Generate();
-            BoosterChecks.Run();
-            EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(Scene,true)};
-            Create();PlayerSettings.defaultScreenWidth=483;PlayerSettings.defaultScreenHeight=1075;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.resizableWindow=true;QualitySettings.antiAliasing=4;PlayerSettings.runInBackground=true;
-            string output = video201 ? "BuildVideo201" : freezeDemo ? "BuildFreezeTest" : chainDemo ? "BuildChainTest" : "BuildVideoUI"; Directory.CreateDirectory(output);
-            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{Scene},locationPathName=output+"/SandJam-VideoUI.exe",target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
-            if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Reference build failed");
-        }
-
-        static void ConfigureChainDemo(LevelData data)
-        {
-            // Dedicated mechanic fixture, not a claim to reconstruct level 97's artwork.
-            data.sceneName = "Linked black and yellow pair";
-            data.gridSlotNeedAmmoCount = new[] { 0, 0, 0, 0, 300 };
-            for (int i = 0; i < data.parts.Length; i++)
-            {
-                data.parts[i].ColorType = i % 2 == 0 ? 8 : 4;
-                data.parts[i].amount = 20;
-                data.parts[i].isOpenedAtStart = true;
-            }
-            data.laneData = new[] {
-                new LaneData { ColorAmmoDatas = new[] { new CharacterData { ColorType = 8, AmmoCount = data.parts.Count(p=>p.ColorType==8)*20, IsChain=true } } },
-                new LaneData { ColorAmmoDatas = new[] { new CharacterData { ColorType = 4, AmmoCount = data.parts.Count(p=>p.ColorType==4)*20, IsChain=true } } },
-                new LaneData { ColorAmmoDatas = new CharacterData[0] }
-            };
-        }
-
-        public static void CreateChainScene()
-        {
-            chainDemo = true;
-            try { Create(); }
-            finally { chainDemo = false; }
-        }
-
-        public static void CreateChainAndBuild()
-        {
-            ChainMechanicChecks.Run();
-            chainDemo = true;
-            try { CreateAndBuild(); }
-            finally { chainDemo = false; }
         }
     }
 }

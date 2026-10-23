@@ -7,7 +7,7 @@ namespace SandJamTest
     {
         public int Number;
         public string SourceId, SceneName, PrefabResource;
-        public TextAsset Json, TestReplay;
+        public TextAsset Json;
     }
     [CreateAssetMenu(menuName="Sand Jam/Level catalog")]
     public sealed class LevelCatalog : ScriptableObject
@@ -26,5 +26,4 @@ namespace SandJamTest
             if(Levels.Select(l=>l.Number).Distinct().Count()!=Levels.Length || Levels.Select(l=>l.SceneName).Distinct().Count()!=Levels.Length)throw new ArgumentException("Duplicate level number or scene");
         }
     }
-    [Serializable] public sealed class LevelReplay { public int[] lanes; }
 }

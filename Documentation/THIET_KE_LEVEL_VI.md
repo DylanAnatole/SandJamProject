@@ -45,7 +45,6 @@ Code: `Editor/Tools/LevelFromPicture.cs`.
    - dữ liệu hợp lệ (`SandGame.Validate`);
    - tổng cát của khối mỗi màu bằng tổng cát các vùng màu đó;
    - có thể thắng với 5 ô chờ (`LevelReplaySolver`).
-4. Vào menu **Sand Jam → Tests → Run all checks**, phải qua cả 8 bài.
 
 Code liên quan:
 - `Editor/Tools/LevelAuthoring.cs`: tạo level và kiểm tra.

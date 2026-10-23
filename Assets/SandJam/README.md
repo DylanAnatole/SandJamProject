@@ -1,19 +1,15 @@
 # Sand Jam clone – project layout
 
-One playable scene: `Scenes/SandJamGame.unity` (the only scene in the build). `Scenes/LevelStructure.unity`
-shows how one level is built (see *Level structure scene* below).
+One playable scene: `Scenes/SandJamGame.unity` (the only scene in the build).
 
 ```
 Assets/SandJam/
   Scenes/            SandJamGame.unity – loading, home, gameplay, popups, shop, gallery
-                     LevelStructure.unity – diagram of one level (editor only, not in the build)
   Scripts/Runtime/   the game
     Core/            rules (SandGame), level data, Burst sand simulation
     Controllers/     gameplay controller, UI screens and popups, boosters
     Managers/        campaign, economy, lives, audio, haptics, save, events
     Views/           board/regions, cubes (characters), effects, UI helpers
-  Scripts/Testing/   LevelReplaySolver (finds a winning move order), LevelStructureViewer, AutoPlayer
-  Editor/Tests/      editor checks – menu Sand Jam > Tests > Run all checks
   Editor/Tools/      Game Manager window, campaign builder, level authoring, screenshot helper
   Editor/SceneBuilders/  rebuilds SandJamGame from the level catalog (Sand Jam > Levels)
   Levels/Templates/  level templates for new levels (original content, safe to share)
@@ -57,13 +53,6 @@ patterns (State, Command, Factory…) can be added next to them as separate file
 
 New views should use these instead of building their own white / rounded sprites or plain materials.
 
-## Tests
-
-`Sand Jam > Tests > Run all checks` runs every editor check and logs `[Checks] PASS/FAIL` per check:
-sand simulation, sand flow, boosters, chained cubes, frozen cubes, level 201 replay, level pack, shaders.
-Run it before and after any upgrade. Batch mode: `-executeMethod SandJamTest.Editor.RunAllChecks.Run`
-(exits with code 1 on a failure).
-
 ## Building a new level
 
 A level is a JSON file (`LevelData`) – the gameplay prefab builds the picture, regions and cube lanes from
@@ -82,21 +71,6 @@ it at runtime, so no scene or prefab work is needed for a new level.
 | `laneData[3].ColorAmmoDatas[]` | the cube queue of each lane, front first: `ColorType`, `AmmoCount` (400 = a full cube showing 20), flags `IsChain`, `IsSecret`, `IsFreeze`+`FreezeCount`, `IsHalf`, `IsUnlocker` |
 | `uiDivider` | sand units per number shown on cubes and regions (20) |
 | `gridSlotNeedAmmoCount` | sand to pour before waiting slots 4 and 5 unlock |
-
-### Level structure scene
-
-`Sand Jam > Levels > Open level structure scene` (or open `Scenes/LevelStructure.unity`). Select
-**Level Structure** and set `Level Number` (campaign order) or drop any level JSON into `Level Json`.
-
-- Edit mode: a diagram rebuilt on every change, also listed in the Hierarchy under *Level structure (preview)*:
-  the board (one pixel per grid cell; bright = open at start, dark = opens later, gold = padlock) with the sand
-  of each region, each region's colour / sand / cells / prerequisites, the three lanes front cube first (ammo
-  and mechanics: chain, ice, secret, key, half), the five stash slots, and sand vs ammo per colour.
-- Play mode: the real level is built from the gameplay template and starts straight away, so the runtime
-  objects (regions, characters, board texture, effects) can be inspected in the Hierarchy.
-
-Rules checked by `Check custom levels`: the data is valid, every colour's cubes carry exactly the sand its
-regions need, and the level can be won with five waiting slots.
 
 ## Prefabs
 

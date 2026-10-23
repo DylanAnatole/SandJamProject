@@ -1856,3 +1856,22 @@ phía sau các nút của Home lúc thẻ nhỏ.
 - Level 268: Home → Shop trượt từ trái (Home còn thấy bên phải lúc 0,26 s); Shop → Gallery trượt từ phải; thanh
   điều hướng đứng yên. Shop mở đúng như video (SAND SHOP, Remove Ads, No Ads Pack, Starter Pack).
 - Luồng thua không lỗi. Run all checks qua 8/8.
+
+## Dọn code (yêu cầu người dùng, 23/10): bỏ code thừa, trùng lặp; bỏ thư mục test; giữ tài nguyên game gốc
+
+### Đợt 1: bỏ phần test và các scene demo cũ
+
+- Xoá `Scripts/Testing` (AutoPlayer, LevelStructureViewer), `Editor/Tests` (8 bài kiểm tra, Run all checks),
+  `TestResults/`, scene `LevelStructure.unity` và menu mở nó.
+- `LevelReplaySolver` (bộ giải level) chuyển sang `Editor/Tools`: công cụ tạo level và "Check custom levels"
+  vẫn cần nó để bảo đảm level thắng được.
+- `BuildVideoScene`: bỏ các biến thể demo không còn dùng (scene khối nối xích, khối đóng băng, Video201, scene
+  VideoUI đơn lẻ, `CreateAndBuild`, `ConfigureChainDemo`, `ConfigureFreezeDemo`, `AddFreezeView`,
+  `ConfigureVideo201`, khối "?" dựng sẵn). Công cụ chỉ còn dựng prefab mẫu cho catalog (`CreateLevelPack`),
+  đúng đường game đang dùng. Xoá `BuildVideoScene.Video201.cs` và `BuildVideoScene.Freeze.cs`.
+- Bỏ sinh file "replay" chỉ dùng cho test (`LevelCatalog.TestReplay`, `LevelReplay`).
+- Code chết tìm bằng máy quét (tên chỉ xuất hiện ở chỗ khai báo, không có trong scene/prefab):
+  `SandGame.HintLane`/`Useful`, `BurstSandSimulation.UsedBurst` (+ `MarkManaged`), `LevelBootstrap.SelectedIndex`.
+- Tài liệu: bỏ phần nói về test và scene cấu trúc level.
+
+**Kiểm tra:** biên dịch không lỗi. Tự chơi (script tạm trên máy, dùng bộ giải) level 2, 68, 267: thắng cả 3.

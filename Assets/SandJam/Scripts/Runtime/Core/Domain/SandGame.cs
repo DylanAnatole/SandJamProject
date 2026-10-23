@@ -295,32 +295,6 @@ namespace SandJamTest
             for (int i = 0; i < Lanes.Length; i++) if (CanSelectLane(i)) return;
             State = GameState.Lost;
         }
-
-        public int HintLane()
-        {
-            for (int i = 0; i < Lanes.Length; i++) if (CanSelectLane(i) && Target(Lanes[i].Peek()) >= 0) return i;
-            // Choose the lane whose next useful color is nearest the front.
-            int best = -1, distance = int.MaxValue;
-            for (int i = 0; i < Lanes.Length; i++)
-            {
-                if(!CanSelectLane(i))continue;
-                int d = 0;
-                foreach (var s in Lanes[i]) { if (Useful(s) && d < distance) { best = i; distance = d; } d++; }
-            }
-            if (best >= 0) return best;
-            // While something is still pouring, wait rather than spend a slot on a useless cube.
-            if (Slots.Any(s => Target(s) >= 0)) return -1;
-            // Nothing useful is reachable: admitting any cube still thaws ice and can pair a sleeping half.
-            for (int i = 0; i < Lanes.Length; i++) if (CanSelectLane(i) && Lanes[i].Peek().Half) return i;
-            for (int i = 0; i < Lanes.Length; i++) if (CanSelectLane(i)) return i;
-            return -1;
-        }
-
-        // Would pour into an open region once free (ignores ice and half sleep).
-        bool Useful(Shooter s)
-        {
-            return s != null && s.Ammo > 0 && Array.Exists(Regions, p => p.Open && p.Remaining > 0 && p.Data.ColorType == s.Color && p.Data.IsUnlockerPart == s.Key);
-        }
     }
 }
 

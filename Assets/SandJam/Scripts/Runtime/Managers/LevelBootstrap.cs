@@ -23,10 +23,7 @@ namespace SandJamTest.Scene3D
             throw new InvalidOperationException("No playable level found after "+MaxSkips+" attempts");
         }
         public const string SceneName="SandJamGame";
-        public static int SelectedIndex;
         public LevelCatalog Catalog;
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetSelection(){SelectedIndex=0;}
         void Awake()
         {
             Catalog.Validate();

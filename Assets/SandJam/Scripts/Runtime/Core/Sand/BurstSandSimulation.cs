@@ -29,7 +29,6 @@ namespace SandJamTest.Scene3D
         public int Requested {get{return state[2];}}
         public int MovingCount {get{return state[3];}}
         public bool Complete {get{return Settled==Requested;}}
-        public bool UsedBurst {get{return state[4]==1;}}
         public int StepCount {get{return state[8];}}
         // Column and row the stream currently falls from.
         public int MouthX {get{return state[9];}}
@@ -96,7 +95,7 @@ namespace SandJamTest.Scene3D
             if(disposed)return;CompleteSteps();disposed=true;
             SettleStep.Dispose();topCell.Dispose();rows.Dispose();cols.Dispose();cellAt.Dispose();spawns.Dispose();seep.Dispose();state.Dispose();Filled.Dispose();Moving.Dispose();occupied.Dispose();
         }
-        // State: 0 emitted, 1 settled, 2 requested, 3 moving count, 4 burst flag, 5 rng, 6 seep cursor, 7 next grain id, 8 step count, 9 mouth column, 10 mouth row
+        // State: 0 emitted, 1 settled, 2 requested, 3 moving count, 4 unused, 5 rng, 6 seep cursor, 7 next grain id, 8 step count, 9 mouth column, 10 mouth row
         [BurstCompile(CompileSynchronously=true)]
         public struct StepJob : IJob
         {
@@ -107,7 +106,6 @@ namespace SandJamTest.Scene3D
             public NativeArray<int> SettleStep;
             public NativeArray<SandPourSimulation.Grain> Moving;
             public int Width,Height,Steps;
-            [BurstDiscard] static void MarkManaged(ref int enabled){enabled=0;}
             int Cell(int x,int y){return x<0 || x>=Width || y<0 || y>=Height?-1:CellAt[y*Width+x];}
             bool Free(int x,int y){int c=Cell(x,y);return c>=0 && Occupied[c]==0;}
             void Move(ref SandPourSimulation.Grain g,int x,int y)
@@ -116,7 +114,6 @@ namespace SandJamTest.Scene3D
             }
             public void Execute()
             {
-                int burst=1;MarkManaged(ref burst);State[4]=burst;
                 for(int step=0;step<Steps && State[1]<State[2];step++)
                 {
                     State[8]++;

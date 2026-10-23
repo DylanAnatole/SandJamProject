@@ -64,7 +64,7 @@ Cập nhật: 22/10/2026. Chi tiết từng thay đổi xem `NHAT_KY_TIEN_DO_VI.
 
 | Hạng mục | Trạng thái | Ghi chú |
 |---|---|---|
-| 8 bài kiểm tra tự động (Run all checks) | ✅ | Qua 8/8 sau mỗi thay đổi |
+| Kiểm tra level tự làm (Check custom levels, bộ giải) | ✅ | Thư mục test đã bỏ theo yêu cầu (23/10) |
 | Tự chơi hàng loạt level để bắt lỗi | ✅ | Script cục bộ |
 | Tạo level từ ảnh pixel-art (84×112) | ✅ | Menu Sand Jam → Levels |
 | Tạo level từ template, kiểm tra level tự làm | ✅ | |
