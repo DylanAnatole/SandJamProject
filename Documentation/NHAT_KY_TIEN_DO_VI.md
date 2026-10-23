@@ -1768,3 +1768,24 @@ phía sau các nút của Home lúc thẻ nhỏ.
 
 **Kiểm tra:** đóng popup hết tim hai lần: không còn ô tối. Luồng thua / chơi tiếp không lỗi. Run all checks qua
 8/8.
+
+### Shop / Gallery: trang cuộn có quán tính như bản gốc
+
+**Đo** (video 2, Shop giây 4,0–10,7; dịch chuyển nội dung giữa hai khung liên tiếp)
+
+- Lướt rồi thả: trang trượt tiếp, vận tốc giảm ~e^-2t (ví dụ 8,4 → 8,9 s: 42,6 → 15,7 px/khung). Đây là mức hãm
+  mặc định 0,135/s của ScrollRect. Chạm mép thì dừng ngay, không nảy (8,92 s: 15 → 0 px/khung).
+- Bản mình (`DragScroller`): thả tay là trang dừng ngay, không có quán tính.
+
+**Sửa** (`DragScroller`, dùng chung cho Shop và Gallery)
+
+- Trong lúc kéo: đo tốc độ ngón tay, làm mượt như ScrollRect (`Lerp(v, mới, dt × 10)`).
+- Sau khi thả: trượt tiếp, `velocity *= 0,135^dt`, dừng khi < `StopSpeed` hoặc chạm mép. Chạm lại là dừng ngay.
+  Chạm không kéo thì không trượt.
+- Bước thời gian tối đa 0,05 s, để một khung khựng không làm trang vọt đi. Phần trượt chạy cả khi editor không
+  có con trỏ.
+
+**Kiểm tra**
+
+- Shop, gán vận tốc thả tay -6: vị trí 23,84 → 20,76, vận tốc 5,43 → 3,41 sau 0,23 s (≈ e^-2t), dừng sau ~2,4 s.
+- Gán từ vị trí 1: dừng đúng ở 0. Mở Gallery không lỗi. Run all checks qua 8/8.
