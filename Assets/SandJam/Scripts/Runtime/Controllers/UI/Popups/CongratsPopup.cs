@@ -95,11 +95,8 @@ namespace SandJamTest.Scene3D
             int level = screen.Levels.PlayedNumber;
             var info = GalleryCollections.ForLevel(level);
             if (info == null) return false;
-            Sprite colour, grey;
-            if (info.Cover != null) { colour = Resources.Load<Sprite>(info.Cover); grey = Resources.Load<Sprite>(info.Cover + "-bw"); }
-            else { colour = Resources.Load<Sprite>("LevelRenders/" + info.RenderId); grey = Greyscale(colour); }
+            Sprite colour, grey; CoverPair(info.Cover, info.RenderId, out colour, out grey);
             if (!colour || !grey) return false;
-            if (info.Cover != null) { colour = CoverCrop(colour); grey = CoverCrop(grey); }
             colour = RoundedCopy(colour); grey = RoundedCopy(grey); // corners follow the rim; the glass shows around them
             SetText(cardName, info.Name);
             var size = grey.bounds.size;
@@ -143,38 +140,6 @@ namespace SandJamTest.Scene3D
             return true;
         }
 
-        // Copy of a sprite's area with transparent rounded corners (radius ~10% of its width, the frame rim's inner
-        // rounding). Rendered through the GPU, so the source texture need not be readable.
-        readonly Dictionary<Sprite, Sprite> roundedCopies = new Dictionary<Sprite, Sprite>();
-        Sprite RoundedCopy(Sprite source)
-        {
-            if (!source) return source;
-            if (roundedCopies.TryGetValue(source, out var done)) return done;
-            var r = source.textureRect; var tex = source.texture;
-            int w = Mathf.RoundToInt(r.width), h = Mathf.RoundToInt(r.height);
-            var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
-            Graphics.Blit(tex, rt, new Vector2(r.width / tex.width, r.height / tex.height), new Vector2(r.x / tex.width, r.y / tex.height));
-            var copy = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = tex.filterMode, wrapMode = TextureWrapMode.Clamp, name = source.name + " rounded" };
-            var active = RenderTexture.active; RenderTexture.active = rt;
-            copy.ReadPixels(new Rect(0, 0, w, h), 0, 0);
-            RenderTexture.active = active; RenderTexture.ReleaseTemporary(rt);
-            var px = copy.GetPixels32(); float radius = w * .1f;
-            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
-            {
-                // Only the four corner squares are touched: alpha falls off past the radius from the corner centre.
-                bool left = x + .5f < radius, right = x + .5f > w - radius, bottom = y + .5f < radius, top = y + .5f > h - radius;
-                if (!((left || right) && (bottom || top))) continue;
-                float cx = left ? radius : w - radius, cy = bottom ? radius : h - radius;
-                float d = Mathf.Sqrt((x + .5f - cx) * (x + .5f - cx) + (y + .5f - cy) * (y + .5f - cy));
-                float a = Mathf.Clamp01(radius + .5f - d);
-                var c = px[y * w + x]; c.a = (byte)(c.a * a); px[y * w + x] = c;
-            }
-            copy.SetPixels32(px); copy.Apply(false, true);
-            var sprite = Sprite.Create(copy, new Rect(0, 0, w, h), new Vector2(.5f, .5f), source.pixelsPerUnit);
-            sprite.name = source.name + " (rounded)";
-            roundedCopies[source] = sprite; runtimeArt.Add(copy); runtimeArt.Add(sprite);
-            return sprite;
-        }
         static Vector3 Centred(Sprite sprite, float kx, float ky, float z)
         {
             var c = sprite.bounds.center;

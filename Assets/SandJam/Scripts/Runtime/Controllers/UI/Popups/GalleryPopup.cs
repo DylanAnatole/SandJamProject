@@ -246,17 +246,7 @@ namespace SandJamTest.Scene3D
             GalleryHit(x, CarouselY - .1f, .65f, .65f, direction < 0 ? "gallery-prev" : "gallery-next");
         }
 
-        void StyleCover(GalleryCollections.Info info, out Sprite colour, out Sprite grey)
-        {
-            // Gallery covers carry a transparent margin and an off-centre pivot: the card uses them trimmed and centred
-            // (the same crop as the CONGRATS card), so the picture fills the rounded slot.
-            if (info.StyleCover != null)
-            {
-                colour = Resources.Load<Sprite>(info.StyleCover); grey = Resources.Load<Sprite>(info.StyleCover + "-bw");
-                if (colour) colour = CoverCrop(colour); if (grey) grey = CoverCrop(grey);
-            }
-            else { colour = Resources.Load<Sprite>("LevelRenders/" + info.StyleRenderId); grey = Greyscale(colour); }
-        }
+        void StyleCover(GalleryCollections.Info info, out Sprite colour, out Sprite grey) { CoverPair(info.StyleCover, info.StyleRenderId, out colour, out grey); }
 
         // Cards scrolled out of the grid band are hidden (the original uses a mask).
         void ClipGrid()

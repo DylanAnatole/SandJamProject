@@ -2041,3 +2041,23 @@ All Cards, nhận mốc thưởng Gallery (40, 60 xu, hộp quà), level 341 h�
 **Sửa** (`AudioManager`): `OnButton` luôn phát `Pop`; bỏ `Sfx.Button` (trùng tiếng chạm khối).
 
 **Kiểm tra:** biên dịch không lỗi; luồng booster / thua không lỗi; tự chơi level 2 thắng.
+
+## 23/10/2026 — Popup NEW ART STYLE và đủ 57 bộ sưu tập
+
+**So với video 3 (75 s, level 361):** gốc ghi tên bộ sưu tập "Infinite Canvas" với ảnh phẳng Superman/Batman
+lấp đầy ô bo góc; thẻ to hơn ~8% và cao hơn ~60 px. Bản mình ghi "Celebs" với ảnh render cát tràn khỏi ô, vì
+bảng bộ sưu tập chỉ có 17 bộ.
+
+**Sửa:**
+- `GalleryCollections`: ba mảng Names / Counts / Covers gộp thành một bảng `Styles` (tên, số level, ảnh bìa)
+  đủ 57 bộ như game gốc. Bộ 1–17 dùng `Gallery/cover-N`; bộ 18–57 dùng ảnh phẳng của level đại diện
+  (`GalleryCovers/<levelId>`, chép từ dữ liệu gốc, chỉ để local, không đẩy lên git).
+- `PopupScreens.CoverPair` (dùng chung cho Gallery, CONGRATS, NEW ART STYLE): ảnh màu và ảnh xám của một bộ.
+  Chỉ bìa `Gallery/` mới cắt lề; thiếu file `-bw` thì tự làm xám; không có bìa thì dùng render của level.
+  Bỏ ba đoạn code trùng nhau ở ba popup.
+- `RoundedCopy` chuyển từ `CongratsPopup` sang `PopupScreens` để dùng chung.
+- NEW ART STYLE: thẻ phóng 1,08 và nâng 60 px (`FitCard`); ảnh bo góc lấp kín phần nhìn thấy của ô
+  (ảnh nền ô có lề trống phía trên).
+
+**Kiểm tra:** biên dịch không lỗi; 57/57 bộ có đủ ảnh màu + xám; ảnh chụp popup ở level 361 khớp video;
+tự chơi level 2, 18, 68 thắng; luồng booster / thua không lỗi.

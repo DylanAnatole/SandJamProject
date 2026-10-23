@@ -671,6 +671,51 @@ namespace SandJamTest.Scene3D
         // Gallery covers (316x376) carry a transparent margin (~12 px each side) and wide rounded corners, which left
         // gaps inside the slot; the card uses the picture inset past them, centred, so it fills the slot edge to edge.
         readonly System.Collections.Generic.Dictionary<Sprite, Sprite> coverCrops = new System.Collections.Generic.Dictionary<Sprite, Sprite>();
+        // Copy of a sprite's area with transparent rounded corners (radius ~10% of its width, the frame rim's inner
+        // rounding). Rendered through the GPU, so the source texture need not be readable.
+        readonly System.Collections.Generic.Dictionary<Sprite, Sprite> roundedCopies = new System.Collections.Generic.Dictionary<Sprite, Sprite>();
+        internal Sprite RoundedCopy(Sprite source)
+        {
+            if (!source) return source;
+            if (roundedCopies.TryGetValue(source, out var done)) return done;
+            var r = source.textureRect; var tex = source.texture;
+            int w = Mathf.RoundToInt(r.width), h = Mathf.RoundToInt(r.height);
+            var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            Graphics.Blit(tex, rt, new Vector2(r.width / tex.width, r.height / tex.height), new Vector2(r.x / tex.width, r.y / tex.height));
+            var copy = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = tex.filterMode, wrapMode = TextureWrapMode.Clamp, name = source.name + " rounded" };
+            var active = RenderTexture.active; RenderTexture.active = rt;
+            copy.ReadPixels(new Rect(0, 0, w, h), 0, 0);
+            RenderTexture.active = active; RenderTexture.ReleaseTemporary(rt);
+            var px = copy.GetPixels32(); float radius = w * .1f;
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
+            {
+                // Only the four corner squares are touched: alpha falls off past the radius from the corner centre.
+                bool left = x + .5f < radius, right = x + .5f > w - radius, bottom = y + .5f < radius, top = y + .5f > h - radius;
+                if (!((left || right) && (bottom || top))) continue;
+                float cx = left ? radius : w - radius, cy = bottom ? radius : h - radius;
+                float d = Mathf.Sqrt((x + .5f - cx) * (x + .5f - cx) + (y + .5f - cy) * (y + .5f - cy));
+                float a = Mathf.Clamp01(radius + .5f - d);
+                var c = px[y * w + x]; c.a = (byte)(c.a * a); px[y * w + x] = c;
+            }
+            copy.SetPixels32(px); copy.Apply(false, true);
+            var sprite = Sprite.Create(copy, new Rect(0, 0, w, h), new Vector2(.5f, .5f), source.pixelsPerUnit);
+            sprite.name = source.name + " (rounded)";
+            roundedCopies[source] = sprite; RuntimeArt.Add(copy); RuntimeArt.Add(sprite);
+            return sprite;
+        }
+        // A collection's picture in colour and grey. Card covers ("Gallery/cover-N", with a "-bw" twin) carry a margin and
+        // are trimmed; flat level pictures (GalleryCovers) are greyed here; without a cover, the level render is used.
+        internal void CoverPair(string cover, string renderId, out Sprite colour, out Sprite grey)
+        {
+            colour = cover != null ? Resources.Load<Sprite>(cover) : null; grey = null;
+            if (colour)
+            {
+                grey = Resources.Load<Sprite>(cover + "-bw");
+                if (cover.StartsWith("Gallery/")) { colour = CoverCrop(colour); if (grey) grey = CoverCrop(grey); }
+            }
+            else colour = Resources.Load<Sprite>("LevelRenders/" + renderId);
+            if (!grey) grey = Greyscale(colour);
+        }
         internal Sprite CoverCrop(Sprite source)
         {
             if (coverCrops.TryGetValue(source, out var cropped)) return cropped;

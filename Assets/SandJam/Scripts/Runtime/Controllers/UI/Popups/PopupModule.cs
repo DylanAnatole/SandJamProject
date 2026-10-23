@@ -50,6 +50,8 @@ namespace SandJamTest.Scene3D
         protected void RefreshPageLives(Popup page) { Host.RefreshPageLives(page); }
         protected Sprite Greyscale(Sprite source) { return Host.Greyscale(source); }
         protected Sprite CoverCrop(Sprite source) { return Host.CoverCrop(source); }
+        protected Sprite RoundedCopy(Sprite source) { return Host.RoundedCopy(source); }
+        protected void CoverPair(string cover, string renderId, out Sprite colour, out Sprite grey) { Host.CoverPair(cover, renderId, out colour, out grey); }
         protected void RefreshPopupCoins() { Host.RefreshPopupCoins(); }
         protected void Show(Popup p) { Host.Show(p); }
         protected void Close() { Host.Close(); }

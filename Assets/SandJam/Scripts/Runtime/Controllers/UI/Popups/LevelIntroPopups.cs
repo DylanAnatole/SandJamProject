@@ -85,7 +85,7 @@ namespace SandJamTest.Scene3D
             // White rounded slot framing the 84x112 picture (stretched from the feature-slot art).
             var slot = Art(artStyle, "ArtStyle/bg-popUp-slot-newFeature-v2", new Vector3(0, .03f, -6.4f), 3.15f);
             slot.SetLocalSize(3.15f, 4.1f);
-            artStylePicture = Child<SpriteRenderer>(artStyle, "Art style picture", new Vector3(0, .03f, -6.5f));
+            artStylePicture = Child<SpriteRenderer>(artStyle, "Art style picture", new Vector3(0, -.3f, -6.5f)); // the slot art has an empty top margin
             Art(artStyle, "ArtStyle/ribbon-purple-v2", new Vector3(0, 3.05f, -6.6f), 4.3f);
             Art(artStyle, "ArtStyle/text-newArtStyle-v2", new Vector3(0, 3.12f, -6.7f), 2.8f);
             artStyleLabel = Label(artStyle, "Art style name", new Vector3(0, 2.33f, -6.8f), "", .05f, new Color(.62f, .2f, .82f));
@@ -93,7 +93,10 @@ namespace SandJamTest.Scene3D
                 child.localPosition = new Vector3(0, -2.94f, child.localPosition.z);
             artStyle.RightButton.transform.parent.localScale = new Vector3(1.1f, 1.1f, 1);
             Configure(artStyle.RightButton, artStyle.Right, "art-style-next", "NEXT");
+            // Recording 3 (75 s): the card ~8% larger and ~60 px higher.
+            PopupScreens.FitCard(artStyle, ArtStyleFit, 60);
         }
+        const float ArtStyleFit = 1.08f;
         // Shown the first time a level of a new art style (collection) is played.
         bool TryShowArtStyle(int level)
         {
@@ -104,15 +107,15 @@ namespace SandJamTest.Scene3D
             string key = "art:" + category.ToLowerInvariant();
             if (SaveManager.HasSeenIntro(key)) return false;
             SaveManager.MarkIntroSeen(key);
-            artStyleLabel.text = Collections.DisplayName(category);
-            artStylePicture.sprite = Resources.Load<Sprite>("LevelRenders/" + System.Text.RegularExpressions.Regex.Replace(id, "_Dupe$", ""));
-            if (artStylePicture.sprite)
-            {
-                // Fit the 84x112 render inside the white slot.
-                var size = artStylePicture.sprite.bounds.size;
-                float k = Mathf.Min(2.85f / size.x, 3.8f / size.y);
-                artStylePicture.transform.localScale = new Vector3(k, k, 1);
-            }
+            // Recording 3 (75 s): the collection's name as in the Gallery ("Infinite Canvas") and its flat cover art,
+            // rounded inside the slot; the level render when the collection has no cover.
+            var info = GalleryCollections.ForLevel(level);
+            artStyleLabel.text = info != null && info.StyleName != null ? info.StyleName : Collections.DisplayName(category);
+            Sprite picture, unusedGrey;
+            CoverPair(info != null ? info.StyleCover : null, System.Text.RegularExpressions.Regex.Replace(id, "_Dupe$", ""), out picture, out unusedGrey);
+            artStylePicture.sprite = RoundedCopy(picture);
+            // Recording 3: the picture fills the slot to a thin rim (FitCard scaled the card at build, so scale it too).
+            artStylePicture.SetLocalSize(2.91f * ArtStyleFit, 3.64f * ArtStyleFit);
             Show(artStyle);
             return true;
         }
