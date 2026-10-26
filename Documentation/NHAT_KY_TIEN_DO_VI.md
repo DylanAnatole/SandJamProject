@@ -2426,3 +2426,15 @@ không vượt. Bản mình: bảng hiện tức thì (trang Result bật thẳn
 nhân bản từ trang này đã bỏ `ResultFx` nên không bị ảnh hưởng.
 
 **Kiểm tra:** quay giờ thực từng khung lúc bảng hiện; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Mặt cát trong khối kính thành gò, không phẳng
+
+**Đo** (video 3, phóng to 90,70 s và 83,30 s): khối vàng còn ~một nửa có mặt cát nhấp nhô; khối đỏ gần hết có một gò cát
+ở giữa. Bản mình: mặt cát phẳng như cắt (khối cát chỉ co theo chiều cao).
+
+**Sửa** (`CharacterSandVessel`): lưới "gò cát" dùng chung (`Mound`: vòm thấp trên mặt khối, gợn nhẹ, mép bằng mặt cát),
+một renderer mỗi khối đặt trên đỉnh khối cát, cùng vật liệu không viền và màu; cao `MoundHeight` 0,15, thấp dần khi
+gần hết (< 20%) và gần đầy (> 88%); lật ngẫu nhiên trục x/z để các khối không giống hệt nhau. Chỉ hiện khi khối là kính.
+
+**Kiểm tra:** quay từng khung khối xanh đang đổ (gò hiện rõ, cát vẫn vơi đúng); hiệu năng không đổi đáng kể; luồng
+booster / thua không lỗi; tự chơi level 2, 68 thắng.

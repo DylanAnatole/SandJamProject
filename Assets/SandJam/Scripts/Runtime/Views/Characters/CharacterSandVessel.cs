@@ -10,7 +10,9 @@ namespace SandJamTest.Scene3D
         public SceneActorView Actor;
         Transform sand;
         MeshRenderer fillRenderer;
-        static Mesh frameMesh, sandMesh, legsMesh, glassMesh;
+        static Mesh frameMesh, sandMesh, legsMesh, glassMesh, moundMesh;
+        MeshRenderer mound; Vector2 moundFlip;
+        const float MoundHeight=.15f, MoundTaperLow=.2f, MoundTaperHigh=.12f;
         static Material glassMaterial;
         // Twin of each block material without the outline pass (SandToonDepthPlain): a block drawn with no outline
         // costs one draw instead of two (the outline pass used to be submitted for every block and culled).
@@ -44,6 +46,9 @@ namespace SandJamTest.Scene3D
             var frame=Part("Rounded vessel frame",frameMesh,material,actor.Visual);frameRenderer=frame;
             frameBlock=new MaterialPropertyBlock();frameBlock.SetFloat("_GrainStrength",0);frameBlock.SetFloat("_OutlineWidth",.007f);frame.SetPropertyBlock(frameBlock);
             fillRenderer=Part("Contained sand volume",sandMesh,material,actor.Visual);sand=fillRenderer.transform;
+            mound=Part("Sand mound",moundMesh,plain,sand);mound.transform.localPosition=new Vector3(0,BlockSize.y,0);mound.enabled=false;
+            // A mirror per box so neighbouring mounds do not look stamped.
+            moundFlip=new Vector2(Random.value<.5f?-1:1,Random.value<.5f?-1:1);
             // Frosted glass walls around the draining sand (original waiting-slot boxes read as glass, not a bare cage).
             if(!glassMaterial){var shader=Shader.Find("SandJamTest/GlassPane");if(shader)glassMaterial=new Material(shader){name="Cube glass walls"};}
             if(glassMaterial){glassRenderer=Part("Glass walls",glassMesh,glassMaterial,actor.Visual);glassBlock=new MaterialPropertyBlock();}
@@ -148,6 +153,16 @@ namespace SandJamTest.Scene3D
             }
             fillRenderer.SetPropertyBlock(sandBlock);
             UseOutline(fillRenderer,!glass && front);
+            // Draining sand piles up unevenly (recording 3, 90.7 s: a wavy surface at half; 83.3 s: a mound in the middle
+            // near the end): a low dome on top of the sand, fading out near empty and near full.
+            float mk=Mathf.Min(1,amount/MoundTaperLow,(1-amount)/MoundTaperHigh);
+            bool showMound=glass && mk>0;
+            mound.enabled=showMound;
+            if(showMound)
+            {
+                mound.transform.localScale=new Vector3(moundFlip.x,MoundHeight*mk/Mathf.Max(.001f,amount),moundFlip.y);
+                mound.SetPropertyBlock(sandBlock);
+            }
             sand.gameObject.SetActive(amount>.001f);
             UpdateHalf(docked);
         }
@@ -213,6 +228,7 @@ namespace SandJamTest.Scene3D
             glassMesh=Finish(gv,gt,"Cube glass walls");
             sandMesh=RoundedBlock(BlockSize,BevelRadius);
             halfMesh=Wedge(sandMesh);
+            moundMesh=Mound();
         }
 
         // Solid block size in Visual space (pivot at the bottom centre) and the glass cage interior.
@@ -235,6 +251,21 @@ namespace SandJamTest.Scene3D
         // pixel-sand texture stays square-aligned on that face (no smearing across the bevel).
         // Half cube (original HalfGif): a wedge whose top slopes down from the left edge to the right.
         static Mesh halfMesh;
+        // Unit-height dome over the sand block's top face (inside its bevel), with a gentle ripple; scaled per box.
+        static Mesh Mound()
+        {
+            const int n=10; float hx=BlockSize.x*.5f-BevelRadius*.5f, hz=BlockSize.z*.5f-BevelRadius*.5f;
+            var v=new List<Vector3>(); var uv=new List<Vector2>(); var t=new List<int>();
+            for(int j=0;j<=n;j++)for(int i=0;i<=n;i++)
+            {
+                float u=i/(float)n*2-1, w=j/(float)n*2-1, d=Mathf.Clamp01(Mathf.Sqrt(u*u+w*w)/1.15f);
+                float h=(1-d*d)*(1+.3f*Mathf.Sin(u*4.1f+1.3f)*Mathf.Cos(w*3.3f+.4f));
+                if(i==0||j==0||i==n||j==n)h=0; // the rim meets the sand's flat top
+                var p=new Vector3(u*hx,Mathf.Max(0,h),w*hz); v.Add(p); uv.Add(new Vector2(p.x,p.z)*BlocksPerUnit/32f);
+            }
+            for(int j=0;j<n;j++)for(int i=0;i<n;i++){int a=j*(n+1)+i,b=a+1,c=a+n+1,e=c+1;t.AddRange(new[]{a,c,b,b,c,e});}
+            var m=new Mesh{name="Sand mound"}; m.SetVertices(v); m.SetUVs(0,uv); m.SetTriangles(t,0); m.RecalculateNormals(); m.RecalculateBounds(); return m;
+        }
         static Mesh Wedge(Mesh block)
         {
             var wedge=Object.Instantiate(block);wedge.name="Rounded half wedge";
@@ -308,7 +339,7 @@ namespace SandJamTest.Scene3D
             pixelSand.SetPixels32(pixels);pixelSand.Apply(false,true);
             return pixelSand;
         }
-        void OnDestroy(){if(initialized && --users==0){Destroy(frameMesh);Destroy(sandMesh);if(glassMesh)Destroy(glassMesh);if(glassMaterial)Destroy(glassMaterial);if(halfMesh)Destroy(halfMesh);if(pixelSand)Destroy(pixelSand);
+        void OnDestroy(){if(initialized && --users==0){Destroy(frameMesh);Destroy(sandMesh);if(moundMesh)Destroy(moundMesh);if(glassMesh)Destroy(glassMesh);if(glassMaterial)Destroy(glassMaterial);if(halfMesh)Destroy(halfMesh);if(pixelSand)Destroy(pixelSand);
             foreach(var twin in plainTwins.Values)if(twin)Destroy(twin);plainTwins.Clear();}}
     }
 }
