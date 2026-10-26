@@ -2186,3 +2186,8 @@ ngay); level 222 trước đó lúc thắng lúc thua, giờ thắng 3/3.
 
 **Kiểm tra:** quay chạy lên ô và rời ô so với video (chân dưới đáy hộp, sải rộng, thấy trọn chu kỳ); luồng booster /
 thua không lỗi; tự chơi level 2, 68 thắng, 222 thắng 3/3.
+
+## 26/10/2026 — Chân thon lại (người dùng: "chân nó to quá rồi để nhỏ lại đi")
+
+`SceneActorView.RunLegThick` 1,7 → 1,3 (chiều dài giữ 1,3, hông vẫn hạ xuống đáy hộp). Quay lại cảnh chạy lên ô:
+chân thon, vẫn sải bước và gập gối.
