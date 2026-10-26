@@ -37,7 +37,7 @@ namespace SandJamTest.Scene3D
         // Only part-way to white (EmptyWhitePeak): on the light stage a pure white box showed as a bare white cage that
         // read as a glitch; a pale box in its own colour reads as the same flash.
         const float EmptyWhiteSnap=.05f, EmptyWhitePeak=.6f;
-        public float EmptyWhite { get { return Departing ? EmptyWhitePeak * Mathf.Clamp01(1-(leaveAge-ExitPause)/EmptyWhiteSnap) : 0; } }
+        public float EmptyWhite { get { return Departing && DisplayedFill <= 0 ? EmptyWhitePeak * Mathf.Clamp01(1-(leaveAge-ExitPause)/EmptyWhiteSnap) : 0; } }
         int shownAmmo = int.MinValue;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
@@ -280,16 +280,19 @@ namespace SandJamTest.Scene3D
         public void Advance(float delta, bool firing)
         {
             if (!gameObject.activeSelf || Shooter == null) return;
-            if (Departing) leaveAge += delta;
             float targetFill=(float)Shooter.Ammo/Mathf.Max(1,Shooter.InitialAmmo);
             DisplayedFill=Mathf.Lerp(DisplayedFill,targetFill,1-Mathf.Exp(-18*delta));
             if(Mathf.Abs(DisplayedFill-targetFill)<.003f)DisplayedFill=targetFill;
+            // An emptied box keeps its colour, waiting on its pad, until the last sand shown in it has drained; only then
+            // does it flash pale and leave (the flash started while sand still showed inside).
+            bool drained = DisplayedFill <= 0;
+            if (Departing && drained) leaveAge += delta;
             if (restWritten && Rock == restRock && Resting(firing, targetFill)) return;
             if(Departing && exitDelay>0)
             {
                 // Brief pause: the emptied block holds still, white, facing the camera (recording 3, 84.30-84.48 s); it
                 // turns toward its exit edge once it jumps off (turning while white read as a flickering white cage).
-                exitDelay=Mathf.Max(0,exitDelay-delta);
+                if(drained)exitDelay=Mathf.Max(0,exitDelay-delta);
                 ShowLegs(false);
                 if(exitDelay>0)return;
                 if(Motion)Motion.SetWalking(true);

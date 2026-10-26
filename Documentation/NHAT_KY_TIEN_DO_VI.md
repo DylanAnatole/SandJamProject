@@ -2320,3 +2320,10 @@ lúc đó, nên trông như chớp viền lỗi. Thử đục kính tới 0,9: v
   hộp kính màu nhạt, không phải khung trơ.
 
 **Kiểm tra:** quay từng khung khối xanh rời ô; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Khối không đổi màu khi vẫn còn cát (người dùng)
+
+Nhịp sáng màu bắt đầu ngay khi lượng cát về 0 trong dữ liệu, trong khi phần cát hiển thị (`DisplayedFill`) còn vơi
+thêm ~0,18 s: khối nhạt màu lúc vẫn thấy cát bên trong. `SceneActorView`: `EmptyWhite` bằng 0 tới khi cát hiển thị
+hết hẳn; thời gian dừng (`exitDelay`) và nhịp sáng chỉ tính từ lúc đó. Quay từng khung: giữ màu suốt lúc cát vơi,
+sáng nhạt sau khi hết, rồi nhảy đi. Luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
