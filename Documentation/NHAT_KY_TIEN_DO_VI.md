@@ -2380,3 +2380,16 @@ rời hàng. Bản mình mất ~0,36 s (`SlideSeconds` 0,38), trông chậm, hà
 **Sửa:** `SceneActorView.SlideSeconds` 0,38 → 0,28. Đo lại: dồn xong trong ~0,26 s.
 
 **Kiểm tra:** luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Hiệu ứng mở vùng: bong bóng to hơn, hạt lơ lửng
+
+**Đo** (video 3, 83,84–84,50 s, từng khung; bản mình quay theo giờ thực vì hạt chạy theo giờ thực — quay từng bước
+0,02 s làm hạt trông như biến mất sau 0,16 s): gốc nở bong bóng ~1,85 đơn vị (gấp đôi vùng) trong ~0,2 s; ~70 khối cát
+nhỏ bung ra rồi lơ lửng, trôi chậm hơn nửa giây. Bản mình: bong bóng 1,2; 34 hạt rơi nhanh (trọng lực 0,9).
+
+**Sửa** (`SandFx`): `BubbleScale` 1,6 → 2,5; `BurstGrains` 34 → 70, bung nhanh hơn (0,8–3,2), có lực cản
+(`VoxelDrag` 3, `limitVelocityOverLifetime`) và trọng lực nhẹ (`VoxelGravity` 0,25) nên chậm lại rồi lơ lửng; hạt to
+hơn chút (0,07–0,12), sống 0,7–1,1 s.
+
+**Kiểm tra:** quay giờ thực cảnh mở vùng ở level 2; đo thời gian (script vẫn ~1,8 ms/khung); luồng booster / thua
+không lỗi; tự chơi level 2, 68 thắng.

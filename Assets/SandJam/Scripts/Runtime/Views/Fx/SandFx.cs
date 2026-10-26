@@ -24,8 +24,11 @@ namespace SandJamTest.Scene3D
         // Region-open bubbles of the original (recording 2, 153.05-153.35 s): one per region that just opened, on its
         // counter: nearly clear (the region and its number show through), a thin bright rim, gone in ~0.3 s. Around it
         // a few big sand cubes in the region's colour and some green confetti.
-        const float BubbleScale = 1.6f, BubbleLife = .45f, BubbleSize = .75f;
-        const int BurstGrains = 34, BurstSparkles = 16;
+        // Recording 3 (83.84-84.50 s, every frame): the bubble swells to ~1.85 units across (twice the region) within
+        // ~0.2 s; ~70 sand cubes fan out and then hang in the air, drifting slowly, for over half a second.
+        const float BubbleScale = 2.5f, BubbleLife = .45f, BubbleSize = .75f;
+        const int BurstGrains = 70, BurstSparkles = 16;
+        const float VoxelGravity = .25f, VoxelDrag = 3f;
         const float ConfettiShare = .25f; static readonly Color Confetti = new Color(.25f, .85f, .3f);
         // Sand needles out of a pouring box (count range per shot, speed, life, width; colour a little darker).
         const int SprayMin = 1, SprayMax = 3;
@@ -44,10 +47,12 @@ namespace SandJamTest.Scene3D
             spray = MakeSystem("Pour spray", Texture2D.whiteTexture, 300, SprayLife, SprayWidth, SprayWidth);
             var sm = spray.main; sm.gravityModifier = 0;
             var sr = spray.GetComponent<ParticleSystemRenderer>(); sr.renderMode = ParticleSystemRenderMode.Stretch; sr.velocityScale = .07f; sr.lengthScale = 1;
-            var vm = voxels.main; vm.gravityModifier = .9f; vm.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
+            var vm = voxels.main; vm.gravityModifier = VoxelGravity; vm.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
             var vrot = voxels.rotationOverLifetime; vrot.enabled = true; vrot.z = new ParticleSystem.MinMaxCurve(-6, 6);
             var vsize = voxels.sizeOverLifetime; vsize.size = new ParticleSystem.MinMaxCurve(1, AnimationCurve.Linear(0, 1, 1, .7f));
             voxels.GetComponent<ParticleSystemRenderer>().sortingOrder = 31;
+            // The cubes burst out and then slow to a float (air drag), instead of falling straight away.
+            var vlimit = voxels.limitVelocityOverLifetime; vlimit.enabled = true; vlimit.limit = 100; vlimit.drag = VoxelDrag;
             bubbleMaterial = new Material(Shader.Find("Sprites/Default"));
         }
 
@@ -245,10 +250,10 @@ namespace SandJamTest.Scene3D
             for (int v = 0; v < BurstGrains; v++)
             {
                 // The cubes stay around the region, drifting up a little and falling back.
-                float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad, speed = Random.Range(.3f, 1.4f);
-                var vel = new Vector3(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed + .9f, 0);
+                float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad, speed = Random.Range(.8f, 3.2f);
+                var vel = new Vector3(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed + .5f, 0);
                 Color vc = Random.value < ConfettiShare ? Confetti : Color.Lerp(color, Color.white, Random.Range(0f, .25f));
-                Emit(voxels, center + (Vector3)(Random.insideUnitCircle * .4f), vel, vc, Random.Range(.06f, .1f), Random.Range(.6f, 1f));
+                Emit(voxels, center + (Vector3)(Random.insideUnitCircle * .4f), vel, vc, Random.Range(.07f, .12f), Random.Range(.7f, 1.1f));
             }
             for (int s = 0; s < BurstSparkles; s++)
             {
