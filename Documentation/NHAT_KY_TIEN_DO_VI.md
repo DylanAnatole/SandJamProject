@@ -2162,3 +2162,27 @@ cần booster (đã biết).
 **Kiểm tra:** biên dịch không lỗi; save v2 (10 / 3 / 7) chuyển đúng sang v3, cộng / dùng / đọc lại đúng; id bộ
 sưu tập level 361 không đổi; luồng booster (Swap, Flare, Select) và thua / chơi tiếp / bỏ cuộc không lỗi; tự chơi
 level 2, 68, 120 thắng.
+
+## 26/10/2026 — Chân khi chạy (người dùng: "phần di chuyển chân trong gameplay khá xấu")
+
+**Đo** (video 3, 84,3–84,6 s, từng khung 50 fps; bản mình quay từng bước 0,02 s, giữ controller và gọi
+`Advance(0.02)` để chân và chuyển động cùng nhịp):
+- Gốc: chân to (mỗi chân ~1/5 bề ngang khối), thò dưới đáy ~0,7–0,8 chiều cao khối, gối gập rõ, sải rộng; khối rỗng
+  chạy ra khỏi ô đều ~570 px/s, thấy trọn một chu kỳ bước (~0,35 s tới mép màn).
+- Bản mình: chân mảnh (chỉ kéo dài 1,45 theo chiều dọc), xoay đùi 35° ra sau; hông rig nằm trong hộp nên khối rỗng
+  lộ chân gập trong kính; khối rỗng lướt qua phần nhìn thấy trong ~0,1 s (thời lượng cố định 0,6 s cho quãng tới
+  x = ±4,8, bắt đầu nhanh).
+- Lỗi: vị trí đùi không được Animator đặt lại mỗi khung, nên phép xoay / hạ đùi bị cộng dồn qua từng khung (chân
+  trôi xa khỏi khối).
+
+**Sửa** (`SceneActorView`):
+- Nhớ vị trí nghỉ của đùi, đặt lại mỗi khung trước khi xoay / hạ.
+- Chạy: hạ khớp háng 0,2 xuống đáy hộp (`RunLegLower`, theo trục dọc thế giới vì rig nghiêng về camera); chân to
+  1,7 lần, dài 1,3 lần (`RunLegThick`, `RunLegLength`); đùi chỉ xoay 12° (`RunLegDrop`).
+- Rời ô: chạy đều `ExitSpeed` 3,2 đơn vị/s; cú nhảy khỏi ô tính theo thời gian (`ExitHopSeconds` 0,3 s).
+
+**Script tự chơi (cục bộ):** chờ 0,8 s sau lần đổ cuối mới chọn tiếp, vì vùng mới chỉ mở khi cát đã lắng (bộ giải mở
+ngay); level 222 trước đó lúc thắng lúc thua, giờ thắng 3/3.
+
+**Kiểm tra:** quay chạy lên ô và rời ô so với video (chân dưới đáy hộp, sải rộng, thấy trọn chu kỳ); luồng booster /
+thua không lỗi; tự chơi level 2, 68 thắng, 222 thắng 3/3.

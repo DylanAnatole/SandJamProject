@@ -38,12 +38,15 @@ namespace SandJamTest.Scene3D
         int shownAmmo = int.MinValue;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
-        // an emptied cube pauses briefly, then runs sideways off the nearest screen edge in ~0.45 s.
+        // an emptied cube pauses briefly, then runs sideways off the nearest screen edge at an even pace (ExitSpeed).
         enum Gait { Slide, Run }
         Gait gait;
         float yaw;
         // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
-        const float SlideSeconds=.38f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitSeconds=.6f, ExitPause=.12f, ExitHop=.25f;
+        const float SlideSeconds=.38f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitPause=.12f, ExitHop=.25f, ExitHopSeconds=.3f;
+        // Leaving runs at an even pace (recording 3, 84.3-84.7 s: ~570 px/s, a full stride cycle seen before the edge);
+        // the off-screen end point is far, so a fixed duration with an eased start crossed the visible part in 0.1 s.
+        const float ExitSpeed=3.2f;
         // The box faces where it runs (its number is on its back): straight up the screen it barely turns (recording 2,
         // 155.6-155.9 s), running sideways it turns ~65 deg so its side shows and the legs stride that way (48.6-49.2 s).
         // Heading = angle of the run from straight up times RunTurnGain (the original turns a little past its path, its
@@ -78,10 +81,12 @@ namespace SandJamTest.Scene3D
         public void Pour(Vector3 target) { pourTarget = target; }
         // Side-to-side rock in degrees (on screen), set from outside, e.g. while the Select booster waits for a pick.
         public float Rock;
-        // Recording 2 (155.6-155.9 s and 48.6-49.3 s, zoomed): both legs come out of the middle of the block's base,
-        // thick, ~0.6 of its height, with bent knees; turned toward the run they hid behind each other.
-        const float RunLegYaw = 0f, RunLegDrop = 35f, RunLegStretch = 1.45f;
-        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale;
+        // Recording 2 (155.6-155.9 s and 48.6-49.3 s) and recording 3 (84.3-84.6 s, every frame): both legs come out
+        // of the block's base, thick, reaching ~0.8 of its height below it, knees well bent. The rig's hips sit inside
+        // the box (seen folded behind the glass of an emptied box): running, the hip joints drop to the base
+        // (RunLegLower, world units straight down) and the legs grow evenly, thicker as well as longer.
+        const float RunLegYaw = 0f, RunLegDrop = 12f, RunLegLength = 1.3f, RunLegThick = 1.7f, RunLegLower = .2f;
+        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale, leftThighRest, rightThighRest;
         void FindRig()
         {
             rigSearched = true;
@@ -91,7 +96,10 @@ namespace SandJamTest.Scene3D
                 else if (t.name.EndsWith("LeftUpLeg")) leftThigh = t;
                 else if (t.name.EndsWith("RightUpLeg")) rightThigh = t;
             }
-            if (leftThigh) thighScale = leftThigh.localScale;
+            // The walk clip only turns the thighs: their place under the hips is kept here and set back every frame,
+            // so the drop below is never added onto the last frame's.
+            if (leftThigh) { thighScale = leftThigh.localScale; leftThighRest = leftThigh.localPosition; }
+            if (rightThigh) rightThighRest = rightThigh.localPosition;
         }
         void LateUpdate()
         {
@@ -104,7 +112,11 @@ namespace SandJamTest.Scene3D
             legDrop = Mathf.MoveTowards(legDrop, running ? RunLegDrop : 0, Time.deltaTime * 400f);
             if (Mathf.Abs(legYaw) < .01f && Mathf.Abs(legDrop) < .01f)
             {
-                if (leftThigh.localScale != thighScale) leftThigh.localScale = rightThigh.localScale = thighScale; // back to rest
+                if (leftThigh.localScale != thighScale)
+                {
+                    leftThigh.localScale = rightThigh.localScale = thighScale; // back to rest
+                    leftThigh.localPosition = leftThighRest; rightThigh.localPosition = rightThighRest;
+                }
                 return;
             }
             var frame = pose ? pose : hips;
@@ -112,12 +124,15 @@ namespace SandJamTest.Scene3D
             // once the box had turned toward its run they swung out behind it instead of below it.
             var dropAxis = new Vector3(Mathf.Sign(frame.right.x), 0, 0);
             var turn = Quaternion.AngleAxis(legYaw * LegTurnSign, Vector3.up) * Quaternion.AngleAxis(legDrop, dropAxis);
-            // Longer legs while running (the bones' length axis is their local Y).
-            var stretch = new Vector3(1, 1 + (RunLegStretch - 1) * legDrop / RunLegDrop, 1);
+            // Longer and thicker legs while running (the bones' length axis is their local Y), hung from the base.
+            float k = legDrop / RunLegDrop;
+            var grow = new Vector3(1 + (RunLegThick - 1) * k, 1 + (RunLegLength - 1) * k, 1 + (RunLegThick - 1) * k);
+            var lower = Vector3.down * RunLegLower * k; // the box stands upright in the world (the rig is pitched)
+            leftThigh.localPosition = leftThighRest; rightThigh.localPosition = rightThighRest;
             foreach (var thigh in new[] { leftThigh, rightThigh })
             {
-                thigh.localScale = Vector3.Scale(thighScale, stretch);
-                thigh.position = hips.position + turn * (thigh.position - hips.position);
+                thigh.localScale = Vector3.Scale(thighScale, grow);
+                thigh.position = hips.position + turn * (thigh.position - hips.position) + lower;
                 thigh.rotation = turn * thigh.rotation;
             }
         }
@@ -229,7 +244,8 @@ namespace SandJamTest.Scene3D
         {
             if (Departing || !gameObject.activeSelf) return;
             float side=transform.position.x<0?-1:1;
-            Begin(new Vector3(side*4.8f,transform.position.y,transform.position.z),Gait.Run,ExitSeconds);
+            var exit=new Vector3(side*4.8f,transform.position.y,transform.position.z);
+            Begin(exit,Gait.Run,Mathf.Abs(exit.x-transform.position.x)/ExitSpeed);
             Departing = true;
             exitDelay=ExitPause; leaveAge=0;
             if(Motion)Motion.SetWalking(false);
@@ -267,10 +283,10 @@ namespace SandJamTest.Scene3D
                 {
                     // Running: off at once and easing into the pad (recording 2, 48.5-48.6 s: the front cube clears
                     // its lane spot within 0.1 s, before the cube behind slides up), with a bob on every step.
-                    float ease = Mathf.Lerp(t, 1 - (1 - t) * (1 - t), .6f);
+                    float ease = Departing ? t : Mathf.Lerp(t, 1 - (1 - t) * (1 - t), .6f);
                     float bob = Mathf.Abs(Mathf.Sin(travel * StepsPerSecond * Mathf.PI)) * StepBob;
                     // An empty box jumps off its pad before running away (recording 2, 60.7 s).
-                    if (Departing) bob += Mathf.Sin(Mathf.PI * Mathf.Clamp01(t * 3)) * ExitHop;
+                    if (Departing) bob += Mathf.Sin(Mathf.PI * Mathf.Clamp01(travel / ExitHopSeconds)) * ExitHop;
                     transform.position = Vector3.Lerp(from, destination, ease) + Vector3.up * bob;
                     // Turn toward the horizontal direction of travel, settle facing the camera on arrival.
                     var dir = destination - from;
