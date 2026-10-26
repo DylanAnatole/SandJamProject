@@ -2191,3 +2191,17 @@ thua không lỗi; tự chơi level 2, 68 thắng, 222 thắng 3/3.
 
 `SceneActorView.RunLegThick` 1,7 → 1,3 (chiều dài giữ 1,3, hông vẫn hạ xuống đáy hộp). Quay lại cảnh chạy lên ô:
 chân thon, vẫn sải bước và gập gối.
+
+## 26/10/2026 — Chân to vừa với khối, hết mảng tối dưới đáy (người dùng: "chân có độ to vừa phải, phù hợp với khối")
+
+**So sánh** (cùng bề ngang khối, gốc video 3 84,4 s cạnh bản mình ở độ dày 1,3 và 1,5): đùi gốc rộng ~1/4 khối;
+1,5 gần gốc hơn 1,3. Cái làm chân trông thô là một mảng tối hình chữ V ngay dưới đáy khối: mặt cắt hở ở eo của
+mesh chân (tách khỏi thân nhân vật gốc), lộ ra khi hông bị hạ 0,2 xuống dưới đáy hộp; chỉ hạ hai đùi còn kéo
+giãn phần hông.
+
+**Sửa** (`SceneActorView`): độ dày `RunLegThick` 1,5; hạ cả khớp hông (không chỉ hai đùi), chỉ 0,08
+(`RunLegLower`) để mặt cắt nằm ngay trên đáy hộp; chân dài 1,3 nên vẫn thò ra đủ. Vị trí hông: Animator có thể
+không ghi lại mỗi khung, nên phần hạ của khung trước được trả lại trước khi hạ tiếp (không cộng dồn).
+
+**Kiểm tra:** quay từng khung chạy lên ô và rời ô: chân liền dưới khối, không còn mảng tối; luồng booster / thua
+không lỗi; tự chơi level 2, 68 thắng.

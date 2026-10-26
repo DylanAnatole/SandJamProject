@@ -83,10 +83,10 @@ namespace SandJamTest.Scene3D
         public float Rock;
         // Recording 2 (155.6-155.9 s and 48.6-49.3 s) and recording 3 (84.3-84.6 s, every frame): both legs come out
         // of the block's base, thick, reaching ~0.8 of its height below it, knees well bent. The rig's hips sit inside
-        // the box (seen folded behind the glass of an emptied box): running, the hip joints drop to the base
+        // the box (seen folded behind the glass of an emptied box): running, the hips drop to the base
         // (RunLegLower, world units straight down) and the legs grow evenly, thicker as well as longer.
-        const float RunLegYaw = 0f, RunLegDrop = 12f, RunLegLength = 1.3f, RunLegThick = 1.3f, RunLegLower = .2f;
-        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale, leftThighRest, rightThighRest;
+        const float RunLegYaw = 0f, RunLegDrop = 12f, RunLegLength = 1.3f, RunLegThick = 1.5f, RunLegLower = .08f;
+        Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale, leftThighRest, rightThighRest, hipsBase, hipsWritten; bool hipsMoved;
         void FindRig()
         {
             rigSearched = true;
@@ -110,6 +110,10 @@ namespace SandJamTest.Scene3D
             float target = !running || Mathf.Abs(dx) < .05f ? 0 : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
             legYaw = Mathf.MoveTowards(legYaw, target, Time.deltaTime * 600f);
             legDrop = Mathf.MoveTowards(legDrop, running ? RunLegDrop : 0, Time.deltaTime * 400f);
+            // The hips are lowered as a whole (the thighs alone stretched the pelvis into a dark wedge under the box).
+            // The walk clip may or may not write their position: last frame's drop is taken back when it did not.
+            if (hipsMoved && hips.localPosition == hipsWritten) hips.localPosition = hipsBase;
+            hipsBase = hips.localPosition; hipsMoved = false;
             if (Mathf.Abs(legYaw) < .01f && Mathf.Abs(legDrop) < .01f)
             {
                 if (leftThigh.localScale != thighScale)
@@ -128,11 +132,12 @@ namespace SandJamTest.Scene3D
             float k = legDrop / RunLegDrop;
             var grow = new Vector3(1 + (RunLegThick - 1) * k, 1 + (RunLegLength - 1) * k, 1 + (RunLegThick - 1) * k);
             var lower = Vector3.down * RunLegLower * k; // the box stands upright in the world (the rig is pitched)
+            hips.position += lower; hipsWritten = hips.localPosition; hipsMoved = true;
             leftThigh.localPosition = leftThighRest; rightThigh.localPosition = rightThighRest;
             foreach (var thigh in new[] { leftThigh, rightThigh })
             {
                 thigh.localScale = Vector3.Scale(thighScale, grow);
-                thigh.position = hips.position + turn * (thigh.position - hips.position) + lower;
+                thigh.position = hips.position + turn * (thigh.position - hips.position);
                 thigh.rotation = turn * thigh.rotation;
             }
         }
