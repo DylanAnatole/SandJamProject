@@ -53,9 +53,15 @@ namespace SandJamTest.Scene3D
         // also leans over; RunUpright rolls it back about the view axis (per degree of turn) so it stays upright.
         const float RunUpright=-.5f;
         const float MaxYaw=80f, RunTurnGain=1.25f;
-        // An emptied box leaving turns fully side-on toward its exit and strides off in profile (recording 2,
-        // 158.55-158.9 s), like a run straight sideways.
-        const float ExitYaw=90f, ExitBehind=.5f;
+        // An emptied box leaving turns only part-way toward its exit (recording 3, 84.40-84.70 s, every frame: its front
+        // stays nearly square to the camera, the legs striding sideways under it); turning fully side-on showed the cage
+        // edge-on and, with the jump, lying on its side.
+        const float ExitYaw=30f;
+        // Leaving, the box runs a little behind the boxes still on their pads but in front of the picture's stand (0.5
+        // put it behind the stand, its top cut off by the purple ledge).
+        const float ExitBehind=.2f;
+        // Its legs turn the rest of the way, striding in profile under the front-facing box (recording 3, 84.40-84.70 s).
+        const float ExitLegYaw=90f-ExitYaw;
         // Walk clip (0.875 s, two steps) played at RunAnimSpeed: ~0.23 s a step, as the original's legs open and close
         // ~4-5 times a second (recording 2, 48.6-49.2 s). The box itself barely bobs there (under 2% of its height).
         const float WalkClipSeconds=.875f, RunAnimSpeed=1.9f, StepsPerSecond=2*RunAnimSpeed/WalkClipSeconds, StepBob=.012f;
@@ -106,7 +112,7 @@ namespace SandJamTest.Scene3D
             if (!hips || !leftThigh || !rightThigh || Shooter == null) return;
             bool running = gait == Gait.Run && (!AtRest || (Departing && exitDelay > 0));
             float dx = destination.x - from.x;
-            float target = !running || Mathf.Abs(dx) < .05f ? 0 : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
+            float target = !running || Mathf.Abs(dx) < .05f ? 0 : Departing ? ExitLegYaw * Mathf.Sign(dx) : RunLegYaw * Mathf.Sign(dx) * Mathf.Clamp01(Mathf.Abs(dx) / .8f);
             legYaw = Mathf.MoveTowards(legYaw, target, Time.deltaTime * 600f);
             legDrop = Mathf.MoveTowards(legDrop, running ? RunLegDrop : 0, Time.deltaTime * 400f);
             // The hips are lowered as a whole (the thighs alone stretched the pelvis into a dark wedge under the box).
@@ -163,7 +169,8 @@ namespace SandJamTest.Scene3D
                     if (!viewCamera) viewCamera = SpriteFactory.CameraForLayer(gameObject.layer);
                     var axis = viewCamera ? (centre - viewCamera.transform.position).normalized : Vector3.forward;
                     pose.RotateAround(centre, Vector3.up, yaw + aimYaw);
-                    pose.RotateAround(centre, axis, roll + yaw * RunUpright + Rock);
+                    // A leaving box turns only ExitYaw and stays upright as it is (the lean fix is for wide turns).
+                    pose.RotateAround(centre, axis, roll + (Departing ? 0 : yaw * RunUpright) + Rock);
                     // The number is printed on the box's back face, but it is not part of the rig: as the box turns it
                     // slides toward the face's far edge (recording 2, 48.9 s: ~3/4 across on a run to the left) and
                     // turns part of the way with it.

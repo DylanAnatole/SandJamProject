@@ -2334,3 +2334,16 @@ Khối rỗng giữ màu của nó từ lúc hết cát tới khi chạy khỏi 
 dùng). Bỏ `EmptyWhite` và mọi chỗ dùng (`SceneActorView`, `CharacterSandVessel`, `CharacterDepthStyle`, ghi chú
 `SandFx`); vẫn dừng trên ô tới khi cát hiển thị hết rồi mới nhảy đi. Quay từng khung: khung xanh suốt; luồng booster /
 thua không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Khối rỗng chạy ra: đứng thẳng, quay mặt trước, chân sải nghiêng
+
+**Đo** (từng khung 0,02 s cạnh video 3, 84,40–84,70 s): khối gốc chạy ra vẫn gần như quay mặt trước (mặt trước
+vuông), đứng thẳng, chân nhìn nghiêng sải về phía thoát, chạy trước gờ tím của khung tranh. Bản mình xoay hẳn 90° nên
+thấy cạnh lồng, lúc nhảy thì như lồng nằm nghiêng; khối nghiêng ~15° (bù nghiêng `RunUpright` tính cho góc lớn); và bị
+đẩy ra sau 0,5 nên đỉnh khối bị gờ tím che.
+
+**Sửa** (`SceneActorView`): `ExitYaw` 90° → 30°; chân xoay nốt phần còn lại (`ExitLegYaw` 60°) nên sải nghiêng; khối
+rời đi không bù nghiêng; lùi sau `ExitBehind` 0,5 → 0,2 (vẫn sau khối đang đứng trên ô, trước chân đế khung tranh).
+
+**Kiểm tra:** quay khối rời ô một mình và chạy ngang sau một khối khác đang đứng trên ô; luồng booster / thua không
+lỗi; tự chơi level 2, 68 thắng.
