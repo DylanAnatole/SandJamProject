@@ -13,7 +13,7 @@ namespace SandJamTest.Scene3D
         TextMesh[] labels;
         Color mainColor;
         int labelState=-1;
-        int lastState=-1; float lastAmount=-1, lastWhite; Color lastColor;
+        int lastState=-1; float lastAmount=-1; Color lastColor;
         static readonly int Width=Shader.PropertyToID("_OutlineWidth"),ColorId=Shader.PropertyToID("_Color");
         void LateUpdate()
         {
@@ -29,9 +29,8 @@ namespace SandJamTest.Scene3D
             float amount=Actor.DisplayedFill;
             var color=Skin.sharedMaterial.GetColor(ColorId);
             int state=(front?1:0)|(docked?2:0);
-            float white=Actor.EmptyWhite;
-            if(state==lastState && amount==lastAmount && color==lastColor && white==lastWhite && !Actor.Shooter.Half)return;
-            lastState=state;lastAmount=amount;lastColor=color;lastWhite=white;
+            if(state==lastState && amount==lastAmount && color==lastColor && !Actor.Shooter.Half)return;
+            lastState=state;lastAmount=amount;lastColor=color;
             vessel.Apply(front,docked);
             if(properties==null)properties=new MaterialPropertyBlock();
             Skin.GetPropertyBlock(properties);

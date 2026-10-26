@@ -371,8 +371,7 @@ namespace SandJamTest.Scene3D
                 bool inSlot = System.Array.IndexOf(game.Slots, actor.Shooter) >= 0;
                 if (inSlot && !actor.Departing && actor.Shooter.Ammo < state.Ammo) Spray(actor, state, color);
                 state.Ammo = actor.Shooter.Ammo;
-                // The original lands and leaves without puffs (recording 2, 155.9-156.1 s and 158.3-158.7 s); an emptied
-                // box turns white itself (SceneActorView.EmptyWhite).
+                // The original lands and leaves without puffs (recording 2, 155.9-156.1 s and 158.3-158.7 s).
             }
         }
 

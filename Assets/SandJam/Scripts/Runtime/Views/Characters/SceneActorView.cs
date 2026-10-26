@@ -31,13 +31,9 @@ namespace SandJamTest.Scene3D
         public static float DepthOriginY = -2.98f, DepthPerUnit = .6f;
         float laneZ; bool laneZKnown;
         public static float DepthOffset(float y) { return Mathf.Min(0, y - DepthOriginY) * DepthPerUnit; }
-        float travel, duration, exitDelay, leaveAge;
-        // An emptied box turns white as it leaves (recording 2, 158.38-158.55 s; recording 3, 84.06-84.30 s): fully white
-        // while it waits on its pad, snapping back to its colour as it jumps off (a slow fade read as a washed-out box).
-        // Only part-way to white (EmptyWhitePeak): on the light stage a pure white box showed as a bare white cage that
-        // read as a glitch; a pale box in its own colour reads as the same flash.
-        const float EmptyWhiteSnap=.05f, EmptyWhitePeak=.6f;
-        public float EmptyWhite { get { return Departing && DisplayedFill <= 0 ? EmptyWhitePeak * Mathf.Clamp01(1-(leaveAge-ExitPause)/EmptyWhiteSnap) : 0; } }
+        float travel, duration, exitDelay;
+        // The original turns an emptied box white before it leaves (recording 3, 84.30-84.48 s); here it keeps its
+        // colour all the way out (user's choice: on the light stage the white box read as a bare white cage).
         int shownAmmo = int.MinValue;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
@@ -258,7 +254,7 @@ namespace SandJamTest.Scene3D
             var exit=new Vector3(side*4.8f,transform.position.y,transform.position.z);
             Begin(exit,Gait.Run,Mathf.Abs(exit.x-transform.position.x)/ExitSpeed);
             Departing = true;
-            exitDelay=ExitPause; leaveAge=0;
+            exitDelay=ExitPause;
             if(Motion)Motion.SetWalking(false);
             AmmoLabel.gameObject.SetActive(false);
             ClickCollider.enabled = false;
@@ -283,15 +279,13 @@ namespace SandJamTest.Scene3D
             float targetFill=(float)Shooter.Ammo/Mathf.Max(1,Shooter.InitialAmmo);
             DisplayedFill=Mathf.Lerp(DisplayedFill,targetFill,1-Mathf.Exp(-18*delta));
             if(Mathf.Abs(DisplayedFill-targetFill)<.003f)DisplayedFill=targetFill;
-            // An emptied box keeps its colour, waiting on its pad, until the last sand shown in it has drained; only then
-            // does it flash pale and leave (the flash started while sand still showed inside).
+            // An emptied box waits on its pad until the last sand shown in it has drained, then leaves.
             bool drained = DisplayedFill <= 0;
-            if (Departing && drained) leaveAge += delta;
             if (restWritten && Rock == restRock && Resting(firing, targetFill)) return;
             if(Departing && exitDelay>0)
             {
-                // Brief pause: the emptied block holds still, white, facing the camera (recording 3, 84.30-84.48 s); it
-                // turns toward its exit edge once it jumps off (turning while white read as a flickering white cage).
+                // Brief pause: the emptied block holds still facing the camera (recording 3, 84.30-84.48 s); it turns
+                // toward its exit edge once it jumps off.
                 if(drained)exitDelay=Mathf.Max(0,exitDelay-delta);
                 ShowLegs(false);
                 if(exitDelay>0)return;

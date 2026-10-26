@@ -91,9 +91,6 @@ namespace SandJamTest.Scene3D
         static readonly Color Outline=new Color(.035f,.03f,.06f);
         // The original's glass walls are almost clear: the background shows through nearly unchanged.
         const float GlassClarity=.5f, GlassWhite=.15f;
-        // Emptied, the original box turns white as a whole (recording 3, 84.30-84.48 s: frosted glass, not a bare
-        // cage): the glass turns frosted while EmptyWhite holds (at its peak, 0.6).
-        const float WhiteGlass=.7f, GlassBase=.26f; // GlassPane face opacity: white box / normal glass
         public void Apply(bool front,bool docked)
         {
             if(!sand || Actor.Shooter==null)return;
@@ -108,7 +105,7 @@ namespace SandJamTest.Scene3D
             var upright=Quaternion.Euler(docked?DockedPitch:BlockPitch,0,0);
             sand.localRotation=upright;frameRenderer.transform.localRotation=upright;
             if(glassRenderer)glassRenderer.transform.localRotation=upright;
-            var color=Color.Lerp(fillRenderer.sharedMaterial.GetColor("_Color"),Color.white,Actor.EmptyWhite);
+            var color=fillRenderer.sharedMaterial.GetColor("_Color");
             // Measured on the reference renders: faces read ~1.15-1.25x brighter than FinalColor with a
             // faint white lift (red 190,24,24 renders as 218,32,60), and lighting is soft.
             var lit=color*1.25f+Color.white*.06f;lit.a=1;
@@ -121,7 +118,7 @@ namespace SandJamTest.Scene3D
                 glassRenderer.enabled=glass;
                 // The glass reads in the box's colour (recording 3, 84.3 s: an emptied red box still looks red), only a
                 // little lighter; half white made a running box look grey.
-                if(glass){var tint=Color.Lerp(color,Color.white,GlassWhite);tint.a=GlassClarity;glassBlock.SetColor("_Color",tint);glassBlock.SetFloat("_Base",Mathf.Lerp(GlassBase,WhiteGlass,Actor.EmptyWhite/.6f));glassRenderer.SetPropertyBlock(glassBlock);}
+                if(glass){var tint=Color.Lerp(color,Color.white,GlassWhite);tint.a=GlassClarity;glassBlock.SetColor("_Color",tint);glassRenderer.SetPropertyBlock(glassBlock);}
             }
             if(glass)
             {
