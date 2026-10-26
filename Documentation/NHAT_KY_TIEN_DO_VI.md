@@ -2360,3 +2360,14 @@ khi chạy vẫn giữ góc nghiêng của ô chờ (16°) nên thấy nhiều m
   nhảy đi.
 
 **Kiểm tra:** quay chạy lên ô, đáp, rời ô; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Đường chạy lên ô theo gốc: bật đi, chạy đều, vượt nhẹ rồi về
+
+**Đo** (vị trí khối từng khung, video 3, 90,30–90,90 s, chọn khối đen hàng trái; bản mình quay 0,02 s / khung): gốc đi
+19% quãng đường ngay khung đầu, sau đó đều ~4% mỗi khung, vượt đích 7% rồi lùi về trong ~0,1 s. Bản mình bắt đầu từ
+từ rồi chậm dần vào ô (đường cong giảm tốc), trông lừ đừ.
+
+**Sửa** (`SceneActorView.RunPath`): bật `RunLeap` 19% trong 5% đầu thời gian, chạy đều tới 107% ở 82% thời gian
+(`RunOvershoot`), về đúng ô bằng smoothstep. Khối rỗng rời đi vẫn chạy đều.
+
+**Kiểm tra:** đo lại quỹ đạo (đều, vượt 7%, về 100%); luồng booster / thua không lỗi; tự chơi level 2, 68, 222 thắng.

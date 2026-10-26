@@ -282,6 +282,18 @@ namespace SandJamTest.Scene3D
                 && shakeTime == 0 && size == sizeTarget && landedAge >= LegLinger && DisplayedFill == targetFill;
         }
 
+        // Path of a run to the pad (fraction of the way against fraction of the time), measured frame by frame on
+        // recording 3 (90.30-90.90 s, 50 fps): 19% of the way in the first frame (the leap off the lane), an even run,
+        // 7% past the pad, then back onto it over the last ~0.1 s.
+        const float RunLeapTime = .05f, RunLeap = .19f, RunOvershootTime = .82f, RunOvershoot = .07f;
+        static float RunPath(float t)
+        {
+            if (t < RunLeapTime) return RunLeap * t / RunLeapTime;
+            if (t < RunOvershootTime) return Mathf.Lerp(RunLeap, 1 + RunOvershoot, (t - RunLeapTime) / (RunOvershootTime - RunLeapTime));
+            float back = (t - RunOvershootTime) / (1 - RunOvershootTime);
+            return 1 + RunOvershoot * (1 - back * back * (3 - 2 * back));
+        }
+
         public void Advance(float delta, bool firing)
         {
             if (!gameObject.activeSelf || Shooter == null) return;
@@ -313,9 +325,9 @@ namespace SandJamTest.Scene3D
                 }
                 else
                 {
-                    // Running: off at once and easing into the pad (recording 2, 48.5-48.6 s: the front cube clears
-                    // its lane spot within 0.1 s, before the cube behind slides up), with a bob on every step.
-                    float ease = Departing ? t : Mathf.Lerp(t, 1 - (1 - t) * (1 - t), .6f);
+                    // Running: a leap off the lane, an even run and a small overshoot into the pad, with a bob on every
+                    // step (RunPath). Leaving runs at an even pace.
+                    float ease = Departing ? t : RunPath(t);
                     float bob = Mathf.Abs(Mathf.Sin(travel * StepsPerSecond * Mathf.PI)) * StepBob;
                     // An empty box jumps off its pad before running away (recording 2, 60.7 s).
                     if (Departing) bob += Mathf.Sin(Mathf.PI * Mathf.Clamp01(travel / ExitHopSeconds)) * ExitHop;
