@@ -42,8 +42,9 @@ namespace SandJamTest.Scene3D
             IsInQueue = inQueue;
             // Hide at once on selection (LateUpdate would leave one frame with the loops still drawn).
             if (!inQueue && pair) pair.enabled = false;
-            if (!inQueue) foreach (var loop in new[] { firstLoop, secondLoop }) if (loop != null && loop.Renderer) loop.Renderer.enabled = false;
+            if (!inQueue) { Hide(firstLoop); Hide(secondLoop); }
         }
+        static void Hide(Loop loop) { if (loop != null && loop.Renderer) loop.Renderer.enabled = false; }
 
         // Original chain (Character prefab "ChainBack", mesh NurbsPath): ONE piece for the pair - a rounded square
         // loop around each block's top (submesh 0 at -x, submesh 1 at +x, each in its block's colour) and two strands
@@ -52,6 +53,7 @@ namespace SandJamTest.Scene3D
         static Mesh PairMesh() { if (!pairLoaded) { pairLoaded = true; pairMesh = Resources.Load<Mesh>("Mechanics/ChainBackLoop"); } return pairMesh; }
         const float PairLoopCentre = 1.36f, PairLoopWidth = 1.3f;
         MeshRenderer pair, lowerRing; MeshFilter pairFilter; Material pairFirst, pairSecond; Mesh pairBent, bentSource; float bentFor = -1;
+        int materialOrder = -1; Material[] materials; MeshFilter lowerFilter; bool drawnStill;
         bool UpdatePair(bool visible)
         {
             int order = Second.SourceOrder - First.SourceOrder; // > 0: First is the back cube (higher on screen)
@@ -68,11 +70,22 @@ namespace SandJamTest.Scene3D
             }
             pair.enabled = visible;
             if (lowerRing) lowerRing.enabled = visible;
-            if (!visible) return true;
+            if (!visible) { drawnStill = false; return true; }
+            // Both boxes holding still: the chain drawn last frame is still right.
+            bool still = First.Still && Second.Still;
+            if (still && drawnStill) return true;
+            drawnStill = still;
             Paint(pairFirst, ColorOf(First)); Paint(pairSecond, ColorOf(Second));
             // Submesh 0 is the -x half of the back chain but the +x half of the cage; First always sits at -x.
-            var materials = cage ? new[] { pairSecond, pairFirst } : new[] { pairFirst, pairSecond };
-            if (pair.sharedMaterials[0] != materials[0]) pair.sharedMaterials = materials;
+            // Set only when that changes: reading or writing sharedMaterials makes a new array every time.
+            int submeshOrder = cage ? 1 : 0;
+            if (submeshOrder != materialOrder)
+            {
+                materialOrder = submeshOrder;
+                materials = cage ? new[] { pairSecond, pairFirst } : new[] { pairFirst, pairSecond };
+                pair.sharedMaterials = materials;
+                if (lowerRing) lowerRing.sharedMaterials = materials;
+            }
             pairFirst.SetColor("_EmissionColor", pairFirst.color * .55f); pairSecond.SetColor("_EmissionColor", pairSecond.color * .55f);
             // Both blocks wear their loops at the same height (the original chains lie level, tilted with the blocks).
             var frame = Matrix4x4.TRS(new Vector3(0, .235f, 0), Quaternion.Euler(CharacterSandVessel.BlockPitch, 0, 0), Vector3.one);
@@ -103,11 +116,11 @@ namespace SandJamTest.Scene3D
             if (!lowerRing)
             {
                 var go = new GameObject("Chain (original, lower copy)"); go.transform.SetParent(t.parent, false);
-                go.AddComponent<MeshFilter>();
+                lowerFilter = go.AddComponent<MeshFilter>();
                 lowerRing = go.AddComponent<MeshRenderer>(); lowerRing.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                lowerRing.sharedMaterials = materials;
             }
-            lowerRing.GetComponent<MeshFilter>().sharedMesh = pairFilter.sharedMesh;
-            if (lowerRing.sharedMaterials.Length == 0 || lowerRing.sharedMaterials[0] != materials[0]) lowerRing.sharedMaterials = materials;
+            lowerFilter.sharedMesh = pairFilter.sharedMesh;
             lowerRing.transform.SetPositionAndRotation(t.position - up * ((cage ? CageLowerDrop : BackLowerDrop) * scale), t.rotation);
             lowerRing.transform.localScale = t.localScale;
             return true;
@@ -118,21 +131,28 @@ namespace SandJamTest.Scene3D
         const float TubeInflate = .03f;
         // Copy of a chain mesh, re-centred on centre, with its two block loops moved to +-half (shape kept) and the
         // part between them (|x| < inner) stretched or shortened to fill the gap; tubes thickened by inflate.
+        Vector3[] bendVertices, bendNormals, bendWork;
         void Bend(Mesh source, float half, Vector3 centre, float loopCentre, float inner, float inflate)
         {
             bentFor = half;
-            if (source != bentSource) { if (pairBent) Destroy(pairBent); pairBent = null; bentSource = source; }
-            var v = source.vertices; var n = source.normals;
-            float span = Mathf.Max(.2f, half - (loopCentre - inner));
-            for (int i = 0; i < v.Length; i++)
+            // The source's vertices and normals are read once (each read is a new array); a running pair re-bends
+            // every frame into the same working array.
+            if (source != bentSource)
             {
-                v[i] -= centre;
-                float x = v[i].x, ax = Mathf.Abs(x), sign = Mathf.Sign(x);
-                v[i].x = ax >= inner ? sign * (half + ax - loopCentre) : x / inner * span;
-                if (inflate > 0 && n.Length == v.Length) v[i] += n[i] * inflate;
+                if (pairBent) Destroy(pairBent); pairBent = null; bentSource = source;
+                bendVertices = source.vertices; bendNormals = source.normals; bendWork = new Vector3[bendVertices.Length];
+            }
+            float span = Mathf.Max(.2f, half - (loopCentre - inner));
+            for (int i = 0; i < bendWork.Length; i++)
+            {
+                var v = bendVertices[i] - centre;
+                float x = v.x, ax = Mathf.Abs(x), sign = Mathf.Sign(x);
+                v.x = ax >= inner ? sign * (half + ax - loopCentre) : x / inner * span;
+                if (inflate > 0 && bendNormals.Length == bendWork.Length) v += bendNormals[i] * inflate;
+                bendWork[i] = v;
             }
             if (!pairBent) { pairBent = Instantiate(source); pairBent.name = "Chain (fitted)"; pairBent.ClearBlendShapes(); }
-            pairBent.vertices = v; pairBent.RecalculateBounds(); pairBent.RecalculateNormals();
+            pairBent.vertices = bendWork; pairBent.RecalculateBounds(); pairBent.RecalculateNormals();
             pairFilter.sharedMesh = pairBent;
         }
 

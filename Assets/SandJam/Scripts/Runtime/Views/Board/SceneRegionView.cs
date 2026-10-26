@@ -66,9 +66,11 @@ namespace SandJamTest.Scene3D
         // copies: on the tilted board, depth alone let the copies of counters near the top draw over the white
         // digits (they read as black numbers). Re-applied when a counter first shows, since its outline copies are
         // created then.
+        static readonly System.Collections.Generic.List<MeshRenderer> counterParts=new System.Collections.Generic.List<MeshRenderer>(); // reused: no array per change
         void SortCounter()
         {
-            foreach (var renderer in Counter.GetComponentsInChildren<MeshRenderer>(true)) renderer.sortingOrder=10;
+            Counter.GetComponentsInChildren(true,counterParts);
+            foreach (var renderer in counterParts) renderer.sortingOrder=10;
             Counter.GetComponent<MeshRenderer>().sortingOrder=11;
         }
         public Color32 SolidColor { get { return solid; } }
@@ -99,8 +101,9 @@ namespace SandJamTest.Scene3D
             }
             lockIcon.gameObject.SetActive(!done);
             Counter.gameObject.SetActive(!done);
-            var backing=transform.Find("Amount backing"); if(backing) backing.gameObject.SetActive(false);
-            Counter.text=done?"":DisplayAmount.Text(DisplayAmount.Units(region.Remaining,Divider));
+            var backing=Backing(); if(backing) backing.gameObject.SetActive(false);
+            int shown=done?-1:DisplayAmount.Units(region.Remaining,Divider);
+            if(shown!=shownLock){shownLock=shown;Counter.text=shown<0?"":DisplayAmount.Text(shown);}
             if(done || !Board) return;
             // Diagonal stripes in the region colour, like the locked areas in the reference gif.
             Color baseColor=ColorPalette.Of(region.Data.ColorType);
@@ -109,6 +112,9 @@ namespace SandJamTest.Scene3D
             Color32 dark=(Color32)Color.Lerp(baseColor,Color.white,.15f), light=(Color32)pale;
             if(!justDone) for(int i=0;i<region.Data.rows.Length;i++){int x=region.Data.cols[i],y=region.Data.rows[i];Board.SetBase(x,y,((x+y)/3)%2==0?dark:light);}
         }
+        // The counter's backing plate, found once (a name lookup every frame for every locked region).
+        Transform backingPlate; bool backingSearched; int shownLock=-2;
+        Transform Backing() { if(!backingSearched){backingSearched=true;backingPlate=transform.Find("Amount backing");} return backingPlate; }
         public void Apply(Region region)
         {
             if(LockMode){ApplyLock(region);return;}
@@ -116,7 +122,7 @@ namespace SandJamTest.Scene3D
             if(region.Data.IsUnlockedPart && !region.Open)
             {
                 Counter.gameObject.SetActive(false);
-                var hidden=transform.Find("Amount backing"); if(hidden) hidden.gameObject.SetActive(false);
+                var hidden=Backing(); if(hidden) hidden.gameObject.SetActive(false);
                 lastOpen=false; lastRemaining=-1; return;
             }
             if(sand==null)
@@ -146,8 +152,8 @@ namespace SandJamTest.Scene3D
             empty=RevealedEmpty();
             Counter.gameObject.SetActive(region.InformationVisible);
             if(region.InformationVisible) SortCounter();
-            var backing=transform.Find("Amount backing"); if(backing) backing.gameObject.SetActive(region.InformationVisible);
-            Counter.text=!region.InformationVisible || region.Remaining==0?"":DisplayAmount.Text(DisplayAmount.Units(region.Remaining,Divider));
+            var backing=Backing(); if(backing) backing.gameObject.SetActive(region.InformationVisible);
+            OutlinedText.SetText(Counter,!region.InformationVisible || region.Remaining==0?"":DisplayAmount.Text(DisplayAmount.Units(region.Remaining,Divider)));
             PaintBase(); PaintMoving();
         }
         Color32 RevealedEmpty() { return (Color32)Color.Lerp((Color)openEmpty,RevealWash,revealGlow*RevealStrength); }
@@ -287,7 +293,7 @@ namespace SandJamTest.Scene3D
             if(sand.MovingCount>0) Target.position=Board.transform.TransformPoint(new Vector3((sand.MouthX+.5f)*SandBoardTextureView.CellSize,(sand.MouthY+.5f)*SandBoardTextureView.CellSize,0));
             if(beforeStep!=sand.Settled || freshPainted) PaintBase();
             PaintMoving();
-            if(IsSettled && lastRemaining==0) { Counter.text="";Counter.gameObject.SetActive(false); }
+            if(IsSettled && lastRemaining==0 && Counter.gameObject.activeSelf) { Counter.text="";Counter.gameObject.SetActive(false); }
         }
     }
 }

@@ -14,7 +14,7 @@ namespace SandJamTest.Scene3D
         Color mainColor;
         int labelState=-1;
         int lastState=-1; float lastAmount=-1, lastWhite; Color lastColor;
-        static readonly int Width=Shader.PropertyToID("_OutlineWidth");
+        static readonly int Width=Shader.PropertyToID("_OutlineWidth"),ColorId=Shader.PropertyToID("_Color");
         void LateUpdate()
         {
             if(!Skin || Actor.Shooter==null || Controller.Game==null)return;
@@ -27,7 +27,7 @@ namespace SandJamTest.Scene3D
             // Restyle only when something it depends on changed (most cubes sit unchanged in their lanes); a half
             // cube keeps updating for its floating "zZ".
             float amount=Actor.DisplayedFill;
-            var color=Skin.sharedMaterial.GetColor("_Color");
+            var color=Skin.sharedMaterial.GetColor(ColorId);
             int state=(front?1:0)|(docked?2:0);
             float white=Actor.EmptyWhite;
             if(state==lastState && amount==lastAmount && color==lastColor && white==lastWhite && !Actor.Shooter.Half)return;

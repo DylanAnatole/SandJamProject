@@ -11,6 +11,7 @@ namespace SandJamTest.Scene3D
         Vector3 baseScale;
         MaterialPropertyBlock properties;
         void Awake(){baseScale=Shell.transform.localScale;properties=new MaterialPropertyBlock();}
+        int shownFreeze=-2; // the number on the ice, rewritten only when it changes
         void LateUpdate()
         {
             if(Actor.Shooter==null)return;
@@ -21,7 +22,8 @@ namespace SandJamTest.Scene3D
             properties.SetFloat("_Opacity",opacity);Shell.SetPropertyBlock(properties);
             Counter.gameObject.SetActive(bound.IsFrozen);
             // Original: the ice shows just the remaining number.
-            Counter.text=bound.IsFrozen?bound.FreezeRemaining.ToString():"";
+            int shown=bound.IsFrozen?bound.FreezeRemaining:-1;
+            if(shown!=shownFreeze){shownFreeze=shown;Counter.text=shown<0?"":DisplayAmount.Text(shown);}
             Actor.AmmoLabel.gameObject.SetActive(!bound.IsFrozen && !Actor.Departing);
         }
     }

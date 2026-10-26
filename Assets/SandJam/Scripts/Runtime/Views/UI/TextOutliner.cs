@@ -14,6 +14,7 @@ namespace SandJamTest.Scene3D
         const float Rescan = .4f;
         float nextScan;
         readonly HashSet<TextMesh> seen = new HashSet<TextMesh>();
+        readonly List<TextMesh> scan = new List<TextMesh>(); // reused: GetComponentsInChildren would allocate an array
 
         // Board counters and cube numbers live outside the UI screens; they are switched to the UI font when a
         // level starts (and once at startup).
@@ -27,7 +28,8 @@ namespace SandJamTest.Scene3D
             if (fontPass) { fontPass = false; UiFont.ApplyAll(); }
             if (Time.unscaledTime < nextScan) return;
             nextScan = Time.unscaledTime + Rescan;
-            foreach (var label in GetComponentsInChildren<TextMesh>(false))
+            GetComponentsInChildren(false, scan);
+            foreach (var label in scan)
             {
                 if (!seen.Add(label)) continue;
                 UiFont.Apply(label);
@@ -72,6 +74,7 @@ namespace SandJamTest.Scene3D
         TextMesh main;
         MeshRenderer mainRenderer;
         readonly TextMesh[] copies = new TextMesh[Directions.Length];
+        readonly MeshRenderer[] copyRenderers = new MeshRenderer[Directions.Length];
         string text; float size = -1, alpha = -1; Font font;
         Vector3 lastBounds; int phase;
 
@@ -85,7 +88,7 @@ namespace SandJamTest.Scene3D
                 var go = new GameObject("Text outline") { layer = gameObject.layer };
                 go.transform.SetParent(transform, false);
                 copies[i] = go.AddComponent<TextMesh>();
-                var r = go.GetComponent<MeshRenderer>();
+                var r = copyRenderers[i] = go.GetComponent<MeshRenderer>();
                 r.sortingLayerID = mainRenderer.sortingLayerID; r.sortingOrder = mainRenderer.sortingOrder; // same order: depth puts it just behind the letters
                 r.NoShadows();
             }
@@ -103,11 +106,21 @@ namespace SandJamTest.Scene3D
         // Outline radius change after creation: the copies are re-laid out on the next frame.
         public void SetThickness(float thickness) { if (Thickness == thickness) return; Thickness = thickness; size = -1; }
 
+        // Busy labels (cube numbers, board counters) set their text here: the outline follows at once, and the label
+        // is no longer polled (reading TextMesh.text makes a new string every time).
+        bool driven;
+        public static void SetText(TextMesh label, string value)
+        {
+            label.text = value;
+            var o = label.GetComponent<OutlinedText>();
+            if (o) { o.driven = true; if (o.main) o.Sync(); }
+        }
+
         void LateUpdate()
         {
             // Reading main.text allocates: only when the label's size changed, or every 8th frame for same-width edits.
             var now = mainRenderer ? mainRenderer.bounds.size : Vector3.zero;
-            if (now != lastBounds || ((Time.frameCount + phase) & 7) == 0)
+            if (now != lastBounds || (!driven && ((Time.frameCount + phase) & 7) == 0))
             {
                 lastBounds = now;
                 if (main.text != text || main.characterSize != size || main.font != font) Sync();
@@ -118,12 +131,13 @@ namespace SandJamTest.Scene3D
         void Sync()
         {
             text = main.text; size = main.characterSize; font = main.font;
-            foreach (var t in copies)
+            for (int i = 0; i < copies.Length; i++)
             {
+                var t = copies[i];
                 t.font = main.font; t.fontSize = main.fontSize; t.fontStyle = main.fontStyle; t.characterSize = main.characterSize;
                 t.anchor = main.anchor; t.alignment = main.alignment; t.lineSpacing = main.lineSpacing; t.richText = main.richText;
                 t.text = text;
-                t.GetComponent<MeshRenderer>().sharedMaterial = mainRenderer.sharedMaterial;
+                copyRenderers[i].sharedMaterial = mainRenderer.sharedMaterial;
             }
             // Outline thickness follows the line height, measured from the rendered label.
             int lines = string.IsNullOrEmpty(text) ? 1 : text.Split('\n').Length;

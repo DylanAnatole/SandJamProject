@@ -21,10 +21,10 @@ namespace SandJamTest.Scene3D
         // Juice: a damped spring for squash & stretch (+ = stretch up) and a short sideways shake.
         float squash, squashVelocity, shakeTime;
         bool wasRunning, wasSliding;
-        public void Punch(float strength) { squashVelocity += strength * 18f; }
+        public void Punch(float strength) { squashVelocity += strength * 18f; restWritten = false; }
         // A cube that cannot go: a light left-right wobble, fading out (ShakeSwings full swings in ShakeSeconds).
         const float ShakeSeconds = .34f, ShakeSwings = 2, ShakeAmount = .035f;
-        public void Shake() { shakeTime = ShakeSeconds; HapticsManager.Refused(); }
+        public void Shake() { shakeTime = ShakeSeconds; restWritten = false; HapticsManager.Refused(); }
         Quaternion baseRotation;
         // Original camera looks down the lanes like a floor: rows nearer the bottom of the screen are nearer the
         // camera, so they look bigger and the lanes fan out. Rows below the front row are pulled toward the camera.
@@ -134,12 +134,13 @@ namespace SandJamTest.Scene3D
             var lower = Vector3.down * RunLegLower * k; // the box stands upright in the world (the rig is pitched)
             hips.position += lower; hipsWritten = hips.localPosition; hipsMoved = true;
             leftThigh.localPosition = leftThighRest; rightThigh.localPosition = rightThighRest;
-            foreach (var thigh in new[] { leftThigh, rightThigh })
-            {
-                thigh.localScale = Vector3.Scale(thighScale, grow);
-                thigh.position = hips.position + turn * (thigh.position - hips.position);
-                thigh.rotation = turn * thigh.rotation;
-            }
+            PoseThigh(leftThigh, turn, grow); PoseThigh(rightThigh, turn, grow);
+        }
+        void PoseThigh(Transform thigh, Quaternion turn, Vector3 grow)
+        {
+            thigh.localScale = Vector3.Scale(thighScale, grow);
+            thigh.position = hips.position + turn * (thigh.position - hips.position);
+            thigh.rotation = turn * thigh.rotation;
         }
         void ApplyYaw()
         {
@@ -211,7 +212,8 @@ namespace SandJamTest.Scene3D
             exitDelay=0; DisplayedFill=1; AmmoLabel.gameObject.SetActive(true);
             if(Motion)Motion.ResetPose();
             ClickCollider.enabled = true;
-            shownAmmo = DisplayAmount.Units(shooter.Ammo, Divider); AmmoLabel.text = DisplayAmount.Text(shownAmmo);
+            shownAmmo = DisplayAmount.Units(shooter.Ammo, Divider); OutlinedText.SetText(AmmoLabel, DisplayAmount.Text(shownAmmo));
+            restWritten = false;
         }
 
         // Queue advance inside a lane: quick slide with a small hop, no legs.
@@ -227,6 +229,7 @@ namespace SandJamTest.Scene3D
         void Begin(Vector3 position, Gait kind, float seconds)
         {
             if (Departing || (destination - position).sqrMagnitude < .00001f) return;
+            restWritten = false;
             from = transform.position; destination = position;
             gait = kind; travel = 0; duration = seconds; landedAge = 0;
             // Picked: a quick stretch as it jumps off.
@@ -258,6 +261,19 @@ namespace SandJamTest.Scene3D
             ClickCollider.enabled = false;
         }
 
+        // Most boxes stand still in their lane most of the time. Once a box has written its resting pose it skips the
+        // per-frame pose writes (each one updates the whole rig and the renderers' bounds; the queue advances every
+        // box twice a frame) until something moves it: a slide or run, a punch or shake, pouring, a fill change,
+        // the Select rock, leaving or merging.
+        bool restWritten; float restRock;
+        // True while the box holds its written resting pose (nothing about it moves): views that follow it can skip work.
+        public bool Still { get { return restWritten; } }
+        bool Resting(bool firing, float targetFill)
+        {
+            return AtRest && !Departing && !firing && yaw == 0 && aimYaw == 0 && roll == 0 && squash == 0 && squashVelocity == 0
+                && shakeTime == 0 && size == sizeTarget && landedAge >= LegLinger && DisplayedFill == targetFill;
+        }
+
         public void Advance(float delta, bool firing)
         {
             if (!gameObject.activeSelf || Shooter == null) return;
@@ -265,6 +281,7 @@ namespace SandJamTest.Scene3D
             float targetFill=(float)Shooter.Ammo/Mathf.Max(1,Shooter.InitialAmmo);
             DisplayedFill=Mathf.Lerp(DisplayedFill,targetFill,1-Mathf.Exp(-18*delta));
             if(Mathf.Abs(DisplayedFill-targetFill)<.003f)DisplayedFill=targetFill;
+            if (restWritten && Rock == restRock && Resting(firing, targetFill)) return;
             if(Departing && exitDelay>0)
             {
                 // Brief pause: the emptied block turns toward its exit edge before running off.
@@ -334,7 +351,8 @@ namespace SandJamTest.Scene3D
             ApplyDepth();
             // Text only when the shown number changes (a new string every frame for every cube adds up on mobile).
             int shown = DisplayAmount.Units(Shooter.Ammo, Divider);
-            if (shown != shownAmmo) { shownAmmo = shown; AmmoLabel.text = DisplayAmount.Text(shown); }
+            if (shown != shownAmmo) { shownAmmo = shown; OutlinedText.SetText(AmmoLabel, DisplayAmount.Text(shown)); }
+            restWritten = Resting(firing, targetFill); restRock = Rock;
         }
         void ApplyDepth()
         {

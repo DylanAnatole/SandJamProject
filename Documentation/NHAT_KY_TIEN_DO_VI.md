@@ -11,12 +11,15 @@ Mỗi thay đổi được ghi thêm một mục ở cuối file, kèm commit t�
    `SpriteFactory`, `PopupModule`, `SandFx`, `OutlinedText`, `VideoScreen.NavPlace`, …). Không thấy thiếu là tạo code
    mới, vì dễ bị trùng lặp.
 4. **Ghi nhật ký.** Mỗi commit thêm một mục vào file này.
+5. **Luôn tối ưu cho mobile** (thêm 26/10): game phải chạy ổn định, mượt, không giật lag trên điện thoại. Không cấp phát
+   bộ nhớ mỗi khung (LINQ, `new[]`, ghép chuỗi, `GetComponent` / `Find` trong `Update`); cache component; giữ ít draw
+   call, ít vẽ chồng, ít hạt; việc nặng dùng Burst / job; đo trước và sau khi tối ưu.
 
 ## Quy trình mỗi thay đổi
 
 1. Compile và xem console, không được có lỗi.
 2. Chụp màn hình bản của mình và đo pixel so với video gốc (`D:\luyentayunityxgame`).
-3. Chạy **Sand Jam → Tests → Run all checks**, phải qua cả 8 bài.
+3. Tự chơi một loạt level bằng bộ giải và chạy luồng booster / thua (script cục bộ; thư mục test đã bỏ từ 23/10).
 4. Trả save demo về như cũ: level 68, mỗi loại booster 10 cái, 5 mạng.
 5. Chạy `git add --dry-run` để chắc chắn không đưa file lấy từ game gốc lên repo (Resources, SourceData,
    OriginalReference, …).
@@ -2211,3 +2214,39 @@ không lỗi; tự chơi level 2, 68 thắng.
 `SceneActorView`: độ dày khi chạy `RunLegThick` 1,5 → 0,9 (mảnh hơn chân gốc của rig), chiều dài `RunLegLength`
 1,3 → 1,15; hông vẫn hạ 0,08 (mặt cắt eo khuất trong hộp). Quay từng khung chạy lên ô và rời ô: chân thanh, vẫn
 sải bước, gập gối; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Tối ưu cho mobile: bớt cấp phát bộ nhớ, bỏ việc thừa của khối đứng yên
+
+**Luật mới (người dùng):** luôn tối ưu để game chạy ổn định, mượt, không giật lag trên mobile (đã thêm vào phần
+quy tắc code ở đầu file).
+
+**Đo:** Profiler của Unity khi tự chơi level 68 (300 khung, gom theo hàm; script đo cục bộ). Cấp phát của game
+~1 070 B/khung, thủ phạm: `ChainLinkView` 384 B (đọc / ghi `sharedMaterials`, mảng `new[]`, đọc `vertices` /
+`normals` mỗi lần uốn xích khi cặp đang chạy, `SetInQueue` tạo mảng mỗi khung), `CharacterQueueController` 192 B
+(cũng do `SetInQueue`), `TextOutliner` 199 B (quét mọi TextMesh 0,4 s một lần bằng mảng mới), `OutlinedText` 154 B
+(đọc `TextMesh.text` mỗi 8 khung để dò chữ đổi), `SceneRegionView.Apply` 131 B (`GetComponentsInChildren` mỗi
+lần số đếm đổi), `SceneActorView` 28 B. Thời gian: `characterQueue.Synchronize` 1,64 ms/khung: mỗi khối (~30)
+ghi lại vị trí / scale / góc hai lần mỗi khung kể cả khi đứng yên (mỗi lần ghi cập nhật cả rig ~50 xương).
+
+**Sửa:**
+- `SceneActorView`: khối đã ghi xong tư thế nghỉ thì bỏ qua phần ghi (`restWritten`, `Still`) cho tới khi có gì
+  làm nó động (chạy, nảy, lắc, đổ, cát đổi, lắc Select, rời, gộp). Hai đùi đặt bằng `PoseThigh` (không mảng).
+- `CubeContactShadow`, `ChainLinkView`: theo `Still`, không tính lại bóng / vẽ lại xích khi khối đứng yên.
+- `ChainLinkView`: vật liệu chỉ đặt khi thứ tự đổi; `MeshFilter` của vòng dưới giữ lại; mảng đỉnh đọc một lần, uốn
+  vào mảng dùng lại; `Hide` thay mảng trong `SetInQueue`.
+- `OutlinedText.SetText`: số trên khối và số đếm vùng ghi qua đây, viền theo ngay, nhãn đó thôi bị dò định kỳ;
+  renderer của 8 bản viền giữ lại.
+- `TextOutliner`: quét bằng danh sách dùng lại. `SceneRegionView`: tấm nền số đếm tìm một lần; `SortCounter` dùng
+  danh sách dùng lại; số trên ổ khoá và vùng xong không ghi lại mỗi khung. `CharacterFreezeView`: số trên băng lấy
+  từ bảng chuỗi, chỉ ghi khi đổi. `CharacterDepthStyle`: ID thuộc tính `_Color`.
+
+**Kết quả** (A/B liền nhau cùng điều kiện, mỗi bản 2 lần, trong Editor):
+
+| | Trước | Sau |
+|---|---|---|
+| Tổng thời gian script của game | 3,5–3,9 ms/khung | 2,5 ms/khung (−33%) |
+| Controller gameplay | 1,7–1,8 ms | 1,2 ms (−30%) |
+| Cấp phát của game | ~1 070 B/khung | ~250 B/khung (−76%) |
+
+**Kiểm tra:** biên dịch không lỗi; quay cảnh chọn khối (hàng dồn lên, xích, đổ cát đúng); luồng booster (Swap,
+Flare, Select lắc khối) và thua không lỗi; tự chơi level 2, 31, 68, 120, 222 thắng.

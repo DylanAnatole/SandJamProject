@@ -40,6 +40,10 @@ namespace SandJamTest.Scene3D
             // put the blur just under its bottom edge, slightly behind so the block covers its upper half.
             float moving = Actor.AtRest ? 0 : 1;
             fade = Mathf.MoveTowards(fade, moving, Time.deltaTime * 6);
+            // A box holding still keeps its shadow where it was last placed (reading the renderers' bounds every frame
+            // for every box in the queue is costly on phones).
+            if (Actor.Still && fade == 0 && placedStill) return;
+            placedStill = Actor.Still && fade == 0;
             // Block renderers are collected once, without the text labels (a GetComponent per renderer per frame
             // allocated an error message for every miss in the editor, ~10 KB a frame).
             if (blockRenderers == null || blockRenderers.Length == 0)
@@ -62,7 +66,8 @@ namespace SandJamTest.Scene3D
             shadow.color = new Color(1, 1, 1, Alpha * (1 - .35f * fade));
         }
 
-        void OnDisable() { if (shadow) shadow.enabled = false; }
+        bool placedStill;
+        void OnDisable() { if (shadow) shadow.enabled = false; placedStill = false; }
         void OnDestroy() { if (shadow) Destroy(shadow.gameObject); }
     }
 }
