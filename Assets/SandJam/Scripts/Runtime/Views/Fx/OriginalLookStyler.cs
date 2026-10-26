@@ -55,6 +55,8 @@ namespace SandJamTest.Scene3D
             filler.transform.SetParent(transform, false);
             filler.depth = cam.depth - 10; filler.cullingMask = 0;
             filler.clearFlags = CameraClearFlags.SolidColor; filler.backgroundColor = bottom;
+            // It only clears: no HDR target or MSAA buffer (on phones those add a full-screen buffer and copy a frame).
+            filler.allowHDR = false; filler.allowMSAA = false;
             BuildGradient(cam);
             var stash = controller.StashSlots.Length > 0 ? controller.StashSlots[0].parent : null;
             if (stash)
@@ -116,7 +118,7 @@ namespace SandJamTest.Scene3D
             var r = go.AddComponent<MeshRenderer>(); r.sharedMaterials = frame.sharedMaterials.Length > 0 ? new[] { frame.sharedMaterials[0] } : frame.sharedMaterials;
             r.shadowCastingMode = frame.shadowCastingMode; r.receiveShadows = frame.receiveShadows;
             // Measured face colour of the original frame (86,114,163): a little deeper and bluer than the old frame.
-            if (r.sharedMaterial && r.sharedMaterial.HasProperty("_Color")) { var m = r.material; m.color = m.color * new Color(.87f, .87f, 1.02f, 1); }
+            r.SetBlockColor(r.SharedColor() * new Color(.87f, .87f, 1.02f, 1));
             frame.enabled = false;
         }
         static System.Collections.Generic.List<Vector2> RoundedLoop(float x0, float x1, float y0, float y1, float radius)
@@ -205,10 +207,9 @@ namespace SandJamTest.Scene3D
             foreach (var r in controller.GetComponentsInChildren<MeshRenderer>(true))
             {
                 if (r.name != "Left solid rail" && r.name != "Right solid rail") continue;
-                var m = r.material; // per-level instance, freed with the scene
-                if (m.HasProperty("_Color")) m.color = new Color(.96f, .95f, .97f);
-                if (m.HasProperty("_ShadeStrength")) m.SetFloat("_ShadeStrength", .35f);
-                if (m.HasProperty("_GrainStrength")) m.SetFloat("_GrainStrength", 0);
+                r.SetBlockColor(new Color(.96f, .95f, .97f));
+                r.SetBlockFloat("_ShadeStrength", .35f);
+                r.SetBlockFloat("_GrainStrength", 0);
             }
         }
         const float LaneWallOut = .17f, LaneWallDown = .3f;
@@ -355,7 +356,7 @@ namespace SandJamTest.Scene3D
                 var color = shadow ? Color.Lerp(theme.DisplayFrame, Color.black, .35f) : frame ? theme.DisplayFrame : theme.DisplaySide;
                 var sprite = renderer as SpriteRenderer;
                 if (sprite) sprite.color = color;
-                else if (renderer.material.HasProperty("_Color")) renderer.material.color = color; // per-level instance, freed with the scene
+                else renderer.SetBlockColor(color);
             }
         }
 

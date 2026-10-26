@@ -304,7 +304,7 @@ namespace SandJamTest.Scene3D
         {
             if(!t)return;var r=t.GetComponent<Renderer>();if(!r)return;
             var sr=r as SpriteRenderer;if(sr){sr.color=color;return;}
-            if(r.sharedMaterial && r.sharedMaterial.HasProperty("_Color"))r.material.color=color;
+            r.SetBlockColor(color);
         }
         // Original lower stage: faint pixel diamonds (little checkered sparkles, a shade darker than the stage) in a
         // staggered grid below the walkway, under the spotlight. Measured on the recording: ~0.21 units across,

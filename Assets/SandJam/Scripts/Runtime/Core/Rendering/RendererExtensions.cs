@@ -37,6 +37,29 @@ namespace SandJamTest
             return b;
         }
 
+        // Per-renderer colour / value without copying the material: renderers that share a material stay on one draw
+        // state (renderer.material made a copy for each, and each copy costs a SetPass call every frame).
+        static MaterialPropertyBlock block;
+        public static Color SharedColor(this Renderer renderer)
+        {
+            var m = renderer.sharedMaterial;
+            return m && m.HasProperty(ColorId) ? m.GetColor(ColorId) : Color.white;
+        }
+        public static void SetBlockColor(this Renderer renderer, Color color) { SetBlock(renderer, ColorId, color, null); }
+        public static void SetBlockFloat(this Renderer renderer, string name, float value)
+        {
+            var m = renderer.sharedMaterial; if (m && m.HasProperty(name)) SetBlock(renderer, Shader.PropertyToID(name), null, value);
+        }
+        static readonly int ColorId = Shader.PropertyToID("_Color");
+        static void SetBlock(Renderer renderer, int id, Color? color, float? value)
+        {
+            var m = renderer.sharedMaterial; if (!m || !m.HasProperty(id)) return;
+            if (block == null) block = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(block);
+            if (color.HasValue) block.SetColor(id, color.Value); else block.SetFloat(id, value.Value);
+            renderer.SetPropertyBlock(block);
+        }
+
         // Flat effect / UI geometry: casts and receives no shadows.
         public static T NoShadows<T>(this T renderer) where T : Renderer
         {

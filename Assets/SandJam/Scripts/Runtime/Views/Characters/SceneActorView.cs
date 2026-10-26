@@ -32,9 +32,10 @@ namespace SandJamTest.Scene3D
         float laneZ; bool laneZKnown;
         public static float DepthOffset(float y) { return Mathf.Min(0, y - DepthOriginY) * DepthPerUnit; }
         float travel, duration, exitDelay, leaveAge;
-        // An emptied box turns white as it leaves (recording 2, 158.38-158.55 s), then runs off in its colour.
-        const float EmptyWhiteSeconds=.18f;
-        public float EmptyWhite { get { return Departing ? Mathf.Clamp01(1-leaveAge/EmptyWhiteSeconds) : 0; } }
+        // An emptied box turns white as it leaves (recording 2, 158.38-158.55 s; recording 3, 84.06-84.30 s): fully white
+        // while it waits on its pad, snapping back to its colour as it jumps off (a slow fade read as a washed-out box).
+        const float EmptyWhiteSnap=.05f;
+        public float EmptyWhite { get { return Departing ? Mathf.Clamp01(1-(leaveAge-ExitPause)/EmptyWhiteSnap) : 0; } }
         int shownAmmo = int.MinValue;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
@@ -43,7 +44,7 @@ namespace SandJamTest.Scene3D
         Gait gait;
         float yaw;
         // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
-        const float SlideSeconds=.38f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitPause=.12f, ExitHop=.25f, ExitHopSeconds=.3f;
+        const float SlideSeconds=.38f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitPause=.18f, ExitHop=.25f, ExitHopSeconds=.3f;
         // Leaving runs at an even pace (recording 3, 84.3-84.7 s: ~570 px/s, a full stride cycle seen before the edge);
         // the off-screen end point is far, so a fixed duration with an eased start crossed the visible part in 0.1 s.
         const float ExitSpeed=3.2f;

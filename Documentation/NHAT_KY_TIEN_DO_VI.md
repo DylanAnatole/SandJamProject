@@ -2250,3 +2250,30 @@ ghi lại vị trí / scale / góc hai lần mỗi khung kể cả khi đứng y
 
 **Kiểm tra:** biên dịch không lỗi; quay cảnh chọn khối (hàng dồn lên, xích, đổ cát đúng); luồng booster (Swap,
 Flare, Select lắc khối) và thua không lỗi; tự chơi level 2, 31, 68, 120, 222 thắng.
+
+## 26/10/2026 — Khung khối rỗng giữ màu khi chạy ra; tối ưu phần vẽ hình
+
+**Người dùng báo:** khối thả hết cát chạy ra thì khung như mất màu, phá cảm giác mượt.
+
+**Đo** (video 3, 84,04–84,6 s, so cạnh bản mình quay theo thời gian thực): gốc trắng hẳn khi còn đứng trên ô
+(~0,24 s), nhảy đi là đỏ lại ngay, cả kính lẫn khung. Bản mình: trắng mờ dần trong 0,18 s ngay lúc bắt đầu chạy, kính
+pha 50% trắng, nên khối chạy đi nhạt màu.
+
+**Sửa:** `SceneActorView.EmptyWhite`: trắng suốt lúc dừng trên ô (`ExitPause` 0,12 → 0,18 s), về màu trong 0,05 s
+(`EmptyWhiteSnap`) khi nhảy đi. `CharacterSandVessel`: kính pha `GlassWhite` 0,15 (trước 0,5).
+
+**Tối ưu vẽ hình (đo bằng `UnityStats` ở level 68):**
+- Không còn bản sao vật liệu: bệ chờ, thanh ray, khung tranh, chân đế đổi màu qua `renderer.material` (mỗi cái một
+  bản sao, mỗi bản sao một lần đổi trạng thái vẽ). Helper mới `RendererExtensions.SetBlockColor` / `SetBlockFloat` /
+  `SharedColor` (MaterialPropertyBlock) dùng ở `GameplayFeedbackController`, `OriginalLookStyler`, `VideoScreen`.
+  SetPass 73 → 61.
+- Khối cát bo góc: lưới mỗi mặt 15 → 11 mốc (bo góc 5, giữa 1). 2 352 → 1 200 tam giác mỗi khối; cả màn 68 500 →
+  40 900 tam giác. Ảnh chụp trước / sau giống hệt (sai khác trung bình 0,014 / 255).
+- `SandToonDepth`: lượt viền đưa đỉnh ra ngoài khung nhìn khi không có viền (trước tô cả vỏ rồi `clip` từng điểm ảnh,
+  trên GPU mobile còn tắt loại sớm theo độ sâu).
+- Camera tô nền viền đen: tắt HDR, MSAA (chỉ xoá màn hình).
+
+**Kết quả:** script của game ~1,85 ms/khung (đầu ngày 3,7 ms), cấp phát ~225 B/khung; camera ~0,14 ms.
+
+**Kiểm tra:** chụp Home và màn chơi (màu không đổi); quay khối rỗng chạy ra so với video; luồng booster / thua không
+lỗi; tự chơi level 2, 31, 120, 222 thắng.

@@ -76,7 +76,7 @@ namespace SandJamTest.Scene3D
         MaterialPropertyBlock frameBlock, sandBlock, glassBlock;
         static readonly Color Outline=new Color(.035f,.03f,.06f);
         // The original's glass walls are almost clear: the background shows through nearly unchanged.
-        const float GlassClarity=.5f;
+        const float GlassClarity=.5f, GlassWhite=.15f;
         public void Apply(bool front,bool docked)
         {
             if(!sand || Actor.Shooter==null)return;
@@ -102,7 +102,9 @@ namespace SandJamTest.Scene3D
             if(glassRenderer)
             {
                 glassRenderer.enabled=glass;
-                if(glass){var tint=Color.Lerp(color,Color.white,.5f);tint.a=GlassClarity;glassBlock.SetColor("_Color",tint);glassRenderer.SetPropertyBlock(glassBlock);}
+                // The glass reads in the box's colour (recording 3, 84.3 s: an emptied red box still looks red), only a
+                // little lighter; half white made a running box look grey.
+                if(glass){var tint=Color.Lerp(color,Color.white,GlassWhite);tint.a=GlassClarity;glassBlock.SetColor("_Color",tint);glassRenderer.SetPropertyBlock(glassBlock);}
             }
             if(glass)
             {
@@ -253,13 +255,14 @@ namespace SandJamTest.Scene3D
             mesh.RecalculateBounds();return mesh;
         }
         static Vector3 Abs(Vector3 v){return new Vector3(Mathf.Abs(v.x),Mathf.Abs(v.y),Mathf.Abs(v.z));}
-        // Coordinates across a face: dense through each bevel band, sparse on the flat middle.
+        // Coordinates across a face: dense through each bevel band, sparse on the flat middle (one line, for the half
+        // wedge's taper). 11 a side: 1 200 triangles a block instead of 2 352, the same silhouette at cube size.
         static List<float> Samples(float half,float radius)
         {
             var list=new List<float>();
-            float[] band={0,.2f,.45f,.7f,.88f,1};
+            float[] band={0,.3f,.6f,.85f,1};
             foreach(float k in band)list.Add(-half+radius*k);
-            for(int i=1;i<4;i++)list.Add(Mathf.Lerp(-half+radius,half-radius,i/4f));
+            list.Add(0);
             for(int i=band.Length-1;i>=0;i--)list.Add(half-radius*band[i]);
             return list;
         }

@@ -39,7 +39,7 @@ namespace SandJamTest.Scene3D
             {
                 var t = stash.Find("Solid waiting pad " + i); var pad = t ? t.GetComponent<Renderer>() : null;
                 if (!pad || !cam) continue;
-                pads[i] = pad; padColors[i] = pad.material.HasProperty("_Color") ? pad.material.color : Color.white;
+                pads[i] = pad; padColors[i] = pad.SharedColor();
                 var flat = locks[i].transform.Find("Locked pad"); if (flat) { var r = flat.GetComponent<Renderer>(); if (r) r.enabled = false; }
                 var icon = locks[i].transform.Find("icon-lock"); var digits = counters[i] ? counters[i].transform : null;
                 var b = pad.bounds; var eye = cam.transform.position;
@@ -68,7 +68,7 @@ namespace SandJamTest.Scene3D
         {
             if (pads == null || !pads[i] || padLocked[i] == locked) return;
             padLocked[i] = locked;
-            if (pads[i].material.HasProperty("_Color")) pads[i].material.color = locked ? LockedPad : padColors[i];
+            pads[i].SetBlockColor(locked ? LockedPad : padColors[i]);
         }
         public void Refresh(float delta)
         {

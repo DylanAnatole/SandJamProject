@@ -34,11 +34,14 @@ Shader "SandJamTest/SandToonDepth"
                 v2f o;float3 p=mul(unity_ObjectToWorld,v.vertex).xyz;
                 o.height=saturate((p.y-_FillBottom)/max(.001,_FillTop-_FillBottom));
                 p+=normalize(UnityObjectToWorldNormal(v.normal))*_OutlineWidth;
-                o.pos=mul(UNITY_MATRIX_VP,float4(p,1));return o;
+                o.pos=mul(UNITY_MATRIX_VP,float4(p,1));
+                // No outline (sand inside the glass, back rows): every vertex goes outside the view, so the GPU drops
+                // the hull before shading it (a per-pixel clip shaded the whole hull and then threw it away).
+                if(_OutlineWidth<=.0001)o.pos=float4(2,2,2,1);
+                return o;
             }
             fixed4 frag(v2f i):SV_Target
             {
-                clip(_OutlineWidth-.0001);
                 // Do not let the back-face outline fill the emptied, transparent interior.
                 if(_FillEnabled>.5 && _FillAmount<.999)
                 { clip(_FillAmount-.001);clip(_FillAmount-i.height); }
