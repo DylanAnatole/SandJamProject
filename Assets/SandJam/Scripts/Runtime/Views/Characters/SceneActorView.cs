@@ -34,8 +34,10 @@ namespace SandJamTest.Scene3D
         float travel, duration, exitDelay, leaveAge;
         // An emptied box turns white as it leaves (recording 2, 158.38-158.55 s; recording 3, 84.06-84.30 s): fully white
         // while it waits on its pad, snapping back to its colour as it jumps off (a slow fade read as a washed-out box).
-        const float EmptyWhiteSnap=.05f;
-        public float EmptyWhite { get { return Departing ? Mathf.Clamp01(1-(leaveAge-ExitPause)/EmptyWhiteSnap) : 0; } }
+        // Only part-way to white (EmptyWhitePeak): on the light stage a pure white box showed as a bare white cage that
+        // read as a glitch; a pale box in its own colour reads as the same flash.
+        const float EmptyWhiteSnap=.05f, EmptyWhitePeak=.6f;
+        public float EmptyWhite { get { return Departing ? EmptyWhitePeak * Mathf.Clamp01(1-(leaveAge-ExitPause)/EmptyWhiteSnap) : 0; } }
         int shownAmmo = int.MinValue;
         // Motion recovered from the gameplay video (27 fps): queue cubes slide forward in ~0.25 s without legs;
         // a selected cube sprouts legs and runs to its slot in ~0.5 s, bobbing and turned toward its path;
@@ -285,9 +287,10 @@ namespace SandJamTest.Scene3D
             if (restWritten && Rock == restRock && Resting(firing, targetFill)) return;
             if(Departing && exitDelay>0)
             {
-                // Brief pause: the emptied block turns toward its exit edge before running off.
+                // Brief pause: the emptied block holds still, white, facing the camera (recording 3, 84.30-84.48 s); it
+                // turns toward its exit edge once it jumps off (turning while white read as a flickering white cage).
                 exitDelay=Mathf.Max(0,exitDelay-delta);
-                yaw=Mathf.MoveTowards(yaw,ExitTarget,delta*900);ApplyYaw();ShowLegs(false);
+                ShowLegs(false);
                 if(exitDelay>0)return;
                 if(Motion)Motion.SetWalking(true);
             }

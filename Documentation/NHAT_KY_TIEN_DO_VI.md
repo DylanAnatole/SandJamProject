@@ -2303,3 +2303,20 @@ vẽ phải gộp động mỗi khung; khối cát luôn gửi 2 lượt vẽ (v
 
 **Kiểm tra:** chụp Home, màn chơi, Settings, Sand Quest so với trước (chữ và viền trùng, số hàng sau viền theo màu
 khối); luồng booster / thua không lỗi; tự chơi level 2, 31, 120 thắng.
+
+## 26/10/2026 — Khối rỗng không còn chớp khung trắng khi rời ô
+
+**Người dùng báo:** khối xả hết cát đi ra có một khoảng rất ngắn bị trắng viền.
+
+**Đo** (từng khung 0,02 s, cạnh video 3, 84,26–84,6 s): gốc cũng trắng ~0,18 s trước khi nhảy đi, nhưng cả khối đọc
+là một hộp trắng (kính mờ, có bóng xám, cục cát trắng bên trong) và đứng yên quay mặt ra trước. Bản mình: kính gần
+trong suốt (`GlassPane` mặt chỉ đục 0,26), trên nền và bệ gần trắng chỉ còn KHUNG trắng mảnh, lại xoay ngang ngay
+lúc đó, nên trông như chớp viền lỗi. Thử đục kính tới 0,9: vẫn gần như vô hình trên nền sáng.
+
+**Sửa:**
+- `SceneActorView`: nhịp trắng chỉ ngả 60% về trắng (`EmptyWhitePeak`), khối giữ sắc màu; khối đứng yên trong nhịp
+  này, quay ra hướng thoát khi nhảy đi.
+- `CharacterSandVessel`: kính mờ dần tới 0,7 (`WhiteGlass`, qua `_Base` của `GlassPane`) trong nhịp đó, nên đọc là một
+  hộp kính màu nhạt, không phải khung trơ.
+
+**Kiểm tra:** quay từng khung khối xanh rời ô; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
