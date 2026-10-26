@@ -85,7 +85,7 @@ namespace SandJamTest.Scene3D
         // of the block's base, thick, reaching ~0.8 of its height below it, knees well bent. The rig's hips sit inside
         // the box (seen folded behind the glass of an emptied box): running, the hips drop to the base
         // (RunLegLower, world units straight down) and the legs grow evenly, thicker as well as longer.
-        const float RunLegYaw = 0f, RunLegDrop = 12f, RunLegLength = 1.3f, RunLegThick = 1.5f, RunLegLower = .08f;
+        const float RunLegYaw = 0f, RunLegDrop = 12f, RunLegLength = 1.15f, RunLegThick = .9f, RunLegLower = .08f;
         Transform hips, leftThigh, rightThigh; bool rigSearched; float legYaw, legDrop; Vector3 thighScale, leftThighRest, rightThighRest, hipsBase, hipsWritten; bool hipsMoved;
         void FindRig()
         {

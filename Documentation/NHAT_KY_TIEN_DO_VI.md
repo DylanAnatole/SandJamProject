@@ -2205,3 +2205,9 @@ không ghi lại mỗi khung, nên phần hạ của khung trước được tr�
 
 **Kiểm tra:** quay từng khung chạy lên ô và rời ô: chân liền dưới khối, không còn mảng tối; luồng booster / thua
 không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Chân nhỏ nhắn (người dùng: "muốn nó nhỏ nhắn, to như hiện tại gây khó chịu")
+
+`SceneActorView`: độ dày khi chạy `RunLegThick` 1,5 → 0,9 (mảnh hơn chân gốc của rig), chiều dài `RunLegLength`
+1,3 → 1,15; hông vẫn hạ 0,08 (mặt cắt eo khuất trong hộp). Quay từng khung chạy lên ô và rời ô: chân thanh, vẫn
+sải bước, gập gối; tự chơi level 2, 68 thắng.
