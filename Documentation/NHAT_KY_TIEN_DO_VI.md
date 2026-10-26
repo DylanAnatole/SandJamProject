@@ -2404,3 +2404,14 @@ không lỗi; tự chơi level 2, 68 thắng.
 
 **Kiểm tra:** quay giờ thực đoạn thắng ở level 2 (phóng xong ~0,3 s, Superb! ở ~2,2 s); luồng booster / thua không lỗi;
 tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — "Superb!" kết thúc theo nhịp gốc
+
+**Đo** (video 3, 242,15–244,80 s, từng khung): chữ co lại biến mất từ ~1,93 s trong ~0,25 s; pháo giấy còn rơi một mình
+~0,35 s; bảng Level Complete bật ra ở ~2,53 s. Bản mình: co từ 2,1 s trong 0,4 s, bảng hiện ngay sau 0,05 s (không có
+quãng chỉ pháo giấy, chuyển cảnh bị dồn).
+
+**Sửa** (`SuperbFx`): `OutroStart` 1,93, `OutroTime` 0,25, thêm `ConfettiOnly` 0,35 (tổng `Duration` 2,53, gần như cũ).
+
+**Kiểm tra:** quay giờ thực từng 0,1 s đoạn Superb! → Level Complete; luồng booster / thua không lỗi; tự chơi level 2, 68
+thắng.

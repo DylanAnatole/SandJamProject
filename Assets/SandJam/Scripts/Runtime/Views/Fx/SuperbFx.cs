@@ -21,7 +21,9 @@ namespace SandJamTest.Scene3D
         // The word reads ~46% of the screen width in the original (recording 2), 12% larger than the label.
         const float LetterScale = 1.29f;
         // Original: after about two seconds the word shrinks away just before the Level Complete card.
-        public const float OutroStart = 2.1f, OutroTime = .4f, Duration = OutroStart + OutroTime + .05f;
+        // Recording 3 (242.15-244.68 s, every frame): the word shrinks away from ~1.93 s in ~0.25 s, the confetti then keeps
+        // falling alone for ~0.35 s before the Level Complete card pops in.
+        public const float OutroStart = 1.93f, OutroTime = .25f, ConfettiOnly = .35f, Duration = OutroStart + OutroTime + ConfettiOnly;
         readonly List<SpriteRenderer> cornerGlows = new List<SpriteRenderer>();
         // Corner lights of the original (recording 2, 226-228 s), in diagonal pairs: bottom-right with top-left, then
         // bottom-left with top-right; the bottom ones are brighter. x, y = viewport position, z = peak time, w = alpha.
