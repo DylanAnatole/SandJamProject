@@ -2371,3 +2371,12 @@ từ rồi chậm dần vào ô (đường cong giảm tốc), trông lừ đừ
 (`RunOvershoot`), về đúng ô bằng smoothstep. Khối rỗng rời đi vẫn chạy đều.
 
 **Kiểm tra:** đo lại quỹ đạo (đều, vượt 7%, về 100%); luồng booster / thua không lỗi; tự chơi level 2, 68, 222 thắng.
+
+## 26/10/2026 — Hàng dồn lên nhanh hơn, theo đo
+
+**Đo** (video 3, 90,30–90,60 s, từng khung): khối sau dồn lên chỗ trống xong trong ~0,27 s, bắt đầu cùng lúc khối trước
+rời hàng. Bản mình mất ~0,36 s (`SlideSeconds` 0,38), trông chậm, hàng như bị trễ.
+
+**Sửa:** `SceneActorView.SlideSeconds` 0,38 → 0,28. Đo lại: dồn xong trong ~0,26 s.
+
+**Kiểm tra:** luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.

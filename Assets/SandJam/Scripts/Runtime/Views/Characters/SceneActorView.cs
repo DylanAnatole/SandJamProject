@@ -44,7 +44,7 @@ namespace SandJamTest.Scene3D
         Gait gait;
         float yaw;
         // Run to the stash: the original takes ~0.75 s from the right lane to the leftmost slot (recording 2, 48.6-49.4 s).
-        const float SlideSeconds=.38f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitPause=.18f, ExitHop=.25f, ExitHopSeconds=.3f;
+        const float SlideSeconds=.28f, RunSpeed=3.5f, MinRun=.45f, MaxRun=.8f, ExitPause=.18f, ExitHop=.25f, ExitHopSeconds=.3f;
         // Leaving runs at an even pace (recording 3, 84.3-84.7 s: ~570 px/s, a full stride cycle seen before the edge);
         // the off-screen end point is far, so a fixed duration with an eased start crossed the visible part in 0.1 s.
         const float ExitSpeed=3.2f;
@@ -318,7 +318,8 @@ namespace SandJamTest.Scene3D
                 float t = duration > 0 ? travel / duration : 1;
                 if (gait == Gait.Slide)
                 {
-                    // Queue advance (recording 2, 48.63-49.0 s): slow start, quickest midway, slow finish, flat (no hop).
+                    // Queue advance (recording 2, 48.63-49.0 s; recording 3, 90.30-90.58 s: done in ~0.27 s, starting as the
+                    // front box leaves): slow start, quickest midway, slow finish, flat (no hop).
                     float ease = t * t * (3 - 2 * t);
                     transform.position = Vector3.Lerp(from, destination, ease);
                     yaw = Mathf.MoveTowards(yaw, 0, delta * 300);
