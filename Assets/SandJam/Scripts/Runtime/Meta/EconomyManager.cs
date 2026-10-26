@@ -11,26 +11,25 @@ namespace SandJamTest
         public static int WinRewardFor(int level) { return OriginalConfig.IsEasy(level) ? BonusWinReward : OriginalConfig.IsHard(level) ? HardWinReward : WinReward; }
         public static int Coins { get { return SaveManager.Data.coins; } }
 
-        // Original booster prices (HUD labels 150 / 500 / 700).
-        public static int BoosterPrice(string action)
-        {
-            switch (action) { case "rocket": return 150; case "swap": return 500; case "select": return 700; default: return 0; }
-        }
+        public static int BoosterPrice(string action) { var b = BoosterCatalog.Find(action); return b != null ? b.Price : 0; }
 
-        public static int BoosterCount(string action)
-        {
-            var d = SaveManager.Data;
-            switch (action) { case "rocket": return d.flares; case "swap": return d.swaps; case "select": return d.selects; default: return 0; }
-        }
+        public static int BoosterCount(string action) { var s = Stock(action, false); return s != null ? s.count : 0; }
 
         public static void AddBooster(string action, int amount, string reason)
         {
-            var d = SaveManager.Data;
-            if (action == "rocket") d.flares = Math.Max(0, d.flares + amount);
-            else if (action == "swap") d.swaps = Math.Max(0, d.swaps + amount);
-            else if (action == "select") d.selects = Math.Max(0, d.selects + amount);
+            if (BoosterCatalog.Find(action) == null) { UnityEngine.Debug.LogWarning("Unknown booster: " + action); return; }
+            var s = Stock(action, true);
+            s.count = Math.Max(0, s.count + amount);
             SaveManager.Save();
             GameEvents.RaiseCoinsChanged(Coins, 0, reason);
+        }
+
+        static BoosterStock Stock(string action, bool create)
+        {
+            var list = SaveManager.Data.boosters;
+            var s = list.Find(b => b.id == action);
+            if (s == null && create) { s = new BoosterStock { id = action }; list.Add(s); }
+            return s;
         }
 
         public static void Add(int amount, string reason)

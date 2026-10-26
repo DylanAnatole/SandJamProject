@@ -14,7 +14,7 @@ namespace SandJamTest.Scene3D
         const float ShopUnit = 5.2f / 342f;      // mockup pixels → popup units
         const float ShopTop = 2.75f;             // where mockup row 185 (first card) sits when not scrolled (under the header)
         static readonly string[] BoosterIcons = { "Shop/icon-flare", "Shop/icon-swap", "Shop/icon-select" };
-        static readonly string[] BoosterActions = { "rocket", "swap", "select" };
+        static readonly string[] BoosterActions = { BoosterCatalog.Flare, BoosterCatalog.Swap, BoosterCatalog.Select };
 
         static float ShopY(float mockupY) { return ShopTop - (mockupY - 185) * ShopUnit; }
         static float ShopX(float mockupX) { return (mockupX - 168) * ShopUnit; }

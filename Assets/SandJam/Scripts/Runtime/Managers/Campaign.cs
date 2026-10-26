@@ -30,7 +30,11 @@ namespace SandJamTest
             get { return Math.Max(1, SaveManager.Data.level); }
             set { SaveManager.Data.level = Math.Max(1, value); SaveManager.Save(); }
         }
-        public static string CurrentId { get { return Levels[(LevelNumber - 1) % Levels.Length]; } }
+        public static string CurrentId { get { return IdAt(LevelNumber); } }
+        // Level id of a level number (the campaign wraps around after its last entry).
+        public static string IdAt(int level) { return Levels[(Math.Max(1, level) - 1) % Levels.Length]; }
+        // Picture of a level (LevelRenders/<id>): repeated levels ("<id>_Dupe") share their original's.
+        public static string PictureId(string id) { return id.EndsWith("_Dupe") ? id.Substring(0, id.Length - 5) : id; }
         public static TextAsset LoadCurrent()
         {
             var asset = LoadLevel(CurrentId);

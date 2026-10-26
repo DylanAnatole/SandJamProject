@@ -31,7 +31,7 @@ namespace SandJamTest.Scene3D
         }
         GameObject BuildSelectCard()
         {
-            var cam = screen.UiCamera; var anchor = buttons["select"];
+            var cam = screen.UiCamera; var anchor = buttons[BoosterCatalog.Select];
             System.Func<float, float, Vector3> spot = (x, y) => new Vector3(cam.transform.position.x + (x - 444) * VideoScreen.Px, cam.transform.position.y + (960 - y) * VideoScreen.Px, anchor.position.z - .4f);
             var root = new GameObject("Select booster card") { layer = anchor.gameObject.layer };
             root.transform.SetParent(anchor.parent, true); root.transform.position = spot(444, 1201);
@@ -78,7 +78,7 @@ namespace SandJamTest.Scene3D
             foreach (var placeholder in owner.Placeholders)
             {
                 string action = placeholder.ActionId;
-                if (action != "rocket" && action != "swap" && action != "select") continue;
+                if (BoosterCatalog.Find(action) == null) continue;
                 var image = placeholder.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(r => r.name == "Purple booster button");
                 if (!image) continue;
                 buttons[action] = image.transform;
@@ -224,20 +224,20 @@ namespace SandJamTest.Scene3D
             if (PickerOpen) { Cancel(); return false; }
             // Boosters work silently, as in the original (no caption under the board).
             if (screen.Levels.PlayedNumber < OriginalConfig.BoosterUnlockLevel(action) || !EconomyManager.CanUseBooster(action)) return false;
-            if (action == "swap")
+            if (action == BoosterCatalog.Swap)
             {
                 bool changed = controller.SwapFrontRows();
                 if (changed) Pay(action);
                 return changed;
             }
-            if (action == "select")
+            if (action == BoosterCatalog.Select)
             {
                 if (!controller.Game.Lanes.SelectMany(l=>l).Any(controller.Game.CanSelectPriority)) return false;
                 PickerOpen = true; pickerOpenedFrame = Time.frameCount; controller.BoosterInputBlocked = true;
                 ShowSelectCard(true);
                 return true;
             }
-            if (action == "rocket")
+            if (action == BoosterCatalog.Flare)
             {
                 var choices = Enumerable.Range(0,controller.Game.Regions.Length).Where(controller.Game.CanRevealRegion).ToArray();
                 if (choices.Length == 0) return false;
@@ -251,7 +251,7 @@ namespace SandJamTest.Scene3D
         {
             Busy = true; controller.BoosterInputBlocked = true;
             var game = controller.Game;
-            var origin = buttons["rocket"].position;
+            var origin = buttons[BoosterCatalog.Flare].position;
             var pixel = screen.UiCamera.WorldToScreenPoint(origin);
             var from = controller.GameCamera.ScreenToWorldPoint(new Vector3(pixel.x,pixel.y,28));
             var to = controller.Regions[index].Counter.transform.position; to.z = -1;
@@ -284,7 +284,7 @@ namespace SandJamTest.Scene3D
             var cam = controller.GameCamera;
             var actor = cam && Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hit, 100, 1 << 8) ? hit.collider.GetComponentInParent<SceneActorView>() : null;
             if (!actor || actor.Shooter == null) { Cancel(); return; }
-            if (controller.SelectPriority(actor.Shooter)) { Pay("select"); Cancel(); }
+            if (controller.SelectPriority(actor.Shooter)) { Pay(BoosterCatalog.Select); Cancel(); }
             else actor.Shake();
         }
         public void Cancel()

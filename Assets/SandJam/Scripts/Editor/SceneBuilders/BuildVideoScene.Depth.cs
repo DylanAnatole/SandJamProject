@@ -85,15 +85,15 @@ namespace SandJamTest.Editor
         {
             var environment=screen.Gameplay.transform.Find("Backdrop and frame");
             foreach(Transform old in environment)old.gameObject.SetActive(false);
-            var plum=DepthMaterial("StagePlum",Hex("67528D"),0,0,.12f);
+            var plum=DepthMaterial("StagePlum",ColorPalette.Hex("67528D"),0,0,.12f);
             var frame=Loft("BevelledBoardFrame",new List<Vector3[]>{
                 Contour(4.26f,5.32f,.34f,.24f),Contour(4.26f,5.32f,.34f,.04f),Contour(4.16f,5.22f,.29f,-.06f),
                 Contour(3.77f,4.95f,.21f,-.06f,.07f),Contour(3.69f,4.87f,.17f,.04f,.07f),Contour(3.69f,4.87f,.17f,.24f,.07f)},false,true);
             DepthMesh("Solid board frame",environment,frame,plum,P(239,374,.2f),Vector3.zero);
             DepthMesh("Extruded plinth",environment,BevelBox("Plinth",4.72f,.30f,.40f,.10f,.045f),plum,P(241,623,-.08f),new Vector3(-32,0,0));
             Shadow(environment,"Plinth contact shadow",241,651,490,36,.35f);
-            var white=DepthMaterial("Porcelain",Hex("FFFDFE"),0,0,.18f);
-            var bank=DepthMaterial("RailTop",Hex("736487"),0,0,.04f);
+            var white=DepthMaterial("Porcelain",ColorPalette.Hex("FFFDFE"),0,0,.18f);
+            var bank=DepthMaterial("RailTop",ColorPalette.Hex("736487"),0,0,.04f);
             var outer=BevelBox("Rail",1.62f,4.5f,.15f,.32f,.025f);var inner=BevelBox("RailInset",1.52f,4.5f,.08f,.28f,.015f);
             DepthMesh("Left solid rail",environment,outer,white,P(-2,978,.36f),new Vector3(0,0,-9));
             DepthMesh("Left rail top",environment,inner,bank,P(-14,975,.23f),new Vector3(0,0,-9));
@@ -125,7 +125,7 @@ namespace SandJamTest.Editor
         static GameObject MysteryCube(Transform actor)
         {
             var root=Group("Mystery cube - cosmetic",actor);root.localPosition=new Vector3(0,.29f,-.05f);root.localRotation=Quaternion.Euler(-38,0,0);
-            var cube=DepthMesh("Solid question cube",root,BevelBox("MysteryCube",.65f,.62f,.58f,.055f,.025f),DepthMaterial("MysteryGray",Hex("646873"),0,.008f,.07f),Vector3.zero,Vector3.zero);cube.localPosition=Vector3.zero;
+            var cube=DepthMesh("Solid question cube",root,BevelBox("MysteryCube",.65f,.62f,.58f,.055f,.025f),DepthMaterial("MysteryGray",ColorPalette.Hex("646873"),0,.008f,.07f),Vector3.zero,Vector3.zero);cube.localPosition=Vector3.zero;
             var front=Text("Front question","?",root,0,0,32,Color.white,-.4f,false);front.transform.localPosition=new Vector3(0,-.02f,-.31f);
             var top=Text("Top questions","? ?\n ?",root,0,0,23,Color.white,0,false);top.transform.localPosition=new Vector3(0,.32f,0);top.transform.localRotation=Quaternion.Euler(90,0,0);
             return root.gameObject;

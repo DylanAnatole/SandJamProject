@@ -19,7 +19,6 @@ namespace SandJamTest.Editor
         static Color VideoColor(int id){switch(id){case 1: return new Color(0.74509805f,0.09411765f,0.09411765f,1.0f);case 2: return new Color(0.11372549f,0.7921569f,0.0f,1.0f);case 3: return new Color(0.0f,0.6392157f,1.0f,1.0f);case 4: return new Color(1.0f,0.8039216f,0.0f,1.0f);case 5: return new Color(1.0f,0.5294118f,0.0f,1.0f);case 6: return new Color(0.83137256f,0.0f,0.78039217f,1.0f);case 7: return new Color(0.43529412f,0.0f,0.9254902f,1.0f);case 8: return new Color(0.07450981f,0.07450981f,0.07450981f,1.0f);case 9: return new Color(0.8666667f,0.8666667f,0.8666667f,1.0f);case 10: return new Color(0.6509804f,0.40392157f,0.22352941f,1.0f);default:return new Color(.6f,.6f,.65f,1);}}
         static Font font; static Material spriteMaterial;
         static Sprite rounded, pad;
-        static Color Hex(string value){return ColorPalette.Hex(value);}
         static Vector3 P(float x,float y,float z=0){return new Vector3((x-241.5f)*.01f,(537.5f-y)*.01f,z);}
         static Transform Group(string name,Transform parent=null){var t=new GameObject(name).transform;if(parent)t.SetParent(parent,false);return t;}
         static T Save<T>(T asset,string name) where T:UnityEngine.Object
@@ -58,7 +57,7 @@ namespace SandJamTest.Editor
             if(outline)
             {
                 foreach(var d in new[]{new Vector2(-1,-1),new Vector2(1,-1),new Vector2(-1,1),new Vector2(1,1)})
-                {var edge=Group("Text outline",t);edge.localPosition=new Vector3(d.x*.012f,d.y*.012f,.012f);var e=edge.gameObject.AddComponent<TextMesh>();e.font=font;e.fontSize=64;e.fontStyle=FontStyle.Bold;e.characterSize=text.characterSize;e.anchor=text.anchor;e.alignment=text.alignment;e.text=value;e.color=Hex("252434");edge.gameObject.GetComponent<MeshRenderer>().sharedMaterial=font.material;}
+                {var edge=Group("Text outline",t);edge.localPosition=new Vector3(d.x*.012f,d.y*.012f,.012f);var e=edge.gameObject.AddComponent<TextMesh>();e.font=font;e.fontSize=64;e.fontStyle=FontStyle.Bold;e.characterSize=text.characterSize;e.anchor=text.anchor;e.alignment=text.alignment;e.text=value;e.color=ColorPalette.Hex("252434");edge.gameObject.GetComponent<MeshRenderer>().sharedMaterial=font.material;}
             }
             if(outline) t.gameObject.AddComponent<ReferenceTextOutline>();
             return text;
@@ -82,15 +81,15 @@ namespace SandJamTest.Editor
             var controller=root.gameObject.AddComponent<SandJamSceneController>();controller.ViewAspect=483f/1075;controller.QueueSpacing=1.04f;root.gameObject.AddComponent<AudioSource>().playOnAwake=false;
             var reference=root.gameObject.AddComponent<VideoScreen>();reference.Controller=controller;
             var environment=Group("Backdrop and frame",root);var hud=Group("HUD - visual controls only",root);
-            Image("Frame shadow",rounded,environment,242,374,438,553,Hex("433565"),.8f,true);
-            Image("Raised board frame",rounded,environment,239,374,426,532,Hex("67558E"),.7f,true);
-            Image("Inset rim",rounded,environment,239,366,366,490,Hex("B6B3CC"),.6f,true);
-            Image("Tray bevel",rounded,environment,241,623,474,46,Hex("564377"),.25f,true);
-            Image("Tray top",rounded,environment,241,610,450,29,Hex("65518C"),.24f,true);
-            var left=Image("Left lane rail",rounded,environment,-2,973,164,442,Hex("E9E9F0"),.6f,true);left.transform.rotation=Quaternion.Euler(0,0,-9);
-            var leftInner=Image("Left lane bank",rounded,environment,-15,966,158,444,Hex("656575"),.5f,true);leftInner.transform.rotation=Quaternion.Euler(0,0,-9);
-            var right=Image("Right booster rail",rounded,environment,479,971,147,438,Hex("F7F7FA"),.6f,true);right.transform.rotation=Quaternion.Euler(0,0,9);
-            var rightInner=Image("Right booster bank",rounded,environment,491,968,150,435,Hex("777382"),.5f,true);rightInner.transform.rotation=Quaternion.Euler(0,0,9);
+            Image("Frame shadow",rounded,environment,242,374,438,553,ColorPalette.Hex("433565"),.8f,true);
+            Image("Raised board frame",rounded,environment,239,374,426,532,ColorPalette.Hex("67558E"),.7f,true);
+            Image("Inset rim",rounded,environment,239,366,366,490,ColorPalette.Hex("B6B3CC"),.6f,true);
+            Image("Tray bevel",rounded,environment,241,623,474,46,ColorPalette.Hex("564377"),.25f,true);
+            Image("Tray top",rounded,environment,241,610,450,29,ColorPalette.Hex("65518C"),.24f,true);
+            var left=Image("Left lane rail",rounded,environment,-2,973,164,442,ColorPalette.Hex("E9E9F0"),.6f,true);left.transform.rotation=Quaternion.Euler(0,0,-9);
+            var leftInner=Image("Left lane bank",rounded,environment,-15,966,158,444,ColorPalette.Hex("656575"),.5f,true);leftInner.transform.rotation=Quaternion.Euler(0,0,-9);
+            var right=Image("Right booster rail",rounded,environment,479,971,147,438,ColorPalette.Hex("F7F7FA"),.6f,true);right.transform.rotation=Quaternion.Euler(0,0,9);
+            var rightInner=Image("Right booster bank",rounded,environment,491,968,150,435,ColorPalette.Hex("777382"),.5f,true);rightInner.transform.rotation=Quaternion.Euler(0,0,9);
             // Exactly five serialized waiting positions.
             var stash=Group("Stash - 5 positions",root);controller.StashSlots=new Transform[5];
             for(int i=0;i<5;i++){float x=95+i*69;Image("Waiting pad "+(i+1),pad,stash,x,687,63,43,Color.white,.3f,true);var anchor=Group("Reference slot "+(i+1),stash);anchor.position=P(x,711,-.1f);controller.StashSlots[i]=anchor;}
@@ -100,7 +99,7 @@ namespace SandJamTest.Editor
             var controls=new List<ReferenceUiPlaceholder>{settings,wallet};
             for(int i=0;i<3;i++)
             {
-                float y=811+i*78;int price=i==0?150:i==1?500:700;var p=Placeholder(hud,"Booster "+(i+1)+" - UI only",i==0?"rocket":i==1?"swap":"select",price);controls.Add(p);
+                float y=811+i*78;var booster=BoosterCatalog.All[i];int price=booster.Price;var p=Placeholder(hud,"Booster "+(i+1)+" - UI only",booster.Id,price);controls.Add(p);
                 Image("Purple booster button",Asset("button-booster"),p.transform,448,y,74,57,Color.white,-1);
                 Image("Booster icon",Asset("icon-booster-"+(3-i)),p.transform,448,y-19,49,49,Color.white,-1.1f);
                 Image("Price coin",Asset("icon-coin_0"),p.transform,434,y+12,15,15,Color.white,-1.2f);Text("Price",price.ToString(),p.transform,461,y+12,17,Color.white,-1.3f);
@@ -113,16 +112,16 @@ namespace SandJamTest.Editor
             controller.Regions=new SceneRegionView[data.parts.Length];
             for(int i=0;i<data.parts.Length;i++)
             {
-                var part=data.parts[i];var t=Group(part.name,board);var view=t.gameObject.AddComponent<SceneRegionView>();view.PartIndex=i;view.Divider=data.uiDivider;view.EmptyTint=Hex("BCBDD3");view.OpenTintStrength=.65f;view.OverrideSandColor=true;view.SandColor=VideoColor(part.ColorType);view.Geometry=Tiles(part,t);
+                var part=data.parts[i];var t=Group(part.name,board);var view=t.gameObject.AddComponent<SceneRegionView>();view.PartIndex=i;view.Divider=data.uiDivider;view.EmptyTint=ColorPalette.Hex("BCBDD3");view.OpenTintStrength=.65f;view.OverrideSandColor=true;view.SandColor=VideoColor(part.ColorType);view.Geometry=Tiles(part,t);
                 view.Target=Group("Pour target",t);float x=((float)part.cols.Average()+.5f)*.075f-3.15f,y=((float)part.rows.Average()+.5f)*.075f+.4f;
                 var label=Text("Remaining amount",part.isOpenedAtStart?DisplayAmount.Units(part.amount,data.uiDivider).ToString():"",t,0,0,20,Color.white,-.08f,true);label.transform.localPosition=new Vector3(x,y,-.09f);label.characterSize=.062f;foreach(var edge in label.GetComponentsInChildren<TextMesh>())edge.characterSize=.062f;label.gameObject.SetActive(part.isOpenedAtStart);view.Counter=label;controller.Regions[i]=view;
             }
             // Serialized editor preview; the runtime grid texture replaces it on Play.
             var previewTexture=new Texture2D(84,112,TextureFormat.RGBA32,false);
-            var previewPixels=Enumerable.Repeat((Color32)Hex("BCBDD3"),84*112).ToArray();
+            var previewPixels=Enumerable.Repeat((Color32)ColorPalette.Hex("BCBDD3"),84*112).ToArray();
             foreach(var part in data.parts) if(part.isOpenedAtStart)
-                for(int i=0;i<part.rows.Length;i++)previewPixels[part.rows[i]*84+part.cols[i]]=Color.Lerp(Hex("BCBDD3"),VideoColor(part.ColorType),.65f);
-            for(int i=0;i<data.opr.Length;i++)previewPixels[data.opr[i]*84+data.opc[i]]=Hex("8280AD");
+                for(int i=0;i<part.rows.Length;i++)previewPixels[part.rows[i]*84+part.cols[i]]=Color.Lerp(ColorPalette.Hex("BCBDD3"),VideoColor(part.ColorType),.65f);
+            for(int i=0;i<data.opr.Length;i++)previewPixels[data.opr[i]*84+data.opc[i]]=ColorPalette.Hex("8280AD");
             previewTexture.SetPixels32(previewPixels);previewTexture.Apply();string previewPath=Folder+"/PopArtBoardPreview.png";File.WriteAllBytes(previewPath,previewTexture.EncodeToPNG());UnityEngine.Object.DestroyImmediate(previewTexture);AssetDatabase.ImportAsset(previewPath);
             var previewImporter=(TextureImporter)AssetImporter.GetAtPath(previewPath);previewImporter.textureType=TextureImporterType.Sprite;previewImporter.mipmapEnabled=false;previewImporter.filterMode=FilterMode.Point;previewImporter.spritePixelsPerUnit=100;previewImporter.textureCompression=TextureImporterCompression.Uncompressed;previewImporter.SaveAndReimport();
             var preview=Group("Editor board preview",board);preview.localPosition=new Vector3(0,4.6f,-.02f);preview.localScale=Vector3.one*7.5f;
@@ -149,7 +148,7 @@ namespace SandJamTest.Editor
             }
             controller.Characters=actorViews.ToArray();controller.ProjectileRoot=Group("Pooled sand projectiles",root);controller.ProjectilePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(ProjectPaths.Root+"/Prefabs/Gameplay/SandProjectile.prefab");
             controller.InterfaceFont=font;controller.SelectSound=Resources.Load<AudioClip>("Original/Select");controller.VictorySound=Resources.Load<AudioClip>("Original/Victory");
-            var camera=Group("Main Camera",root).gameObject.AddComponent<Camera>();camera.tag="MainCamera";camera.transform.position=new Vector3(0,0,-30);camera.orthographic=true;camera.orthographicSize=5.375f;camera.nearClipPlane=.1f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=Hex("DDD8F8");camera.gameObject.AddComponent<AudioListener>();controller.GameCamera=camera;
+            var camera=Group("Main Camera",root).gameObject.AddComponent<Camera>();camera.tag="MainCamera";camera.transform.position=new Vector3(0,0,-30);camera.orthographic=true;camera.orthographicSize=5.375f;camera.nearClipPlane=.1f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=ColorPalette.Hex("DDD8F8");camera.gameObject.AddComponent<AudioListener>();controller.GameCamera=camera;
             ComposeScreens(root,reference,controller);ApplyDepth(root,reference,controller);
             ConfigureLevelPack(root,reference,controller);
             EditorSceneManager.SaveScene(scene,Scene);AssetDatabase.SaveAssets();

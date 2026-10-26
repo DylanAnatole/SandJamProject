@@ -23,9 +23,9 @@ namespace SandJamTest
             if (!CanClaim) return null;
             var gift = Days[NextDay];
             if (gift.Coins > 0) EconomyManager.Add(gift.Coins, "daily-reward");
-            if (gift.Flares > 0) EconomyManager.AddBooster("rocket", gift.Flares, "daily-reward");
-            if (gift.Swaps > 0) EconomyManager.AddBooster("swap", gift.Swaps, "daily-reward");
-            if (gift.Selects > 0) EconomyManager.AddBooster("select", gift.Selects, "daily-reward");
+            if (gift.Flares > 0) EconomyManager.AddBooster(BoosterCatalog.Flare, gift.Flares, "daily-reward");
+            if (gift.Swaps > 0) EconomyManager.AddBooster(BoosterCatalog.Swap, gift.Swaps, "daily-reward");
+            if (gift.Selects > 0) EconomyManager.AddBooster(BoosterCatalog.Select, gift.Selects, "daily-reward");
             Data.nextDay = (NextDay + 1) % Days.Length;
             Data.lastClaimDay = Today;
             SaveManager.Save();

@@ -25,7 +25,7 @@ namespace SandJamTest.Editor
             EditorGUILayout.LabelField("Level", d.level + "  (" + Campaign.CurrentId + ")");
             EditorGUILayout.LabelField("Campaign entries", Campaign.Levels.Length.ToString());
             EditorGUILayout.LabelField("Coins", d.coins.ToString());
-            EditorGUILayout.LabelField("Boosters", "Flare " + d.flares + " · Swap " + d.swaps + " · Select " + d.selects);
+            EditorGUILayout.LabelField("Boosters", string.Join(" · ", System.Array.ConvertAll(BoosterCatalog.All, b => b.Id + " " + EconomyManager.BoosterCount(b.Id))));
             EditorGUILayout.LabelField("Sound", d.soundOn ? "On" : "Off");
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -64,9 +64,9 @@ namespace SandJamTest.Editor
             }
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("+1 Flare")) EconomyManager.AddBooster("rocket", 1, "debug");
-                if (GUILayout.Button("+1 Swap")) EconomyManager.AddBooster("swap", 1, "debug");
-                if (GUILayout.Button("+1 Select")) EconomyManager.AddBooster("select", 1, "debug");
+                if (GUILayout.Button("+1 Flare")) EconomyManager.AddBooster(BoosterCatalog.Flare, 1, "debug");
+                if (GUILayout.Button("+1 Swap")) EconomyManager.AddBooster(BoosterCatalog.Swap, 1, "debug");
+                if (GUILayout.Button("+1 Select")) EconomyManager.AddBooster(BoosterCatalog.Select, 1, "debug");
             }
 
             EditorGUILayout.Space();

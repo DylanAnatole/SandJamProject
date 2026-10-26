@@ -186,16 +186,15 @@ namespace SandJamTest
             // The collection being filled is the art style of the next block.
             int unlock = index + 1; // feature number (1-based) of the next block = the style this block unlocks
             if (unlock >= 1 && unlock <= Styles.Length) { info.Name = Styles[unlock - 1].Name; info.Cover = Styles[unlock - 1].Cover; }
-            var levels = Campaign.Levels;
-            string first = levels[(start + count - 1) % levels.Length]; // first level of the next block
-            info.RenderId = System.Text.RegularExpressions.Regex.Replace(first, "_Dupe$", "");
+            string first = Campaign.IdAt(start + count); // first level of the next block
+            info.RenderId = Campaign.PictureId(first);
             if (info.Name == null)
             {
                 string category = Collections.CategoryOf(first);
                 info.Name = category != null ? Collections.DisplayName(category) : "Collection " + index;
             }
-            string own = levels[(start - 1) % levels.Length];
-            info.StyleRenderId = System.Text.RegularExpressions.Regex.Replace(own, "_Dupe$", "");
+            string own = Campaign.IdAt(start);
+            info.StyleRenderId = Campaign.PictureId(own);
             if (index >= 1 && index <= Styles.Length) { info.StyleName = Styles[index - 1].Name; info.StyleCover = Styles[index - 1].Cover; }
             else
             {

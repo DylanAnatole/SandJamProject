@@ -2136,3 +2136,29 @@ booster / thua không lỗi; tự chơi level 2, 68 thắng.
 
 **Kiểm tra:** chụp Gallery ở level 361 so với video (khớp bố cục); bấm sang bộ khoá "Iconic Realms" hiện ảnh
 tối + ổ khoá; badge Home vẫn đủ đĩa đỏ và "!"; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Ổn định trước khi làm mechanic / booster mới
+
+**Tự chơi diện rộng:** 30 level rải từ 2 đến 498: 28 thắng ngay, không exception. Level 31 và 222 thua vì script
+tự chơi (cục bộ) chọn lane mỗi 0,25 s khi khối trước còn đang đổ, trong khi bộ giải chờ đổ xong; sửa script chờ
+đổ xong thì cả hai thắng. Chạy lời giải trên luật thuần (`SandGame`) cũng thắng: không phải lỗi game. Level 361
+cần booster (đã biết).
+
+**Bảng booster (`BoosterCatalog`):** id và giá của mọi booster ở một chỗ. Trước đó chuỗi "rocket" / "swap" /
+"select" viết tay ở 10 file (giá, số lượng, save, HUD, shop, nhiệm vụ, quà). Giờ thêm booster = một dòng trong bảng
++ hiệu ứng trong `BoosterController`.
+- Save v3: `boosters` là danh sách (id, số lượng); save v2 (`flares`, `swaps`, `selects`) tự chuyển khi đọc.
+- `EconomyManager` đọc giá và số lượng theo bảng; id lạ bị bỏ qua kèm cảnh báo.
+- `OriginalConfig` có trường `Boosters` riêng, nên bảng đặt tên `BoosterCatalog` để khỏi nhầm (cả
+  `VideoScreen.Boosters`).
+
+**Bớt trùng lặp:**
+- `Campaign.IdAt(level)` và `Campaign.PictureId(id)` thay 5 chỗ tự tính id level và tự bỏ hậu tố `_Dupe` bằng
+  Regex (Gallery, CONGRATS / bộ sưu tập, NEW ART STYLE).
+- Bỏ hàm bọc `Hex` trong trình dựng scene (gọi thẳng `ColorPalette.Hex`).
+
+**Tài liệu:** `Documentation/THEM_MECHANIC_BOOSTER_VI.md`: các chỗ phải chạm khi thêm mechanic hoặc booster.
+
+**Kiểm tra:** biên dịch không lỗi; save v2 (10 / 3 / 7) chuyển đúng sang v3, cộng / dùng / đọc lại đúng; id bộ
+sưu tập level 361 không đổi; luồng booster (Swap, Flare, Select) và thua / chơi tiếp / bỏ cuộc không lỗi; tự chơi
+level 2, 68, 120 thắng.

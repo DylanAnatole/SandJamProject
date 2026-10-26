@@ -188,8 +188,7 @@ namespace SandJamTest.Scene3D
                 if (!done) { GoldCard(x, y, vw, vh, cw, ch); continue; }
                 var slot = GalleryArt("bg-cardSlot-cardCollection", x, y, cw, ch, -6.3f, galleryGrid);
                 vy = InnerCardY(slot);
-                string id = System.Text.RegularExpressions.Regex.Replace(Campaign.Levels[(level - 1) % Campaign.Levels.Length], "_Dupe$", "");
-                MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + id), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
+                MaskedPicture(Resources.Load<Sprite>("LevelRenders/" + Campaign.PictureId(Campaign.IdAt(level))), x, vy, vw - 2 * rim, vh - 2 * rim, -6.35f, galleryGrid);
                 KeepCard(level, x, firstPiece);
             }
             int rows = (info.Count + 2) / 3;

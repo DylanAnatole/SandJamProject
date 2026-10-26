@@ -107,9 +107,9 @@ namespace SandJamTest
                 if (s.claimedMilestones.Contains(i) || s.stars < Mathf.CeilToInt(ms[i].Fraction * max)) continue;
                 s.claimedMilestones.Add(i); coins += ms[i].Coins;
                 if (ms[i].Coins > 0) EconomyManager.Add(ms[i].Coins, kind + "-tasks");
-                if (ms[i].Flares > 0) EconomyManager.AddBooster("rocket", ms[i].Flares, kind + "-tasks");
-                if (ms[i].Swaps > 0) EconomyManager.AddBooster("swap", ms[i].Swaps, kind + "-tasks");
-                if (ms[i].Selects > 0) EconomyManager.AddBooster("select", ms[i].Selects, kind + "-tasks");
+                if (ms[i].Flares > 0) EconomyManager.AddBooster(BoosterCatalog.Flare, ms[i].Flares, kind + "-tasks");
+                if (ms[i].Swaps > 0) EconomyManager.AddBooster(BoosterCatalog.Swap, ms[i].Swaps, kind + "-tasks");
+                if (ms[i].Selects > 0) EconomyManager.AddBooster(BoosterCatalog.Select, ms[i].Selects, kind + "-tasks");
             }
             SaveManager.Save();
             return coins;
@@ -158,9 +158,9 @@ namespace SandJamTest
         static void OnCube(int color) { Count(Metric.Cards, 1); } // "REVEAL CARDS": cubes sent to the stash
         static void OnBooster(string action, int paid)
         {
-            if (action == "rocket") Count(Metric.Flare, 1);
-            else if (action == "swap") Count(Metric.Swap, 1);
-            else if (action == "select") Count(Metric.Select, 1);
+            if (action == BoosterCatalog.Flare) Count(Metric.Flare, 1);
+            else if (action == BoosterCatalog.Swap) Count(Metric.Swap, 1);
+            else if (action == BoosterCatalog.Select) Count(Metric.Select, 1);
         }
         static void OnCoins(int balance, int delta, string reason)
         {

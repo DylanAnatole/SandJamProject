@@ -47,7 +47,7 @@ namespace SandJamTest
         // Booster type ids in NewBoosterConfig: 1 flare (rocket), 2 swap, 0 select any.
         public static int BoosterUnlockLevel(string action)
         {
-            int type = action == "rocket" ? 1 : action == "swap" ? 2 : action == "select" ? 0 : -1;
+            int type = action == BoosterCatalog.Flare ? 1 : action == BoosterCatalog.Swap ? 2 : action == BoosterCatalog.Select ? 0 : -1;
             var entry = Array.Find(Boosters, b => b.type == type);
             return entry != null ? entry.showLevel : 1;
         }

@@ -7,7 +7,7 @@ namespace SandJamTest.Editor
     public static partial class BuildVideoScene
     {
         static void Panel(Transform parent,string name,float x,float y,float w,float h,string color,float z=-6)
-        { Image(name,rounded,parent,x,y,w,h,Hex(color),z,true); }
+        { Image(name,rounded,parent,x,y,w,h,ColorPalette.Hex(color),z,true); }
         static void Picture(Transform parent,string asset,float x,float y,float w,float h,float z=-7)
         { Image(asset,Asset(asset),parent,x,y,w,h,Color.white,z); }
         static void Label(Transform parent,string text,float x,float y,float size,float z=-8)
@@ -35,7 +35,7 @@ namespace SandJamTest.Editor
             controller.AmmoPerShot=10;
             controller.EnableSlotUnlocks=true;
             var slotLock=Group("Fifth waiting slot - locked until 300",play);screen.FifthSlotLock=slotLock.gameObject;
-            Image("Locked pad",pad,slotLock,371,687,63,43,Hex("828387"),-.5f,true);
+            Image("Locked pad",pad,slotLock,371,687,63,43,ColorPalette.Hex("828387"),-.5f,true);
             Picture(slotLock,"icon-lock",371,674,17,18,-.6f);
             screen.FifthSlotRemaining=Text("Unlock remaining","300",slotLock,371,696,19,Color.white,-.7f);
             var home=Group("Home screen",root);screen.Home=home.gameObject;
@@ -82,7 +82,7 @@ namespace SandJamTest.Editor
             Panel(result,"Gold header",241.5f,307,412,114,"F9C427",-6.1f);
             Picture(result,"bg-popUp-levelCompleted-v2",241.5f,554,410,392,-6.2f);
             Picture(result,"bg-level-yellow",241.5f,239,205,59,-6.4f);
-            Text("Level title","Level 147",result,241.5f,236,28,Hex("613F00"),-8,false);
+            Text("Level title","Level 147",result,241.5f,236,28,ColorPalette.Hex("613F00"),-8,false);
             Label(result,"Level Complete!",241.5f,300,36);
             Picture(result,"bg-popUp-slot-levelCompleted-v2",241.5f,476,355,257,-7);
             Picture(result,"icon-coin-reward",241.5f,444,170,113,-7.1f);Label(result,"+ 10",241.5f,518,53);
@@ -94,7 +94,7 @@ namespace SandJamTest.Editor
         {
             var particles=Group("Confetti",parent);var random=new System.Random(147);
             string[] colors={"FFD839","31D9F1","FC35BA","8DE443","FA8242"};
-            for(int i=0;i<65;i++){var p=Image("Paper "+i,pad,particles,random.Next(0,483),random.Next(0,1075),random.Next(4,9),random.Next(9,18),Hex(colors[i%colors.Length]),-5.6f);p.transform.rotation=Quaternion.Euler(0,0,random.Next(180));}
+            for(int i=0;i<65;i++){var p=Image("Paper "+i,pad,particles,random.Next(0,483),random.Next(0,1075),random.Next(4,9),random.Next(9,18),ColorPalette.Hex(colors[i%colors.Length]),-5.6f);p.transform.rotation=Quaternion.Euler(0,0,random.Next(180));}
             particles.gameObject.AddComponent<VideoConfetti>();
         }
     }

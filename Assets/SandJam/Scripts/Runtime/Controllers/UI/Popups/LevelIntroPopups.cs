@@ -101,7 +101,7 @@ namespace SandJamTest.Scene3D
         bool TryShowArtStyle(int level)
         {
             if (level <= 1) return false;
-            string id = Campaign.Levels[(level - 1) % Campaign.Levels.Length], previous = Campaign.Levels[(level - 2) % Campaign.Levels.Length];
+            string id = Campaign.IdAt(level), previous = Campaign.IdAt(level - 1);
             string category = Collections.CategoryOf(id);
             if (category == null || string.Equals(category, Collections.CategoryOf(previous), System.StringComparison.OrdinalIgnoreCase)) return false;
             string key = "art:" + category.ToLowerInvariant();
@@ -112,7 +112,7 @@ namespace SandJamTest.Scene3D
             var info = GalleryCollections.ForLevel(level);
             artStyleLabel.text = info != null && info.StyleName != null ? info.StyleName : Collections.DisplayName(category);
             Sprite picture, unusedGrey;
-            CoverPair(info != null ? info.StyleCover : null, System.Text.RegularExpressions.Regex.Replace(id, "_Dupe$", ""), out picture, out unusedGrey);
+            CoverPair(info != null ? info.StyleCover : null, Campaign.PictureId(id), out picture, out unusedGrey);
             artStylePicture.sprite = RoundedCopy(picture);
             // Recording 3: the picture fills the slot to a thin rim (FitCard scaled the card at build, so scale it too).
             artStylePicture.SetLocalSize(2.91f * ArtStyleFit, 3.64f * ArtStyleFit);
@@ -165,7 +165,7 @@ namespace SandJamTest.Scene3D
         {
             SaveManager.MarkIntroSeen(entry.gif);
             // Original: a newly unlocked booster arrives with one free use (HUD badge "1").
-            if (boosterIntros.Contains(entry)) EconomyManager.AddBooster(entry.type == 1 ? "rocket" : entry.type == 2 ? "swap" : "select", 1, "unlock-gift");
+            if (boosterIntros.Contains(entry)) EconomyManager.AddBooster(entry.type == 1 ? BoosterCatalog.Flare : entry.type == 2 ? BoosterCatalog.Swap : BoosterCatalog.Select, 1, "unlock-gift");
             introGif = Resources.Load<SpriteSequence>("OriginalGifs/" + entry.gif);
             intro.Title.text = boosterIntros.Contains(entry) ? "New Booster!" : "New Feature!";
             Configure(null, intro.Caption, null, TwoLines(entry.info), 24f);

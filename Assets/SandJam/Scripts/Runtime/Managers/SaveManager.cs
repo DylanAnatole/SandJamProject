@@ -14,7 +14,9 @@ namespace SandJamTest
         public bool soundOn = true;
         public bool hapticsOn = true;
         public List<string> introsSeen = new List<string>();
-        // Booster inventory (the original grants boosters as rewards, e.g. daily gift day 2 = 1 flare).
+        // Booster inventory by id (BoosterCatalog); the original grants boosters as rewards, e.g. daily gift day 2 = 1 flare.
+        public List<BoosterStock> boosters = new List<BoosterStock>();
+        // v2 inventory, moved into boosters when an old save is loaded.
         public int flares, swaps, selects;
         public int lives = LivesManager.Max;
         public long nextLifeUtcTicks;
@@ -28,6 +30,9 @@ namespace SandJamTest
         // Gallery milestone rewards already collected, as "collectionIndex:milestone".
         public List<string> galleryClaims = new List<string>();
     }
+
+    [Serializable]
+    public sealed class BoosterStock { public string id; public int count; }
 
     // 7-day login gift: next day to claim (0-6) and the UTC day number of the last claim.
     [Serializable]
@@ -69,7 +74,7 @@ namespace SandJamTest
     // Older PlayerPrefs progress is migrated automatically the first time the file is created.
     public static class SaveManager
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
         const string FileName = "sandjam_save.json";
         static SaveData data;
 
@@ -85,6 +90,14 @@ namespace SandJamTest
             if (data.completedLevels == null) data.completedLevels = new List<string>();
             // v1 -> v2: lives were added; existing players start with full hearts.
             if (data.version < 2 && data.lives <= 0 && data.nextLifeUtcTicks == 0) data.lives = LivesManager.Max;
+            // v2 -> v3: booster counts move from one field per booster to the inventory list.
+            if (data.boosters == null) data.boosters = new List<BoosterStock>();
+            if (data.version < 3)
+            {
+                foreach (var old in new[] { new BoosterStock { id = BoosterCatalog.Flare, count = data.flares }, new BoosterStock { id = BoosterCatalog.Swap, count = data.swaps }, new BoosterStock { id = BoosterCatalog.Select, count = data.selects } })
+                    if (old.count > 0 && !data.boosters.Exists(b => b.id == old.id)) data.boosters.Add(old);
+                data.flares = data.swaps = data.selects = 0;
+            }
             data.version = CurrentVersion;
         }
 
