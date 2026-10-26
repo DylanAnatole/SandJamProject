@@ -2347,3 +2347,16 @@ rời đi không bù nghiêng; lùi sau `ExitBehind` 0,5 → 0,2 (vẫn sau kh�
 
 **Kiểm tra:** quay khối rời ô một mình và chạy ngang sau một khối khác đang đứng trên ô; luồng booster / thua không
 lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Khối đang chạy cho thấy mặt trước; đổi tư thế mượt
+
+**Đo** (video 3, 84,3–84,7 s): khối gốc đang chạy dựng đứng, mặt trước vuông, gần như không thấy mặt trên. Bản mình
+khi chạy vẫn giữ góc nghiêng của ô chờ (16°) nên thấy nhiều mặt trên.
+
+**Sửa:**
+- `CharacterSandVessel`: góc riêng khi chạy `RunPitch` 32° (lên ô và rời đi); góc chuyển dần 160°/s (`PitchSpeed`)
+  giữa chạy / ô / hàng thay vì nhảy cóc lúc đáp; `Settling` báo `CharacterDepthStyle` cập nhật tiếp tới khi xong.
+- `SceneActorView.Moving`: đang thật sự di chuyển (khối rỗng còn chờ trên ô thì không) — khối không đổi góc trước khi
+  nhảy đi.
+
+**Kiểm tra:** quay chạy lên ô, đáp, rời ô; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.

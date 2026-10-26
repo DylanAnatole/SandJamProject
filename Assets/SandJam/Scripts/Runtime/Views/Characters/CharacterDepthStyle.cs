@@ -28,10 +28,11 @@ namespace SandJamTest.Scene3D
             // cube keeps updating for its floating "zZ".
             float amount=Actor.DisplayedFill;
             var color=Skin.sharedMaterial.GetColor(ColorId);
-            int state=(front?1:0)|(docked?2:0);
-            if(state==lastState && amount==lastAmount && color==lastColor && !Actor.Shooter.Half)return;
+            bool running=Actor.Moving;
+            int state=(front?1:0)|(docked?2:0)|(running?4:0);
+            if(state==lastState && amount==lastAmount && color==lastColor && !Actor.Shooter.Half && !vessel.Settling)return;
             lastState=state;lastAmount=amount;lastColor=color;
-            vessel.Apply(front,docked);
+            vessel.Apply(front,docked,running);
             if(properties==null)properties=new MaterialPropertyBlock();
             Skin.GetPropertyBlock(properties);
             // Legs only need a thin contour; the block itself carries the bold outline.

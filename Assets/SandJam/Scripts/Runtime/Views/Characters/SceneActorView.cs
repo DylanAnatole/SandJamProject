@@ -13,6 +13,8 @@ namespace SandJamTest.Scene3D
         public BoxCollider ClickCollider;
         public Shooter Shooter { get; private set; }
         public bool AtRest { get { return travel >= duration; } }
+        // Actually on its way (an emptied box still waiting on its pad is not).
+        public bool Moving { get { return !AtRest && !(Departing && exitDelay > 0); } }
         public bool Departing { get; private set; }
         public float DisplayedFill { get; private set; } = 1;
         public Vector3 AimPoint { get { return Visual ? Visual.TransformPoint(new Vector3(0,.81f,0)) : transform.position + Vector3.up * .70f; } }

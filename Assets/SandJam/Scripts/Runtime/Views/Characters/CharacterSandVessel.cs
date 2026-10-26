@@ -91,7 +91,7 @@ namespace SandJamTest.Scene3D
         static readonly Color Outline=new Color(.035f,.03f,.06f);
         // The original's glass walls are almost clear: the background shows through nearly unchanged.
         const float GlassClarity=.5f, GlassWhite=.15f;
-        public void Apply(bool front,bool docked)
+        public void Apply(bool front,bool docked,bool running=false)
         {
             if(!sand || Actor.Shooter==null)return;
             float amount=Actor.DisplayedFill;
@@ -102,7 +102,12 @@ namespace SandJamTest.Scene3D
             // (with the number) dominates and the top is a narrow strip, as in the reference renders.
             // On its pad (recording 2, 58.4 s zoomed) the top shows as about a quarter of the box: a little less upright
             // than in the lanes (0 showed nearly half of it as top).
-            var upright=Quaternion.Euler(docked?DockedPitch:BlockPitch,0,0);
+            // The stance eases between run, pad and lane (a snap on landing read as a jolt); Settling asks the caller
+            // to keep applying until it is reached.
+            float targetPitch=running?RunPitch:docked?DockedPitch:BlockPitch;
+            pitch=pitch<0?targetPitch:Mathf.MoveTowards(pitch,targetPitch,Time.deltaTime*PitchSpeed);
+            Settling=pitch!=targetPitch;
+            var upright=Quaternion.Euler(pitch,0,0);
             sand.localRotation=upright;frameRenderer.transform.localRotation=upright;
             if(glassRenderer)glassRenderer.transform.localRotation=upright;
             var color=fillRenderer.sharedMaterial.GetColor("_Color");
@@ -216,6 +221,11 @@ namespace SandJamTest.Scene3D
         const float BevelRadius=.11f; // original blocks have softer, rounder edges
         public const float BlockPitch=20f; // less stood up than before: more of the top face shows (original)
         const float DockedPitch=16f;
+        // Running (to its pad or off the screen) the box stands up so its front face shows square (recording 3, 84.3-84.7 s:
+        // little of the top shows on a running box).
+        const float RunPitch=32f, PitchSpeed=160f; // degrees a second: run to pad in 0.1 s
+        float pitch=-1;
+        public bool Settling { get; private set; }
         // Count digits ~15% wider than first built (recording 2, 150 s: "20" spans ~75 px on a front block).
         const float LabelSize=1.07f;
         const float BlocksPerUnit=13.5f; // ~10 sand pixels across a face, as in the reference renders
