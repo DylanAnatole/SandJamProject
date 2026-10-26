@@ -2415,3 +2415,14 @@ quãng chỉ pháo giấy, chuyển cảnh bị dồn).
 
 **Kiểm tra:** quay giờ thực từng 0,1 s đoạn Superb! → Level Complete; luồng booster / thua không lỗi; tự chơi level 2, 68
 thắng.
+
+## 26/10/2026 — Bảng Level Complete nở ra như gốc
+
+**Đo** (video 3, bề ngang bảng từng khung 244,76–244,90 s): bảng nở từ ~1/5 lên đủ cỡ trong ~0,14 s, nhanh rồi chậm dần,
+không vượt. Bản mình: bảng hiện tức thì (trang Result bật thẳng).
+
+**Sửa** (`ResultFx.Pop`): khi trang hiện, phóng gốc trang 0,2 → 1 trong 0,14 s (ease-out); nền tối, thanh xu
+(`PopupScreens.CoinBar`, nay `internal` để dùng chung) và pháo giấy được bù lại để giữ nguyên chỗ / phủ kín màn. Các popup
+nhân bản từ trang này đã bỏ `ResultFx` nên không bị ảnh hưởng.
+
+**Kiểm tra:** quay giờ thực từng khung lúc bảng hiện; luồng booster / thua không lỗi; tự chơi level 2, 68 thắng.

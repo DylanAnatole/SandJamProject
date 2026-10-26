@@ -263,9 +263,38 @@ namespace SandJamTest.Scene3D
             VideoScreen.Place(transform.Find("Your Reward!"), 1.25f, 0, 0);
             RecordLayout();
         }
-        void LateUpdate() { KeepCentred(); }
+        void LateUpdate() { KeepCentred(); Pop(); }
 
-        void OnEnable() { time = 0; collected = null; CoinsLanded = coins.Count == 0; Flatten(); }
+        // Recording 3 (244.76-244.90 s, card width every frame): the card grows from ~1/5 of its size to full in ~0.14 s,
+        // fast then easing, no overshoot. The page is scaled as a whole; the dark backdrop, the coin bar and the confetti
+        // are scaled back so they keep covering the screen / their place.
+        const float PopFrom = .2f, PopTime = .14f;
+        float popAge = -1; Vector3 rootScale; Transform[] steady; Vector3[] steadyPosition, steadyScale;
+        void Pop()
+        {
+            if (popAge < 0) return;
+            if (steady == null)
+            {
+                rootScale = transform.localScale;
+                var list = new List<Transform>();
+                foreach (Transform child in transform)
+                    if (child.name == "Dark backdrop" || child.name == "Confetti" || System.Array.IndexOf(PopupScreens.CoinBar, child.name) >= 0) list.Add(child);
+                steady = list.ToArray(); steadyPosition = new Vector3[steady.Length]; steadyScale = new Vector3[steady.Length];
+                for (int i = 0; i < steady.Length; i++) { steadyPosition[i] = steady[i].localPosition; steadyScale[i] = steady[i].localScale; }
+            }
+            popAge += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(popAge / PopTime), s = PopFrom + (1 - PopFrom) * (1 - (1 - t) * (1 - t));
+            transform.localScale = new Vector3(rootScale.x * s, rootScale.y * s, rootScale.z);
+            for (int i = 0; i < steady.Length; i++)
+            {
+                if (!steady[i]) continue;
+                steady[i].localPosition = new Vector3(steadyPosition[i].x / s, steadyPosition[i].y / s, steadyPosition[i].z);
+                steady[i].localScale = new Vector3(steadyScale[i].x / s, steadyScale[i].y / s, steadyScale[i].z);
+            }
+            if (t >= 1) popAge = -1;
+        }
+
+        void OnEnable() { time = 0; collected = null; CoinsLanded = coins.Count == 0; Flatten(); popAge = 0; }
 
         // The card's layers spread from z -6 to -8: through any perspective view (or a camera that is not exactly
         // in front) the glass, reward box, texts and buttons slid sideways against the gold frame. They are pressed
