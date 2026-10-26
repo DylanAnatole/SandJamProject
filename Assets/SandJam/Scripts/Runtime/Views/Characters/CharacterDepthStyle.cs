@@ -69,9 +69,11 @@ namespace SandJamTest.Scene3D
             if(outline)outline.SetThickness(LabelOutline);
             var ink=outline?outline.Ink:TextOutliner.Ink;
             Color backInk=color*BackInkShade;backInk.a=1;
+            if(outline)outline.ShowInk(highlighted?ink:backInk); // the outline is one mesh, recoloured as a whole
             foreach(var label in labels)
             {
                 bool main=label==Actor.AmmoLabel;
+                if(!main && outline)continue;
                 // Back rows (recording 2, 150 s): pale digits tinted by the block with an edge in a darker shade of the
                 // block itself (dark yellow on yellow, dark green on green), not black; still readable on light blocks.
                 label.color=main?(highlighted?mainColor:Color.Lerp(Color.white,color,BackTint)):highlighted?ink:backInk;

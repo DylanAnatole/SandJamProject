@@ -2277,3 +2277,29 @@ pha 50% trắng, nên khối chạy đi nhạt màu.
 
 **Kiểm tra:** chụp Home và màn chơi (màu không đổi); quay khối rỗng chạy ra so với video; luồng booster / thua không
 lỗi; tự chơi level 2, 31, 120, 222 thắng.
+
+## 26/10/2026 — Tối ưu viền chữ và viền khối cát
+
+**Đo trước** (`UnityStats`, level 68): 144 renderer chữ, trong đó 128 là bản sao viền (mỗi nhãn 8 TextMesh); 175 lệnh
+vẽ phải gộp động mỗi khung; khối cát luôn gửi 2 lượt vẽ (viền + thân) dù phần lớn không có viền.
+
+**Sửa:**
+- `OutlinedText`: 8 bản sao viền giờ là MỘT lưới phía sau chữ, dựng bằng `TextGenerator` (cùng font, cỡ, neo; 1
+  pixel font = `characterSize` / 10 đơn vị như TextMesh), dịch theo 8 hướng, tô màu viền bằng màu đỉnh. Dựng lại khi
+  chữ / cỡ đổi và khi atlas font được xếp lại (`Font.textureRebuilt`). `ShowInk` đổi màu viền tạm thời mà giữ `Ink`
+  (số hàng sau viền theo màu khối, `CharacterDepthStyle`); `GameplayFeedbackController` dùng `SetInk`.
+- Khối cát không viền (hàng sau, cát trong kính) dùng vật liệu sinh đôi với shader mới `SandToonDepthPlain` (chỉ
+  `UsePass` lượt TOON của `SandToonDepth`, không chép code): 1 lượt vẽ thay vì 2. Khối hàng đầu giữ viền.
+
+**Kết quả:**
+
+| | Trước | Sau |
+|---|---|---|
+| Renderer chữ trên màn | 144 | 16 (+16 lưới viền) |
+| Lệnh vẽ gộp động mỗi khung | 175 | 62 |
+| Batch / SetPass | 81 / 61 | 74 / 57 |
+| Tam giác | 40 900 | 32 500 |
+| Cấp phát của game | ~225 B/khung | ~155 B/khung |
+
+**Kiểm tra:** chụp Home, màn chơi, Settings, Sand Quest so với trước (chữ và viền trùng, số hàng sau viền theo màu
+khối); luồng booster / thua không lỗi; tự chơi level 2, 31, 120 thắng.

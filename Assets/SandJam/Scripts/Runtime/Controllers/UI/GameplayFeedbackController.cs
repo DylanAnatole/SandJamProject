@@ -59,8 +59,8 @@ namespace SandJamTest.Scene3D
                     digits.position = onRay(new Vector3(b.center.x, b.max.y - b.size.y * .7f, b.center.z), z);
                     digits.localScale *= .72f;
                     var ink = new Color(.22f, .24f, .3f);
-                    var outlined = digits.GetComponent<OutlinedText>(); if (outlined) outlined.Ink = ink;
-                    foreach (var o in digits.GetComponentsInChildren<TextMesh>(true)) if (o.transform != digits) o.color = ink;
+                    var outlined = digits.GetComponent<OutlinedText>(); if (outlined) outlined.SetInk(ink);
+                    else foreach (var o in digits.GetComponentsInChildren<TextMesh>(true)) if (o.transform != digits) o.color = ink;
                 }
             }
         }

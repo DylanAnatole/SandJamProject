@@ -12,6 +12,19 @@ namespace SandJamTest.Scene3D
         MeshRenderer fillRenderer;
         static Mesh frameMesh, sandMesh, legsMesh, glassMesh;
         static Material glassMaterial;
+        // Twin of each block material without the outline pass (SandToonDepthPlain): a block drawn with no outline
+        // costs one draw instead of two (the outline pass used to be submitted for every block and culled).
+        static readonly Dictionary<Material,Material> plainTwins=new Dictionary<Material,Material>();
+        Material outlined, plain;
+        static Material PlainTwin(Material source)
+        {
+            Material twin;
+            if(plainTwins.TryGetValue(source,out twin) && twin) return twin;
+            var shader=Shader.Find("SandJamTest/SandToonDepthPlain");
+            twin=shader?new Material(source){name=source.name+" (no outline)",shader=shader}:source;
+            plainTwins[source]=twin; return twin;
+        }
+        void UseOutline(MeshRenderer renderer,bool on){var want=on?outlined:plain;if(want && renderer.sharedMaterial!=want)renderer.sharedMaterial=want;}
         MeshRenderer glassRenderer;
         Vector3 labelScale;
         static int users;
@@ -20,6 +33,7 @@ namespace SandJamTest.Scene3D
         {
             if(initialized)return;
             Actor=actor;users++;initialized=true;
+            outlined=material;plain=PlainTwin(material);
             if(!frameMesh)BuildMeshes();
             var skin=actor.GetComponent<CharacterDepthStyle>().Skin;
             if(!legsMesh)legsMesh=Resources.Load<Mesh>("CharacterAnimation/CharacterLegs");
@@ -128,6 +142,7 @@ namespace SandJamTest.Scene3D
                 sandBlock.SetColor("_OutlineColor",Outline);
             }
             fillRenderer.SetPropertyBlock(sandBlock);
+            UseOutline(fillRenderer,!glass && front);
             sand.gameObject.SetActive(amount>.001f);
             UpdateHalf(docked);
         }
@@ -283,6 +298,7 @@ namespace SandJamTest.Scene3D
             pixelSand.SetPixels32(pixels);pixelSand.Apply(false,true);
             return pixelSand;
         }
-        void OnDestroy(){if(initialized && --users==0){Destroy(frameMesh);Destroy(sandMesh);if(glassMesh)Destroy(glassMesh);if(glassMaterial)Destroy(glassMaterial);if(halfMesh)Destroy(halfMesh);if(pixelSand)Destroy(pixelSand);}}
+        void OnDestroy(){if(initialized && --users==0){Destroy(frameMesh);Destroy(sandMesh);if(glassMesh)Destroy(glassMesh);if(glassMaterial)Destroy(glassMaterial);if(halfMesh)Destroy(halfMesh);if(pixelSand)Destroy(pixelSand);
+            foreach(var twin in plainTwins.Values)if(twin)Destroy(twin);plainTwins.Clear();}}
     }
 }
