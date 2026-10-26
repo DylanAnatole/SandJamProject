@@ -7,7 +7,8 @@ namespace SandJamTest.Scene3D
     // Presentation only: polls the game state, restores the camera when a new attempt starts.
     public sealed class WinZoom : MonoBehaviour
     {
-        public float Duration = .9f, WidthMargin = 1.06f, ScreenCenterY = .58f;
+        // Recording 3 (239.98-240.30 s, every frame): the push-in takes ~0.32 s and starts as the last box empties.
+        public float Duration = .32f, WidthMargin = 1.06f, ScreenCenterY = .58f;
         SandJamSceneController controller;
         Camera cam;
         Vector3 startPosition, targetPosition;

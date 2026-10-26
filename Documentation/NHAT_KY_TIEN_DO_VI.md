@@ -2393,3 +2393,14 @@ hơn chút (0,07–0,12), sống 0,7–1,1 s.
 
 **Kiểm tra:** quay giờ thực cảnh mở vùng ở level 2; đo thời gian (script vẫn ~1,8 ms/khung); luồng booster / thua
 không lỗi; tự chơi level 2, 68 thắng.
+
+## 26/10/2026 — Nhịp thắng level: phóng tranh nhanh, ngắm tranh lâu hơn
+
+**Đo** (video 3, đo bề ngang khung tranh từng khung): phóng to bắt đầu 239,98 s (khối cuối vừa hết cát), xong 240,30 s
+(0,32 s); tranh giữ nguyên tới 242,15 s mới hiện "Superb!" (~2,15 s từ lúc bắt đầu phóng). Bản mình: phóng 0,9 s,
+"Superb!" sau 1,65 s — phóng lừ đừ mà ngắm tranh hoàn chỉnh quá ngắn.
+
+**Sửa:** `WinZoom.Duration` 0,9 → 0,32; `VideoScreen.SuperbDelay` 2,15 (thay số 1,65 viết thẳng trong code).
+
+**Kiểm tra:** quay giờ thực đoạn thắng ở level 2 (phóng xong ~0,3 s, Superb! ở ~2,2 s); luồng booster / thua không lỗi;
+tự chơi level 2, 68 thắng.

@@ -25,6 +25,8 @@ namespace SandJamTest.Scene3D
         public PopupScreens Popups { get; private set; }
         public enum Page { Loading,Home,Gameplay,Celebration,Result }
         public Page Current { get; private set; }
+        // The finished picture is shown, pushed in, for a while before "Superb!" (recording 3: 239.98 -> 242.15 s).
+        const float SuperbDelay=2.15f;
         float elapsed, winPresentationTime, loadingTime=1.6f; Vector3 fillScale,mascotPosition;
         int transitionFrame,viewWidth,viewHeight;
         void Awake()
@@ -504,7 +506,7 @@ namespace SandJamTest.Scene3D
                 {
                     Levels.RecordCompletion();
                     winPresentationTime+=Time.unscaledDeltaTime;
-                    if(winPresentationTime>=1.65f)Show(Page.Celebration);
+                    if(winPresentationTime>=SuperbDelay)Show(Page.Celebration);
                 }
                 else winPresentationTime=0;
             }
