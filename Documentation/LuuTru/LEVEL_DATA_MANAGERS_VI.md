@@ -6,7 +6,7 @@
 - Thứ tự thử nghiệm A/B: `Default_LevelOrderConfig_TEST_AB.json` — **1.005 lượt**, **406 tên màn khác nhau**.
 - Các tên trong cả hai danh sách đều tìm thấy file tương ứng. Số lượt lớn hơn số file vì có màn được dùng lại; không suy ra Level N từ thứ tự tên file trong thư mục.
 
-Toàn bộ 556 JSON có lưới **112 hàng × 84 cột**, tổng cộng **12.471 vùng tô**. Xem `LEVEL_DATA_INVENTORY.csv` để tra từng file, số vùng/hộp, tổng cát, divider và cờ cơ chế.
+Toàn bộ 556 JSON có lưới **112 hàng × 84 cột**, tổng cộng **12.471 vùng tô**. Xem `LEVEL_DATA_INVENTORY.csv` (chỉ lưu trên máy, không đưa lên git) để tra từng file, số vùng/hộp, tổng cát, divider và cờ cơ chế.
 
 ## Cấu trúc và ý nghĩa
 | Trường | Ý nghĩa / cách bản thử dùng |

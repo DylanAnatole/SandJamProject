@@ -26,6 +26,6 @@ Build Windows thành công. Kiểm tra tự động: 39 vùng, 5 ô chờ, 5 con
 - ReferenceUiPlaceholder.cs: nơi đánh dấu nút để nối chức năng sau.
 - ReferenceQueueCover.cs: phần dấu hỏi hiển thị tạm.
 - ReferenceTextOutline.cs: đồng bộ viền chữ với số thay đổi.
-- copied-assets.csv: nguồn các PNG gốc đã sao chép. RoundedCube.asset sao chép từ Assets/Mesh/RoundedCube.asset; WildlifeOriginal.json từ Assets/Resources/compressedlevels/112x84_wildlife_11.json.
+- copied-assets.csv (chỉ lưu trên máy, không đưa lên git): nguồn các PNG gốc đã sao chép. RoundedCube.asset sao chép từ Assets/Mesh/RoundedCube.asset; WildlifeOriginal.json từ Assets/Resources/compressedlevels/112x84_wildlife_11.json.
 
 Việc dựng/build dùng project validation riêng, sau đó chép scene và asset mới về CoreGameplayTest; không đóng phiên Unity của người dùng, không ghi đè scene prototype cũ.

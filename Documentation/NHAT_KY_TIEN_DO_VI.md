@@ -2661,3 +2661,16 @@ bằng `Sprites/Default` (blend toàn màn hình mỗi khung dù nền vốn đ�
 - `SandToonDepthPlain`: bỏ các thuộc tính fill còn sót.
 
 **Kiểm tra:** so ảnh Dance_12 — nền trùng từng pixel; luồng booster / thua; tự chơi level 2, 222 và 2 màn băng / khoá.
+
+## 27/10/2026 — Dọn repo: gỡ công cụ ngoài, tài liệu về nội dung trích từ game gốc và log test
+
+**Rà `git ls-files` (1.304 file):** 736 file là package nhúng `com.coplaydev.unity-mcp` (cầu nối MCP dùng khi phát triển,
+của bên thứ ba, không thuộc game — `manifest.json` không khai báo); trong `Documentation` có các chỉ mục / ghi chú về nội dung
+trích từ game gốc: danh sách 1.120 script dịch ngược, bản đồ 5.413 asset đã trích, danh sách 556 level gốc, hash các file đã
+chép, bảng màu gốc, kiến trúc lớp gốc; cùng ~40 file log test thô (`checks.txt`, `benchmark.txt`…).
+
+**Sửa:** gỡ khỏi git 782 file trên (vẫn giữ nguyên trên máy) và thêm vào `.gitignore`; 4 dòng tài liệu nhắc tới các file này
+ghi chú "chỉ lưu trên máy". Giữ: scripts, shader, font, scene, prefab, `Generated` (scene tham chiếu), level tự thiết kế,
+`ProjectSettings`, `Packages/manifest.json`, tài liệu thiết kế / nhật ký.
+
+**Lưu ý:** các file này vẫn còn trong lịch sử các commit cũ; xoá khỏi lịch sử cần viết lại lịch sử và force-push (chưa làm).

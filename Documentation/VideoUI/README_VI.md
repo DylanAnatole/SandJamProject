@@ -32,7 +32,7 @@ Settings, Shop, Gallery, Join, mua tim/coin, booster và x2 **chỉ có giao di�
 - Giữ hai bản JSON xuất nguyên vẹn trong `Assets/Resources/VideoUI/`. File thử sinh riêng là `Assets/Generated/VideoUI/ReferencePlayable.json`.
 - JSON thử dùng vùng/hàng cát từ bản thường và `gridSlotNeedAmmoCount=[0,0,0,0,300]` từ bản `_Dupe`, phù hợp khung hình video. Các cờ secret dùng làm lớp che dấu hỏi; chưa phục hồi toàn bộ cơ chế đặc biệt từ APK.
 - Ô thứ năm khóa tới khi đã dùng 300 đơn vị hiển thị. Đây là cách triển khai suy ra từ dữ liệu và video, không phải logic gốc được khôi phục. Tùy chọn này chỉ bật trong scene mới; scene cũ giữ hành vi trước.
-- Các màu khối lấy từ `_BaseColor` của material Character gốc; bảng màu lưu trong `palette.json`.
+- Các màu khối lấy từ `_BaseColor` của material Character gốc; bảng màu lưu trong `palette.json` (chỉ lưu trên máy, không đưa lên git).
 - Tận dụng texture/UI/mesh đã xuất. Một số khung, nhân vật và chữ dùng vật liệu, hình học và font thay thế, vì vậy chưa giống từng pixel hoặc shader của bản gốc.
 - Cát vẫn dùng mô phỏng grid texture + SpriteRenderer có sẵn. Chuyển động rót hiện tại chưa phải bản sao chính xác chuyển động trong video.
 - Không phục dựng các màn bên trong Shop/Gallery/Settings vì video chưa mở chúng.
@@ -43,7 +43,7 @@ Settings, Shop, Gallery, Join, mua tim/coin, booster và x2 **chỉ có giao di�
 - `Assets/Editor/ReferenceUI/BuildVideoScene.Screens.cs`: tạo các màn và nút.
 - `Assets/Scripts/Runtime/UI/ReferenceUI/VideoScreen.cs`: chuyển màn, phím kiểm tra, chạy kiểm tra tự động.
 - `VideoUiButton.cs`, `VideoConfetti.cs`: nút điều hướng và confetti.
-- `Assets/Resources/VideoUI`: bản sao dữ liệu/ảnh gốc; nguồn và SHA256 ở `copied-assets.csv`.
+- `Assets/Resources/VideoUI`: bản sao dữ liệu/ảnh gốc; nguồn và SHA256 ở `copied-assets.csv` (chỉ lưu trên máy, không đưa lên git).
 - `Assets/Generated/VideoUI`: chỉ các tài nguyên sinh riêng cho scene này.
 
 ## Kiểm tra

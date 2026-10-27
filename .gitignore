@@ -68,3 +68,21 @@ Thumbs.db
 # Prefab built from the original character rig (bone hierarchy of the original game): local only.
 /Assets/SandJam/Prefabs/Characters/SandCube.prefab
 /Assets/SandJam/Prefabs/Characters/SandCube.prefab.meta
+
+# Editor tooling from a third party (Unity MCP bridge used while developing), not part of the game: local only.
+/Packages/com.coplaydev.unity-mcp/
+# Indexes and notes about the content extracted from the original game (decompiled script list, ripped asset map,
+# original level inventory, copied-file hashes, original palette, original class architecture): local only.
+/Documentation/EXTRACTED_SCRIPT_INDEX.csv
+/Documentation/RECOVERED_ASSET_INDEX.csv
+/Documentation/LEVEL_DATA_INVENTORY.csv
+/Documentation/ORIGINAL_CONTENT_VALIDATION.json
+/Documentation/RECOVERY_LIMITATIONS.json
+/Documentation/ORIGINAL_CONTENT_VI.md
+/Documentation/KIEN_TRUC_GOC_VA_THIET_KE_VI.md
+/Documentation/**/copied-assets.csv
+/Documentation/**/animation-sources.csv
+/Documentation/ReferenceUI/folders.csv
+/Documentation/VideoUI/palette.json
+# Raw test run outputs (results are summarised in NHAT_KY_TIEN_DO_VI.md).
+/Documentation/**/*.txt

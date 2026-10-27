@@ -3,7 +3,7 @@
 Sơ đồ bên dưới ghi nhận giai đoạn đầu. Xem [cấu trúc hiện tại](SCRIPT_STRUCTURE_V2_VI.md) và [cơ chế cặp nối](CHAIN_MECHANIC_VI.md) cho các thay đổi mới.
 
 ## Kết quả đọc bản AssetRipper
-Đã quét nội dung 1.120 file C# trong Assets/Scripts, ghi đường dẫn, namespace, type và số dòng vào EXTRACTED_SCRIPT_INDEX.csv; đọc chi tiết các controller và dữ liệu gameplay chính.
+Đã quét nội dung 1.120 file C# trong Assets/Scripts, ghi đường dẫn, namespace, type và số dòng vào EXTRACTED_SCRIPT_INDEX.csv (chỉ lưu trên máy, không đưa lên git); đọc chi tiết các controller và dữ liệu gameplay chính.
 Bản xuất nằm chủ yếu trong Assembly-CSharp, không phản ánh đầy đủ thư mục source ban đầu. Nhiều hàm có thân rỗng, trả về null/0/false; có cả lớp coroutine do compiler sinh. Vì vậy tên trường và chữ ký hàm là bằng chứng về cấu trúc, không chứng minh thuật toán gốc.
 
 | Nhóm gốc | Bằng chứng tiêu biểu | Trách nhiệm tham khảo |
