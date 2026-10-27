@@ -37,9 +37,6 @@ namespace SandJamTest.Scene3D
             Skin.GetPropertyBlock(properties);
             // Legs only need a thin contour; the block itself carries the bold outline.
             properties.SetFloat(Width,.006f);
-            // The shader's fill effect is off for the legs; its range is not computed (reading Skin.bounds forced the
-            // skinned mesh to finish skinning right here, ~2 ms a frame for the whole queue).
-            properties.SetFloat("_FillEnabled",0);properties.SetFloat("_FillAmount",amount);
             properties.SetColor("_OutlineColor",Color.Lerp(color,new Color(.045f,.025f,.07f),.6f));
             Skin.SetPropertyBlock(properties);
             StyleLabel(front || docked,color);

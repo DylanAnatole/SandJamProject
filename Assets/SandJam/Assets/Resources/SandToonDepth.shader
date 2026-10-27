@@ -11,10 +11,6 @@ Shader "SandJamTest/SandToonDepth"
         _GrainContrast ("Grain contrast", Range(0,3)) = 1
         _Gloss ("Soft highlight", Range(0,1)) = 0.2
         _Albedo ("Use the texture as colour (props like the padlock)", Range(0,1)) = 0
-        _FillEnabled ("Character fill enabled", Float) = 0
-        _FillAmount ("Remaining sand", Range(0,1)) = 1
-        _FillBottom ("Fill world bottom", Float) = 0
-        _FillTop ("Fill world top", Float) = 1
     }
     SubShader
     {
@@ -28,12 +24,10 @@ Shader "SandJamTest/SandToonDepth"
             #pragma fragment frag
             #include "UnityCG.cginc"
             float _OutlineWidth; fixed4 _OutlineColor;
-            float _FillEnabled,_FillAmount,_FillBottom,_FillTop;
-            struct v2f { float4 pos:SV_POSITION; float height:TEXCOORD0; };
+            struct v2f { float4 pos:SV_POSITION; };
             v2f vert(appdata_base v)
             {
                 v2f o;float3 p=mul(unity_ObjectToWorld,v.vertex).xyz;
-                o.height=saturate((p.y-_FillBottom)/max(.001,_FillTop-_FillBottom));
                 p+=normalize(UnityObjectToWorldNormal(v.normal))*_OutlineWidth;
                 o.pos=mul(UNITY_MATRIX_VP,float4(p,1));
                 // No outline (sand inside the glass, back rows): every vertex goes outside the view, so the GPU drops
@@ -41,13 +35,7 @@ Shader "SandJamTest/SandToonDepth"
                 if(_OutlineWidth<=.0001)o.pos=float4(2,2,2,1);
                 return o;
             }
-            fixed4 frag(v2f i):SV_Target
-            {
-                // Do not let the back-face outline fill the emptied, transparent interior.
-                if(_FillEnabled>.5 && _FillAmount<.999)
-                { clip(_FillAmount-.001);clip(_FillAmount-i.height); }
-                return _OutlineColor;
-            }
+            fixed4 frag(v2f i):SV_Target { return _OutlineColor; }
             ENDCG
         }
         Pass
@@ -59,7 +47,6 @@ Shader "SandJamTest/SandToonDepth"
             #pragma fragment frag
             #include "UnityCG.cginc"
             sampler2D _MainTex;float4 _MainTex_ST;fixed4 _Color;float _GrainStrength,_Gloss,_ShadeStrength,_GrainContrast,_Albedo;
-            float _FillEnabled,_FillAmount,_FillBottom,_FillTop;
             struct v2f { float4 pos:SV_POSITION;float3 normal:TEXCOORD0;float2 uv:TEXCOORD1;float3 world:TEXCOORD2; };
             v2f vert(appdata_base v)
             {
@@ -78,17 +65,9 @@ Shader "SandJamTest/SandToonDepth"
                 float grain=lerp(1,.60+.43*sampleGrain,_GrainStrength);
                 float highlight=pow(saturate(dot(n,normalize(l+view))),28)*_Gloss;
                 float rim=pow(1-saturate(dot(n,view)),3)*.07;
-                float3 filled=_Color.rgb*lerp(1,tex,_Albedo)*grain*(lighting+rim)+highlight*.45;
-                float height=saturate((i.world.y-_FillBottom)/max(.001,_FillTop-_FillBottom));
-                float fill=smoothstep(height-.025,height+.025,_FillAmount);
-                fill=lerp(fill,1,step(.999,_FillAmount));
-                fill*=step(.001,_FillAmount);
-                // Discard the empty interior instead of painting a misleading grey colour.
-                float edge=smoothstep(.38,.78,1-abs(dot(n,view)));
-                edge=max(edge,smoothstep(.91,.98,height)*.85);
-                if(_FillEnabled>.5) clip(max(fill,edge)-.5);
-                float3 shell=_Color.rgb*(.8+.2*lighting);
-                return fixed4(lerp(filled,lerp(shell,filled,fill),_FillEnabled),1);
+                // No clip / discard anywhere in this opaque shader: on tile GPUs (iPhone, most Android) one would turn
+                // off hidden-surface removal for every cube, rail and pad drawn with it.
+                return fixed4(_Color.rgb*lerp(1,tex,_Albedo)*grain*(lighting+rim)+highlight*.45,1);
             }
             ENDCG
         }

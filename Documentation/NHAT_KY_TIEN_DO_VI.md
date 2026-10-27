@@ -2622,3 +2622,14 @@ nhưng vật lý 3D + 2D vẫn mô phỏng 50 lần/s và đồng bộ collider 
 
 **Kiểm tra:** camera nền tắt ở 1170×2532, ảnh không đổi; thử chạm: khối vừa dịch lên — không đồng bộ thì trượt, qua
 `ScreenTap` (có đồng bộ) thì trúng; luồng booster / thua; tự chơi level 2, 31, 68 và 2 màn băng / khoá.
+
+## 27/10/2026 — Mobile: shader khối không còn `clip`
+
+**Đo:** `SandToonDepth` (shader đục của khối, ray, đế, ổ khoá…) có `clip` trong cả hai pass cho hiệu ứng "fill" — nhưng
+`_FillEnabled` không bao giờ bật (chỉ `CharacterDepthStyle` gán 0, mọi material cũng 0). Trên GPU tile (iPhone, đa số
+Android) chỉ cần shader đục có `clip` là mất loại bỏ pixel bị che (HSR / early-Z) cho mọi vật vẽ bằng nó.
+
+**Sửa:** bỏ toàn bộ phần fill (thuộc tính, nội suy độ cao, các `clip`) khỏi `SandToonDepth`; bỏ dòng gán `_FillEnabled` /
+`_FillAmount` trong `CharacterDepthStyle`. Hình không đổi.
+
+**Kiểm tra:** so ảnh Dance_12 trước / sau — giống hệt (chỉ khác vệt băng loang xoay ngẫu nhiên); luồng booster / thua; tự chơi.
