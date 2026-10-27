@@ -10,6 +10,7 @@ Shader "SandJamTest/SandToonDepth"
         _ShadeStrength ("Depth shading", Range(0,1)) = 1
         _GrainContrast ("Grain contrast", Range(0,3)) = 1
         _Gloss ("Soft highlight", Range(0,1)) = 0.2
+        _Albedo ("Use the texture as colour (props like the padlock)", Range(0,1)) = 0
         _FillEnabled ("Character fill enabled", Float) = 0
         _FillAmount ("Remaining sand", Range(0,1)) = 1
         _FillBottom ("Fill world bottom", Float) = 0
@@ -57,7 +58,7 @@ Shader "SandJamTest/SandToonDepth"
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
-            sampler2D _MainTex;float4 _MainTex_ST;fixed4 _Color;float _GrainStrength,_Gloss,_ShadeStrength,_GrainContrast;
+            sampler2D _MainTex;float4 _MainTex_ST;fixed4 _Color;float _GrainStrength,_Gloss,_ShadeStrength,_GrainContrast,_Albedo;
             float _FillEnabled,_FillAmount,_FillBottom,_FillTop;
             struct v2f { float4 pos:SV_POSITION;float3 normal:TEXCOORD0;float2 uv:TEXCOORD1;float3 world:TEXCOORD2; };
             v2f vert(appdata_base v)
@@ -72,11 +73,12 @@ Shader "SandJamTest/SandToonDepth"
                 float diffuse=dot(n,l);
                 float lighting=.53+.40*smoothstep(-.2,.65,diffuse)+.12*smoothstep(.65,.96,diffuse);
                 lighting=lerp(1,lighting,_ShadeStrength);
-                float sampleGrain=saturate((tex2D(_MainTex,i.uv).r-.75)*_GrainContrast+.75);
+                fixed3 tex=tex2D(_MainTex,i.uv).rgb;
+                float sampleGrain=saturate((tex.r-.75)*_GrainContrast+.75);
                 float grain=lerp(1,.60+.43*sampleGrain,_GrainStrength);
                 float highlight=pow(saturate(dot(n,normalize(l+view))),28)*_Gloss;
                 float rim=pow(1-saturate(dot(n,view)),3)*.07;
-                float3 filled=_Color.rgb*grain*(lighting+rim)+highlight*.45;
+                float3 filled=_Color.rgb*lerp(1,tex,_Albedo)*grain*(lighting+rim)+highlight*.45;
                 float height=saturate((i.world.y-_FillBottom)/max(.001,_FillTop-_FillBottom));
                 float fill=smoothstep(height-.025,height+.025,_FillAmount);
                 fill=lerp(fill,1,step(.999,_FillAmount));

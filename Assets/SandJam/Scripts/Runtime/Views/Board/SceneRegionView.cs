@@ -34,7 +34,14 @@ namespace SandJamTest.Scene3D
         // Padlock (unlocker part): receives key-cube sand as a counter only. While locked it draws its
         // colour as diagonal stripes with a lock icon (original UnlockerGif); it never pours visible sand.
         public bool LockMode;
-        bool lockDone; int lockCells; SpriteRenderer lockIcon;
+        bool lockDone; int lockCells; GameObject lockIcon;
+        // Original padlock (UnlockerGif, PaintablePart "Lock"): the gold 3D lock (mesh Lock, texture Lock_Color) on the
+        // locked part, its count in a white bubble at the lock's top right with dark digits. Sizes as fractions of the
+        // board's width, measured on the gif: lock ~11% tall, bubble ~5.5% across, ~6% right of and ~5% above its centre.
+        const float LockHeight = .13f, BubbleSize = .085f, LockTilt = -8f;
+        static readonly Vector2 BubbleOffset = new Vector2(.075f, .06f);
+        static readonly Color BubbleInk = new Color(.24f, .17f, .14f);
+        static Material lockMaterial;
         public int SettledCount { get { return LockMode?(lockDone?lockCells:0):sand==null?0:sand.Settled; } }
         public bool IsSettled { get { return LockMode?lockDone:sand!=null && sand.Complete; } }
         public SandBoardTextureView Board { get; private set; }
@@ -91,15 +98,8 @@ namespace SandJamTest.Scene3D
             bool justDone=done && !lockDone;
             lockDone=done; lastRemaining=region.Remaining;
             Target.position=Counter.transform.position;
-            if(!lockIcon)
-            {
-                var obj=new GameObject("Padlock icon"){layer=Counter.gameObject.layer};
-                obj.transform.SetParent(Counter.transform.parent,false);
-                obj.transform.position=Counter.transform.position+new Vector3(-.32f,.02f,-.01f);
-                lockIcon=obj.AddComponent<SpriteRenderer>(); lockIcon.sprite=Resources.Load<Sprite>("VideoUI/icon-lock"); lockIcon.sortingOrder=11;
-                if(lockIcon.sprite){float s=.42f/lockIcon.sprite.bounds.size.y;obj.transform.localScale=Vector3.one*s/Mathf.Max(.0001f,obj.transform.parent.lossyScale.y);}
-            }
-            lockIcon.gameObject.SetActive(!done);
+            if(!lockIcon) BuildPadlock();
+            if(lockIcon) lockIcon.SetActive(!done);
             Counter.gameObject.SetActive(!done);
             var backing=Backing(); if(backing) backing.gameObject.SetActive(false);
             int shown=done?-1:DisplayAmount.Units(region.Remaining,Divider);
@@ -111,6 +111,45 @@ namespace SandJamTest.Scene3D
             Color pale=original!=null && original.HasInit?original.init:Color.Lerp(EmptyTint,baseColor,.4f);
             Color32 dark=(Color32)Color.Lerp(baseColor,Color.white,.15f), light=(Color32)pale;
             if(!justDone) for(int i=0;i<region.Data.rows.Length;i++){int x=region.Data.cols[i],y=region.Data.rows[i];Board.SetBase(x,y,((x+y)/3)%2==0?dark:light);}
+        }
+        void BuildPadlock()
+        {
+            var mesh=Resources.Load<Mesh>("Mechanics/Lock");
+            float width=Board && Board.Renderer ? Board.Renderer.bounds.size.x : 6f;
+            var centre=Counter.transform.position;
+            lockIcon=new GameObject("Padlock"){layer=Counter.gameObject.layer};
+            lockIcon.transform.SetParent(Counter.transform.parent,true);
+            if(mesh)
+            {
+                if(!lockMaterial)
+                {
+                    lockMaterial=new Material(Shader.Find("SandJamTest/SandToonDepth")){name="Padlock gold"};
+                    lockMaterial.SetTexture("_MainTex",Resources.Load<Texture2D>("Mechanics/LockColor"));
+                    lockMaterial.SetFloat("_Albedo",1);lockMaterial.SetFloat("_GrainStrength",0);lockMaterial.SetFloat("_Gloss",.5f);
+                    lockMaterial.SetFloat("_ShadeStrength",.75f);lockMaterial.SetFloat("_OutlineWidth",.012f);lockMaterial.SetColor("_Color",new Color(1.15f,1.1f,.95f)); // the texture reads a little dark under the toon light
+                }
+                var body=new GameObject("Padlock mesh"){layer=lockIcon.layer};
+                body.transform.SetParent(lockIcon.transform,false);
+                body.AddComponent<MeshFilter>().sharedMesh=mesh;
+                body.AddComponent<MeshRenderer>().sharedMaterial=lockMaterial;
+                body.GetComponent<MeshRenderer>().NoShadows();
+                float k=width*LockHeight/Mathf.Max(.01f,mesh.bounds.size.y);
+                body.transform.rotation=Quaternion.Euler(0,0,LockTilt);
+                body.transform.localScale=Vector3.one*k/Mathf.Max(.0001f,lockIcon.transform.lossyScale.y);
+                body.transform.position=centre-body.transform.rotation*(mesh.bounds.center*k)+new Vector3(0,0,-.6f);
+            }
+            // Count bubble: a white disc behind the counter, which turns dark with a white edge.
+            var bubble=new GameObject("Padlock count bubble"){layer=lockIcon.layer}.AddComponent<SpriteRenderer>();
+            bubble.transform.SetParent(lockIcon.transform,true);
+            bubble.sprite=SpriteFactory.Disc; bubble.sortingOrder=10;
+            var at=centre+new Vector3(BubbleOffset.x*width,BubbleOffset.y*width,-.7f);
+            bubble.transform.position=at;
+            float d=width*BubbleSize/Mathf.Max(.0001f,bubble.sprite.bounds.size.x);
+            bubble.transform.localScale=Vector3.one*d/Mathf.Max(.0001f,bubble.transform.parent.lossyScale.x);
+            Counter.transform.position=new Vector3(at.x,at.y,at.z-.05f);
+
+            Counter.color=BubbleInk;
+            var outline=Counter.GetComponent<SandJamTest.Scene3D.OutlinedText>(); if(outline) outline.SetInk(Color.white);
         }
         // The counter's backing plate, found once (a name lookup every frame for every locked region).
         Transform backingPlate; bool backingSearched; int shownLock=-2;

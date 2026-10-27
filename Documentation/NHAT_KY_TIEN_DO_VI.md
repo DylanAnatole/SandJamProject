@@ -2438,3 +2438,25 @@ gần hết (< 20%) và gần đầy (> 88%); lật ngẫu nhiên trục x/z đ�
 
 **Kiểm tra:** quay từng khung khối xanh đang đổ (gò hiện rõ, cát vẫn vơi đúng); hiệu năng không đổi đáng kể; luồng
 booster / thua không lỗi; tự chơi level 2, 68 thắng.
+
+## 27/10/2026 — Hoàn thiện hình khối băng và ổ khoá theo ảnh gốc
+
+**Ảnh gốc tìm lại** (Texture2D, chỉ để local, không lên git): `ice_new.png` (= `Mechanics/Ice.png`), `IceMatCap.png`,
+`snowflake.png` cho khối băng; `Lock_Color.png` + mesh `Lock` cho ổ khoá (chép vào `Resources/Mechanics/Lock.asset`,
+`LockColor.png` giới hạn 512 px — thư mục đã gitignore). So hình theo 2 GIF giới thiệu gốc (Freeze 40 khung, Unlocker 38 khung).
+
+**Sửa:**
+- `SandIce.shader`: băng xanh lơ sáng, vân băng mờ trên mặt bên, mặt trên gần trắng, mép sáng (trước: xanh lam đục, tối).
+- Số trên khối băng (`AddFreezeShell`): chữ trắng viền xanh như gốc. `OutlinedText.Awake` huỷ lưới viền bị nhân bản theo
+  nhãn gốc; bỏ `ReferenceTextOutline` cũ (nó bỏ qua màu viền tối < 0,35).
+- Ổ khoá trên tranh (`SceneRegionView.BuildPadlock`): ổ khoá 3D vàng (mesh + texture gốc) nghiêng nhẹ, số trong bong bóng
+  trắng ở góc trên phải, chữ nâu tối viền trắng; kích thước tính theo bề ngang bảng. Thiếu mesh (repo không có file gốc)
+  thì chỉ hiện bong bóng số.
+- `SandToonDepth` / `SandToonDepthPlain`: thêm `_Albedo` (mặc định 0) để tô theo màu texture — dùng lại shader khối, không
+  thêm shader mới; vẫn chỉ 1 lần lấy mẫu texture.
+
+**Màn có mechanic** (không có trong Campaign.json): băng 19 màn (AnimalPortrait 1,2,3,5,6,9,10,12,14,15; Dance
+2,3,6,8,9,10,12,14,15); khoá/chìa 20 màn (Halloween 1,2,3,5,6,7,10,11,12,14; ModernPosters 1,2,4,5,8,9,10,12,14,15).
+
+**Kiểm tra:** nạp tạm từng màn vào ô level 68 (chỉ trong bộ nhớ), tự chơi cả 39 màn: **39/39 thắng**, không exception;
+luồng booster / thua không lỗi; tự chơi level 5, 31, 68 thắng.

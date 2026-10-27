@@ -78,13 +78,19 @@ namespace SandJamTest.Scene3D
         string text; float size = -1, alpha = -1; Font font;
         Vector3 lastBounds; int phase;
         Color shown; bool shownSet; // colour drawn now (Ink unless ShowInk overrides it)
+        const string EdgeName = "Text outline mesh";
 
         void Awake()
         {
             main = GetComponent<TextMesh>(); mainRenderer = GetComponent<MeshRenderer>(); phase = GetInstanceID() & 7;
             // Older, thinner outlines (scene builder / popup helpers) are replaced by this one.
-            foreach (Transform child in transform) if (child.name == "Text outline") child.gameObject.SetActive(false);
-            var go = new GameObject("Text outline mesh") { layer = gameObject.layer };
+            foreach (Transform child in transform)
+            {
+                if (child.name == "Text outline") child.gameObject.SetActive(false);
+                // A label copied with Instantiate brings its source's outline mesh along (shared mesh, source ink).
+                else if (child.name == EdgeName) Destroy(child.gameObject);
+            }
+            var go = new GameObject(EdgeName) { layer = gameObject.layer };
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0, 0, .01f); // just behind the letters
             edge = new Mesh { name = "Text outline" }; edge.MarkDynamic();

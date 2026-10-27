@@ -206,6 +206,13 @@ namespace SandJamTest.Scene3D
             // Same spot as the ammo count once CharacterSandVessel lifts it onto the front face.
             label.name = "Freeze remaining"; label.transform.localPosition = actor.AmmoLabel.transform.localPosition + new Vector3(0, .2f, -.05f);
             label.transform.localScale = actor.AmmoLabel.transform.localScale * 1.22f;
+            // Original (Freeze gif): white digits edged in deep ice blue.
+            // The copy may still carry the legacy outline hand-over, which keeps only light inks: the blue edge is set
+            // here instead.
+            label.color = Color.white;
+            var legacy = label.GetComponent<ReferenceTextOutline>(); if (legacy) DestroyImmediate(legacy);
+            foreach (Transform child in label.transform) if (child.name == "Text outline") Destroy(child.gameObject);
+            OutlinedText.Add(label, new Color(.1f, .36f, .78f));
             var view = actor.gameObject.AddComponent<CharacterFreezeView>();
             view.Actor = actor; view.Shell = renderer; view.Counter = label;
         }

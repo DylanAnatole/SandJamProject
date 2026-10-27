@@ -12,6 +12,7 @@ Shader "SandJamTest/SandToonDepthPlain"
         _ShadeStrength ("Depth shading", Range(0,1)) = 1
         _GrainContrast ("Grain contrast", Range(0,3)) = 1
         _Gloss ("Soft highlight", Range(0,1)) = 0.2
+        _Albedo ("Use the texture as colour (props like the padlock)", Range(0,1)) = 0
         _FillEnabled ("Character fill enabled", Float) = 0
         _FillAmount ("Remaining sand", Range(0,1)) = 1
         _FillBottom ("Fill world bottom", Float) = 0
