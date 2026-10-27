@@ -9,6 +9,7 @@ namespace SandJamTest.Scene3D
         // The original ice mesh (Ice_Cube) melts from the top down through its blend shape, one step per count (Freeze
         // gif: whole at 5, half at 2, a thin collar at 1, gone at 0). Null: the plain shell just fades out.
         public Mesh Melting;
+        public SpriteRenderer Splash; // frost on the ground while frozen
         // Melt per count gone, fitted on the gif: 4 of 5 left only chips the top, 2 of 5 is half, 1 of 5 a collar.
         const float MeltSpeed = 2.5f, MeltCurve = 1.5f, FlashTime = .3f, FadeSpeed = 3.5f;
         Shooter bound;
@@ -43,6 +44,8 @@ namespace SandJamTest.Scene3D
                 Shell.transform.localScale=baseScale*(1+(1-opacity)*.16f);
             }
             Shell.gameObject.SetActive(opacity>0);
+            // The frost goes with the break (hidden by its flash and snow): the thawed cube walks off at once.
+            if(Splash && Splash.gameObject.activeSelf!=bound.IsFrozen)Splash.gameObject.SetActive(bound.IsFrozen);
             properties.SetFloat(OpacityId,opacity);properties.SetFloat(FlashId,flash);Shell.SetPropertyBlock(properties);
             Counter.gameObject.SetActive(bound.IsFrozen);
             // Original: the ice shows just the remaining number.

@@ -2522,3 +2522,23 @@ cố định. Bản mình đổ đều 9,5 đơn vị/s nên khối 40 mất ~4,
 `AmmoPerShot` / `ShotInterval` (và các dòng gán trong scene builder). `LevelReplaySolver` tick cùng kiểu (`.01`).
 
 **Kiểm tra:** đo bước cố định 0,02 s ở level 68 (khối 40): đổ 0,68 → 2,76 s (2,08 s); luồng booster / thua; tự chơi.
+
+## 27/10/2026 — Khối băng theo đúng material gốc, có vệt băng loang dưới chân
+
+**So:** GIF Freeze gốc — băng xanh nhạt trong, mặt trên gần trắng, mép có sương giá, nhìn xuyên thấy màu khối bên trong
+(khối xám thấy xám, khối tím thấy tím), dưới chân có vệt băng loang. Bản mình: băng gần như đục (alpha 0,9), không thấy
+khối, giữa mặt có vệt chữ thập trắng (UV dịch +0,5 làm mép sương giá của texture rơi vào giữa mặt).
+
+**Nguồn gốc:** prefab Character gốc — `IceCube` (SkinnedMeshRenderer, mesh Ice_Cube) dùng material `IceCube_0`
+(Toony Colors, premultiplied): `ice_new` × (0,87; 0,94; 1), emission (0; 0,34; 0,87), rim (0; 0,39; 1) 0,28–1,01; alpha
+lấy từ texture (~0,7 giữa mặt, ~1 ở mép). Vệt loang: `Splash.png`, màu của material `Splash 1` (0,89; 0,97; 1).
+
+**Sửa:**
+- `SandIce.shader`: viết lại theo công thức trên, blend `One OneMinusSrcAlpha`, mặt trên nhạt gần trắng, bỏ dịch UV
+  (UV mesh 0..1). Vẫn giữ `_Flash` / `_Opacity`.
+- `SandJamSceneController.Dynamic.AddIceSplash`: SpriteRenderer nằm trên nền dưới khối băng (xoay ngẫu nhiên, sprite và
+  material dùng chung → batch được); `CharacterFreezeView.Splash` ẩn ngay khi băng vỡ (lúc đó có loé sáng + bông tuyết, khối
+  chạy đi ngay).
+- Local (gitignore): `Resources/Mechanics/Splash.png`.
+
+**Kiểm tra:** chụp khối băng đứng yên, quay cảnh số giảm / băng vỡ; luồng booster / thua; tự chơi màn băng / khoá.

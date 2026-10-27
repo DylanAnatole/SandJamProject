@@ -185,6 +185,8 @@ namespace SandJamTest.Scene3D
         }
 
         static Mesh iceMesh, iceMelting;
+        static Sprite iceSplash;
+        const float SplashSize = 1.25f;
         Material iceMaterial, keyMaterial;
 
         // Ice shell over a frozen cube (original Freeze gif): slightly larger than the block, with a count.
@@ -228,6 +230,24 @@ namespace SandJamTest.Scene3D
             OutlinedText.Add(label, new Color(.1f, .36f, .78f));
             var view = actor.gameObject.AddComponent<CharacterFreezeView>();
             view.Actor = actor; view.Shell = renderer; view.Counter = label; view.Melting = iceMelting;
+            view.Splash = AddIceSplash(actor.transform);
+        }
+
+        // Frost splashed on the ground under a frozen cube (original Freeze gif; Splash texture, tint of "Splash 1").
+        static SpriteRenderer AddIceSplash(Transform actor)
+        {
+            if (!iceSplash)
+            {
+                var texture = Resources.Load<Texture2D>("Mechanics/Splash");
+                if (!texture) return null;
+                iceSplash = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), texture.width / SplashSize);
+            }
+            var splash = new GameObject("Ice splash").AddComponent<SpriteRenderer>();
+            splash.transform.SetParent(actor, false);
+            splash.transform.localPosition = new Vector3(0, .01f, 0);
+            splash.transform.localRotation = Quaternion.Euler(90, 0, Random.Range(0f, 360f));
+            splash.sprite = iceSplash; splash.sharedMaterial = SpriteFactory.PlainSprite; splash.color = new Color(.89f, .97f, 1f, .85f);
+            return splash;
         }
 
         // Golden key lying on top of a key cube (original UnlockerGif).
