@@ -2498,3 +2498,15 @@ lơ lửng trên ô.
 lùi về, khớp gốc).
 
 **Kiểm tra:** quay từng khung lúc lên ô; luồng booster / thua không lỗi; tự chơi level 2, 31, 68 thắng.
+
+## 27/10/2026 — Khối ngồi xuống ô rồi mới đổ
+
+**Đo:** từ lúc khối chạy tới ô đến phát cát đầu tiên (số trên khối giảm): video 2 155,88 → 156,04 s (0,16 s), video 3
+180,22 → 180,44 s (0,22 s) — khối thu chân, ngồi xuống, xoay về vùng rồi mới đổ. Bản mình bắn ngay khi hết đoạn lùi về
+(~0,11 s sau khi tới), cảm giác vội.
+
+**Sửa:** `SceneActorView.ReadyToPour` = đứng yên + (sau khi chạy) đã ngồi thêm `PourSettle` 0,08 s;
+`CharacterQueueController.CanShoot` và tư thế nghỉ (`Resting`) dùng nó. Phát đầu nay ~0,19 s sau khi tới ô.
+
+**Kiểm tra:** đo bước cố định 0,02 s (tới ô 0,49 s, phát đầu 0,68 s); luồng booster / thua; tự chơi level 2, 31, 68, 222
+và 2 màn băng / khoá.

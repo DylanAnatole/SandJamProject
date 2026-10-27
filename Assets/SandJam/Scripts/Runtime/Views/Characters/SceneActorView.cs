@@ -13,6 +13,10 @@ namespace SandJamTest.Scene3D
         public BoxCollider ClickCollider;
         public Shooter Shooter { get; private set; }
         public bool AtRest { get { return travel >= duration; } }
+        // Run onto its pad, the box first sits down and turns before its first shot: ~0.16-0.22 s from reaching the pad
+        // (recording 2, 155.88 -> 156.04 s; recording 3, 180.22 -> 180.44 s), of which the run's step back is ~0.1 s.
+        public bool ReadyToPour { get { return AtRest && (gait != Gait.Run || restAge >= PourSettle); } }
+        const float PourSettle = .08f; float restAge;
         // Actually on its way (an emptied box still waiting on its pad is not).
         public bool Moving { get { return !AtRest && !(Departing && exitDelay > 0); } }
         public bool Departing { get; private set; }
@@ -239,7 +243,7 @@ namespace SandJamTest.Scene3D
             if (Departing || (destination - position).sqrMagnitude < .00001f) return;
             restWritten = false;
             from = transform.position; destination = position;
-            gait = kind; travel = 0; duration = seconds;
+            gait = kind; travel = 0; duration = seconds; restAge = 0;
             // Picked: a quick stretch as it jumps off.
             if (kind == Gait.Run && !Departing) Punch(.22f);
             if(Motion)Motion.SetWalking(kind == Gait.Run);
@@ -278,7 +282,7 @@ namespace SandJamTest.Scene3D
         public bool Still { get { return restWritten; } }
         bool Resting(bool firing, float targetFill)
         {
-            return AtRest && !Departing && !firing && yaw == 0 && aimYaw == 0 && roll == 0 && squash == 0 && squashVelocity == 0
+            return ReadyToPour && !Departing && !firing && yaw == 0 && aimYaw == 0 && roll == 0 && squash == 0 && squashVelocity == 0
                 && shakeTime == 0 && size == sizeTarget && DisplayedFill == targetFill;
         }
 
@@ -350,6 +354,7 @@ namespace SandJamTest.Scene3D
             else
             {
                 transform.position = destination;
+                restAge += delta;
                 // Pouring from its pad: tipped toward the region it fills (positive = counter-clockwise on screen).
                 bool pouring = firing && !Departing;
                 float side = pourTarget.x >= transform.position.x ? 1 : -1; // region to the right / left

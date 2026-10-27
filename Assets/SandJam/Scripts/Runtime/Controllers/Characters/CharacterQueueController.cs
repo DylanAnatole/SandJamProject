@@ -31,7 +31,7 @@ namespace SandJamTest.Scene3D
             return p;
         }
         public bool CanShoot(SandGame game, int slot)
-        { var shooter = game.Slots[slot]; return shooter != null && actors[shooter].AtRest; }
+        { var shooter = game.Slots[slot]; return shooter != null && actors[shooter].ReadyToPour; }
         public void Bind(SandGame Game, LevelData level)
         {
             actors.Clear();
