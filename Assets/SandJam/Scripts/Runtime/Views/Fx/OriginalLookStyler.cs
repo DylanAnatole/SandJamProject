@@ -387,9 +387,8 @@ namespace SandJamTest.Scene3D
             gradientMesh.triangles = new[] { 0, 2, 1, 1, 2, 3, 2, 4, 3, 3, 4, 5 };
             obj.AddComponent<MeshFilter>().sharedMesh = gradientMesh;
             var renderer = obj.AddComponent<MeshRenderer>();
-            gradientMaterial = new Material(Shader.Find("Sprites/Default"));
+            gradientMaterial = new Material(Shader.Find("SandJamTest/BackdropGradient"));
             renderer.sharedMaterial = gradientMaterial;
-            renderer.sortingOrder = -100;
             renderer.NoShadows();
         }
 

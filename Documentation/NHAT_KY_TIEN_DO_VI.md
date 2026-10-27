@@ -2646,3 +2646,18 @@ dựng phần bình cát cho từng khối (~0,3 ms/khối, mesh đã dùng chun
 cài tiếng Thổ Nhĩ Kỳ). `FindRig` 2,05 → 0,10 ms/khối; khung đầu khi vào màn 145 → 86 ms trong editor (phần game ~15 ms).
 
 **Kiểm tra:** luồng booster / thua (đi qua action nút); tự chơi level 2, 31, 68 và 2 màn băng / khoá.
+
+## 27/10/2026 — Mobile: nền gradient vẽ đục, bớt blend toàn màn hình
+
+**Đo:** rà các hàm chạy mỗi khung: `TextOutliner` quét UI mỗi 0,4 s chỉ tốn 0,08 ms (27 nhãn) — không sửa;
+`CubeContactShadow` đã cache; `SuperbFx` gọi `GetComponent<SpriteRenderer>()` mỗi khung khi đang ăn mừng. Ước lượng overdraw
+(khung bao renderer chiếu lên màn hình): lớp đục ~1 màn, lớp trong suốt ~2,1 màn — trong đó "Backdrop gradient" phủ kín 1 màn
+bằng `Sprites/Default` (blend toàn màn hình mỗi khung dù nền vốn đục).
+
+**Sửa:**
+- `Resources/BackdropGradient.shader`: màu đỉnh, đục, hàng đợi `Background`, không ghi depth; `OriginalLookStyler.BuildGradient`
+  dùng nó. Màu nền giống hệt từng pixel. Lớp trong suốt còn ~1,3 màn (tấm nền bảng + bảng cát cần alpha).
+- `SuperbFx`: giữ sẵn `SpriteRenderer` của glow thay vì `GetComponent` mỗi khung.
+- `SandToonDepthPlain`: bỏ các thuộc tính fill còn sót.
+
+**Kiểm tra:** so ảnh Dance_12 — nền trùng từng pixel; luồng booster / thua; tự chơi level 2, 222 và 2 màn băng / khoá.

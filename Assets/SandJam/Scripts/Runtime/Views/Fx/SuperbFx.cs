@@ -12,7 +12,8 @@ namespace SandJamTest.Scene3D
         readonly List<Transform> letters = new List<Transform>();
         readonly List<float> letterBase = new List<float>(), letterX = new List<float>();
         float wordCentreX;
-        Transform rays, glow;
+        Transform rays;
+        SpriteRenderer glow;
         Vector3 raysScale;
         SpriteRenderer flash;
         ParticleSystem stars;
@@ -39,7 +40,7 @@ namespace SandJamTest.Scene3D
             if (light)
             {
                 rays = Sprite("Rays", light, centre + new Vector3(0, 0, .6f), 6.5f, new Color(1, .86f, .35f, .55f)).transform; raysScale = rays.localScale;
-                glow = Sprite("Glow", light, centre + new Vector3(0, 0, .5f), 3.2f, new Color(1, 1, 1, .45f)).transform;
+                glow = Sprite("Glow", light, centre + new Vector3(0, 0, .5f), 3.2f, new Color(1, 1, 1, .45f));
             }
             flash = Sprite("Flash", SpriteFactory.White, centre + new Vector3(0, 0, -.8f), 1, Color.white);
             flash.transform.localScale = new Vector3(12, 20, 1);
@@ -80,7 +81,7 @@ namespace SandJamTest.Scene3D
             // Original (recording, level 267 win): no light rays, only a soft warm glow behind the word.
             if (rays) { rays.gameObject.SetActive(false); rays = null; }
             // Measured on recording 2 (226-227 s): the glow stays near full brightness ~620 px wide behind the word.
-            if (glow) { var g = glow.GetComponent<SpriteRenderer>(); g.sprite = soft; float k = GlowWidth / soft.bounds.size.x; glow.localScale = new Vector3(k, k, 1); }
+            if (glow) { glow.sprite = soft; float k = GlowWidth / soft.bounds.size.x; glow.transform.localScale = new Vector3(k, k, 1); }
             // Bigger, bolder confetti pieces like the original's.
             var confetti = transform.Find("Confetti");
             if (confetti)
@@ -181,7 +182,7 @@ namespace SandJamTest.Scene3D
                 var p = letters[i].position; letters[i].position = new Vector3(wordCentreX + (letterX[i] - wordCentreX) * keep, letterBase[i] + wave, p.z);
             }
             if (rays) { rays.localRotation = Quaternion.Euler(0, 0, time * 25f); rays.localScale = raysScale * Mathf.Min(1, .3f + time * 2.5f); }
-            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.GetComponent<SpriteRenderer>().color = new Color(1, .82f, .45f, GlowAlpha * g * keep); }
+            if (glow) { float g = 1 + .08f * Mathf.Sin(time * 6); glow.transform.localRotation = Quaternion.Euler(0, 0, -time * 12f); glow.color = new Color(1, .82f, .45f, GlowAlpha * g * keep); }
             if (rays) rays.localScale *= Mathf.Max(.01f, keep);
             if (flash) { var c = flash.color; c.a = Mathf.Clamp01(.55f - time * 2.2f); flash.color = c; }
         }
