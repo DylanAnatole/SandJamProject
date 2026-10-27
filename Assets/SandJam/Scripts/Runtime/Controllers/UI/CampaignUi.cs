@@ -168,12 +168,12 @@ namespace SandJamTest.Scene3D
             bool doubled = screen.Levels.RewardDoubled;
             if (coins == shownCoins && level == shownLevel && doubled == shownDoubled) return;
             shownCoins = coins; shownLevel = level; shownDoubled = doubled;
-            if (homeNumber) homeNumber.text = Campaign.LevelNumber.ToString();
-            if (hudLevel) hudLevel.text = "Level " + level;
+            if (homeNumber) OutlinedText.SetText(homeNumber, Campaign.LevelNumber.ToString());
+            if (hudLevel) OutlinedText.SetText(hudLevel, "Level " + level);
             // Original EasyHardLevelConfig: hard levels get a red badge + skull, bonus ("easy") levels a green one + coins.
             ApplyLevelKindBadge(OriginalConfig.IsEasy(level) ? 2 : OriginalConfig.IsHard(level) ? 1 : 0);
-            if (resultTitle) resultTitle.text = "Level " + level;
-            if (rewardLabel) rewardLabel.text = "+ " + (EconomyManager.WinRewardFor(level) * (doubled ? 2 : 1));
+            if (resultTitle) OutlinedText.SetText(resultTitle, "Level " + level);
+            if (rewardLabel) OutlinedText.SetText(rewardLabel, "+ " + (EconomyManager.WinRewardFor(level) * (doubled ? 2 : 1)));
             if (doubleButton) doubleButton.SetActive(!doubled);
         }
 
@@ -247,7 +247,7 @@ namespace SandJamTest.Scene3D
             if (shown != shownRolling)
             {
                 shownRolling = shown;
-                foreach (var label in coinLabels) if (label) label.text = shown.ToString();
+                foreach (var label in coinLabels) if (label) OutlinedText.SetText(label, shown.ToString());
             }
             coinPop = Mathf.MoveTowards(coinPop, 0, Time.unscaledDeltaTime * 4);
             foreach (var label in coinLabels)
@@ -266,18 +266,18 @@ namespace SandJamTest.Scene3D
             // Hearts: "Full" when full, otherwise the countdown to the next heart (original Home HUD).
             if (Time.unscaledTime < nextLivesRefresh) return;
             nextLivesRefresh = Time.unscaledTime + .5f;
-            if (livesCount) livesCount.text = LivesManager.Lives.ToString();
+            if (livesCount) OutlinedText.SetText(livesCount, LivesManager.Lives.ToString());
             ShowQuestLock(!SandQuest.Unlocked);
             string join = !SandQuest.Unlocked ? "Lv. " + SandQuest.StartLevel : SandQuest.Joined ? SandQuest.StepsDone + "/" + SandQuest.Steps : "JOIN";
             var ink = SandQuest.Unlocked ? VideoScreen.JoinInk : LockedInk;
             foreach (var label in joinLabels)
             {
                 if (!label) continue;
-                label.text = join;
+                OutlinedText.SetText(label, join);
                 var edge = label.GetComponent<OutlinedText>();
                 if (edge && edge.Ink != ink) edge.SetInk(ink);
             }
-            if (livesStatus) livesStatus.text = LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext);
+            if (livesStatus) OutlinedText.SetText(livesStatus, LivesManager.IsFull ? "Full" : LivesManager.Countdown(LivesManager.UntilNext));
         }
 
         // Before SandQuest.StartLevel the original keeps the chest on Home, locked: its disabled art (Chest_Disable,

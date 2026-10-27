@@ -66,6 +66,9 @@ namespace SandJamTest
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false; return renderer;
         }
 
+        // SetActive only on a change: per-frame callers skip the native call while nothing changes.
+        public static void SetShown(this GameObject go, bool shown) { if (go.activeSelf != shown) go.SetActive(shown); }
+
         // First descendant (inactive included, the root itself too) with this exact name; null when none.
         public static Transform FindDeep(this Transform root, string name)
         {

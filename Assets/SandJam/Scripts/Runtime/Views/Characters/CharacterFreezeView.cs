@@ -26,10 +26,13 @@ namespace SandJamTest.Scene3D
         static readonly int OpacityId = Shader.PropertyToID("_Opacity"), FlashId = Shader.PropertyToID("_Flash");
         void Awake(){baseScale=Shell.transform.localScale;properties=new MaterialPropertyBlock();filter=Shell.GetComponent<MeshFilter>();}
         int shownFreeze=-2; // the number on the ice, rewritten only when it changes
+        float shownOpacity=-1, shownFlash=-1; // last values sent to the shell's property block
         void LateUpdate()
         {
             if(Actor.Shooter==null)return;
             if(bound!=Actor.Shooter){bound=Actor.Shooter;opacity=bound.IsFrozen?1:0;start=lastRemaining=bound.FreezeRemaining;melt=bound.IsFrozen?0:1;flash=0;flashWait=-1;}
+            // Thawed and gone: only the cube's own count follows its departure (most of a level, for most cubes).
+            if(!bound.IsFrozen && opacity<=0 && flash<=0 && flashWait<0 && !Shell.gameObject.activeSelf){Actor.AmmoLabel.gameObject.SetShown(!Actor.Departing);return;}
             float dt=Time.deltaTime;
             int remaining=bound.FreezeRemaining;
             if(remaining<lastRemaining)flashWait=Front?Mathf.Clamp((Front.position.y-transform.position.y)*FlashStagger,0,MaxFlashDelay):0;
@@ -49,15 +52,19 @@ namespace SandJamTest.Scene3D
                 opacity=bound.IsFrozen?1:Mathf.MoveTowards(opacity,0,dt*FadeSpeed);
                 Shell.transform.localScale=baseScale*(1+(1-opacity)*.16f);
             }
-            Shell.gameObject.SetActive(opacity>0);
+            Shell.gameObject.SetShown(opacity>0);
             // The frost goes with the break (hidden by its flash and snow): the thawed cube walks off at once.
-            if(Splash && Splash.gameObject.activeSelf!=bound.IsFrozen)Splash.gameObject.SetActive(bound.IsFrozen);
-            properties.SetFloat(OpacityId,opacity);properties.SetFloat(FlashId,flash);Shell.SetPropertyBlock(properties);
-            Counter.gameObject.SetActive(bound.IsFrozen);
+            if(Splash)Splash.gameObject.SetShown(bound.IsFrozen);
+            if(opacity!=shownOpacity || flash!=shownFlash)
+            {
+                shownOpacity=opacity;shownFlash=flash;
+                properties.SetFloat(OpacityId,opacity);properties.SetFloat(FlashId,flash);Shell.SetPropertyBlock(properties);
+            }
+            Counter.gameObject.SetShown(bound.IsFrozen);
             // Original: the ice shows just the remaining number.
             int shown=bound.IsFrozen?remaining:-1;
-            if(shown!=shownFreeze){shownFreeze=shown;Counter.text=shown<0?"":DisplayAmount.Text(shown);}
-            Actor.AmmoLabel.gameObject.SetActive(!bound.IsFrozen && !Actor.Departing);
+            if(shown!=shownFreeze){shownFreeze=shown;OutlinedText.SetText(Counter,shown<0?"":DisplayAmount.Text(shown));}
+            Actor.AmmoLabel.gameObject.SetShown(!bound.IsFrozen && !Actor.Departing);
         }
     }
 }

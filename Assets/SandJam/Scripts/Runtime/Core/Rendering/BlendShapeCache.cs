@@ -24,6 +24,12 @@ namespace SandJamTest
             return steps[step];
         }
 
+        // Bakes every step now (while a level builds), so none is baked mid-play when the ice melts or the lock opens.
+        public static void Prewarm(Mesh source)
+        {
+            for (int step = 1; step <= Steps; step++) At(source, (float)step / Steps);
+        }
+
         static Mesh Bake(Mesh source, float weight)
         {
             if (!baker)

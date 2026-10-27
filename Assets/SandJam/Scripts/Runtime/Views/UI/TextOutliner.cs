@@ -128,8 +128,9 @@ namespace SandJamTest.Scene3D
         bool driven;
         public static void SetText(TextMesh label, string value)
         {
-            label.text = value;
             var o = label.GetComponent<OutlinedText>();
+            if (o && o.driven && o.size >= 0 && o.text == value) return; // unchanged: no re-layout (HUD labels refresh twice a second)
+            label.text = value;
             if (o) { o.driven = true; o.size = -1; }
         }
 

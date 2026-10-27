@@ -196,6 +196,7 @@ namespace SandJamTest.Scene3D
             // The original ice cube (it melts step by step); without it a plain rounded shell.
             if (!iceMelting) iceMelting = Resources.Load<Mesh>("Mechanics/IceCube");
             if (iceMelting && !iceMelting.isReadable) iceMelting = null; // it melts through baked copies (Read/Write)
+            if (iceMelting) BlendShapeCache.Prewarm(iceMelting);
             if (!iceMesh && !iceMelting) iceMesh = CharacterSandVessel.RoundedBlock(size, .09f);
             if (!iceMaterial)
             {

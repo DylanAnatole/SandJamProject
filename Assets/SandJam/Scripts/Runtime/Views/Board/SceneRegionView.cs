@@ -106,7 +106,7 @@ namespace SandJamTest.Scene3D
             else if(!done){ Counter.gameObject.SetActive(true); if(received && padlock) padlock.Pop(); }
             var backing=Backing(); if(backing) backing.gameObject.SetActive(false);
             int shown=DisplayAmount.Units(region.Remaining,Divider);
-            if(shown!=shownLock){shownLock=shown;Counter.text=shown<0?"":DisplayAmount.Text(shown);}
+            if(shown!=shownLock){shownLock=shown;OutlinedText.SetText(Counter,shown<0?"":DisplayAmount.Text(shown));}
             if(done || !Board) return;
             // Diagonal stripes in the region colour, like the locked areas in the reference gif.
             Color baseColor=ColorPalette.Of(region.Data.ColorType);
@@ -137,7 +137,7 @@ namespace SandJamTest.Scene3D
                 body.transform.SetParent(lockIcon.transform,false);
                 body.AddComponent<MeshFilter>().sharedMesh=mesh;
                 var bodyRenderer=body.AddComponent<MeshRenderer>(); bodyRenderer.sharedMaterial=lockMaterial; bodyRenderer.NoShadows();
-                padlock.Body=bodyRenderer; padlock.Closed=mesh; padlock.Gold=lockMaterial.GetColor("_Color");
+                padlock.Body=bodyRenderer; padlock.Closed=mesh; BlendShapeCache.Prewarm(mesh); padlock.Gold=lockMaterial.GetColor("_Color");
                 float k=width*LockHeight/Mathf.Max(.01f,mesh.bounds.size.y);
                 body.transform.rotation=Quaternion.Euler(0,0,LockTilt);
                 body.transform.localScale=Vector3.one*k/Mathf.Max(.0001f,lockIcon.transform.lossyScale.y);

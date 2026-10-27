@@ -2564,3 +2564,25 @@ loé xong — loé chạy dọc hàng, không đồng loạt. Bản mình loé t
 
 **Kiểm tra:** quay Dance_12 (12 khối băng): hàng đầu loé 0 s, hàng giữa ~0,07 s, hàng cuối ~0,13 s; luồng booster / thua;
 tự chơi các màn băng.
+
+## 27/10/2026 — Ổn định cho mobile: cấu hình build, nướng mesh sẵn, bớt việc lặp mỗi khung
+
+**Đo (editor, Dance_12 — 12 khối băng, autoplay; profiler self time):** script game sinh ~110 B rác/khung (8 KB/khung
+trong số tổng là của editor + công cụ đo), không khung nào > 2 KB; GC incremental đã bật; không có đèn → không có lượt
+shadow; 70–90 draw call. Tốn nhất: `SandJamSceneController.Update` 677 µs, `OutlinedText` 268, `CharacterDepthStyle` 211,
+`SandFx` 141, `CharacterFreezeView` 124. Đo trực tiếp `Advance`: ~200 µs, trong đó `Synchronize` ~51 µs × 2 lần/khung
+(gần hết là đồng bộ hàng chờ), mô phỏng cát (Burst) ~9 µs, tick 3 µs.
+
+**Sửa:**
+- Cấu hình build (qua API editor): Android IL2CPP + ARM64 (trước Mono, chỉ ARMv7 32-bit — chậm hơn và Google Play bắt buộc
+  64-bit), iOS IL2CPP, tắt accelerometer (đang đọc 60 lần/s dù game không dùng).
+- `BlendShapeCache.Prewarm`: nướng sẵn 20 bước của mesh băng / ổ khoá lúc dựng màn, không nướng giữa lúc chơi.
+- `CharacterFreezeView`: chỉ gửi property block khi độ mờ / loé đổi, `SetActive` chỉ khi đổi, thoát sớm khi băng đã tan;
+  số trên băng gán qua `OutlinedText.SetText`. 124 → 27 µs/khung.
+- `RendererExtensions.SetShown` (helper dùng chung: `SetActive` chỉ khi đổi; dùng thêm ở `CongratsPopup`).
+- `OutlinedText.SetText` bỏ qua khi chữ không đổi (so với chuỗi đã lưu, không đọc `TextMesh.text`); số trên ổ khoá và các nhãn
+  HUD (`CampaignUi`: level, xu, mạng, JOIN) gán qua đó → 30/33 nhãn không còn bị dò định kỳ (trước 16/33).
+- `SandJamSceneController.Advance`: lần `Synchronize(0)` sau tick chỉ chạy khi `Game.Revision` đổi (~40 µs/khung lúc không
+  bắn).
+
+**Kiểm tra:** luồng booster / thua; tự chơi level 2, 31, 68, 222 và 4 màn băng / khoá; đo lại nhịp đổ (level 68).

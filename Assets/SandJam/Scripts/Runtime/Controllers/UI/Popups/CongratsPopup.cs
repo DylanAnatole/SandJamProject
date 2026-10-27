@@ -121,7 +121,7 @@ namespace SandJamTest.Scene3D
             float c = Mathf.Clamp01((t - 1.3f) / .35f);
             giftCoin.gameObject.SetActive(c > 0);
             giftCoin.localPosition = new Vector3(0, -(920 - 712) * VideoScreen.Px * (1 - c) * (1 - c), 0);
-            foreach (var b in rewardButtons) if (b.activeSelf != t >= GiftButtonsAt) b.SetActive(t >= GiftButtonsAt);
+            foreach (var b in rewardButtons) b.SetShown(t >= GiftButtonsAt);
         }
         public void ShowGalleryReward(int coins, bool gift)
         {
