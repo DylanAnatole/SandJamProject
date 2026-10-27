@@ -2606,3 +2606,19 @@ không nén. Mesh nướng sẵn của ổ khoá / băng: 40 mesh × 280–500 K
 
 **Kiểm tra:** import lại logo → Android / iOS ASTC_4x4, Standalone giữ nguyên; quay băng tan (mesh nướng sẵn vẫn vẽ đúng);
 luồng booster / thua; tự chơi level 2, 68 và 3 màn băng / khoá. Giới hạn độ phân giải chỉ chạy trên điện thoại (chưa thử máy thật).
+
+## 27/10/2026 — Mobile: tắt mô phỏng vật lý thừa, tắt camera nền khi không có viền
+
+**Đo:** lúc chơi có ~57 triệu px texture trong bộ nhớ (~55 MB sau ASTC), ~38 triệu px thuộc popup chưa mở (Shop, SandQuest,
+Gallery, Congrats, Tasks, Lives…). Giữ dựng sẵn: dựng khi mở sẽ khựng lần đầu mở popup. 3 camera / khung: camera nền
+letterbox (mask 0) chỉ xoá màn hình trong khi Main Camera cũng tự xoá. Không có rigidbody nào, collider chỉ để dò chạm,
+nhưng vật lý 3D + 2D vẫn mô phỏng 50 lần/s và đồng bộ collider của mọi khối đang chạy.
+
+**Sửa:**
+- `OriginalLookStyler.LateUpdate`: camera nền chỉ bật khi Main Camera chừa viền (`rect` không phủ kín) — trên điện thoại
+  (1170×2532) tắt, bớt một lượt xoá toàn màn hình mỗi khung.
+- Vật lý 3D + 2D: `Simulation Mode = Script` (Project Settings). `Views/UI/ScreenTap` (helper dùng chung): `SyncTransforms` rồi
+  raycast một lần mỗi lần chạm; 3 chỗ dò chạm (khối, booster chọn khối, nút UI) dùng nó thay vì lặp code.
+
+**Kiểm tra:** camera nền tắt ở 1170×2532, ảnh không đổi; thử chạm: khối vừa dịch lên — không đồng bộ thì trượt, qua
+`ScreenTap` (có đồng bộ) thì trúng; luồng booster / thua; tự chơi level 2, 31, 68 và 2 màn băng / khoá.

@@ -154,9 +154,8 @@ namespace SandJamTest.Scene3D
             if (Input.GetKeyDown(KeyCode.Alpha3)) SelectLane(2);
             if (Input.GetMouseButtonDown(0) && !paused && Game.State == GameState.Playing)
             {
-                RaycastHit hit;
-                if (Physics.Raycast(GameCamera.ScreenPointToRay(Input.mousePosition), out hit, 100, 1 << 8))
-                    SelectActor(hit.collider.GetComponentInParent<SceneActorView>());
+                var tapped = ScreenTap.Cube(GameCamera);
+                if (tapped) SelectActor(tapped);
             }
             if (!paused) Advance(Mathf.Min(Time.unscaledDeltaTime, .1f) * (EndgameRush ? 2 : 1));
         }

@@ -16,9 +16,19 @@ namespace SandJamTest.Scene3D
         public float PadTilt = 55f, PadThickness = 1f, PadDepth = 1.55f;
         public int ThemeIndex { get; private set; }
         Color top, middle, bottom;
-        Camera filler;
+        Camera filler, played;
         Mesh gradientMesh;
         Material gradientMaterial;
+
+        // The filler only shows when the play camera leaves bars (tablets, very wide or tall screens); on a phone the play
+        // camera covers the screen and clears it itself, so the filler would be one more full-screen clear a frame.
+        void LateUpdate()
+        {
+            if (!filler || !played) return;
+            var r = played.rect;
+            bool bars = r.x > 0 || r.y > 0 || r.width < 1 || r.height < 1;
+            if (filler.enabled != bars) filler.enabled = bars;
+        }
 
         // Measured on recording 2 (level 267, 888 px wide): at the same camera the original picture is ~3.5% larger,
         // and its frame border is ~6.7% of the picture's width at the sides and top. The bottom border is the same and
@@ -57,6 +67,7 @@ namespace SandJamTest.Scene3D
             filler.clearFlags = CameraClearFlags.SolidColor; filler.backgroundColor = bottom;
             // It only clears: no HDR target or MSAA buffer (on phones those add a full-screen buffer and copy a frame).
             filler.allowHDR = false; filler.allowMSAA = false;
+            played = cam;
             BuildGradient(cam);
             var stash = controller.StashSlots.Length > 0 ? controller.StashSlots[0].parent : null;
             if (stash)

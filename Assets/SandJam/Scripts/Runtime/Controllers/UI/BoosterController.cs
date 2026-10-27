@@ -280,9 +280,7 @@ namespace SandJamTest.Scene3D
             // The game waits while the player picks; a zero step still poses the cubes, so they rock.
             RockCubes(true); controller.Advance(0);
             if (Time.frameCount == pickerOpenedFrame || !Input.GetMouseButtonDown(0)) return;
-            RaycastHit hit;
-            var cam = controller.GameCamera;
-            var actor = cam && Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hit, 100, 1 << 8) ? hit.collider.GetComponentInParent<SceneActorView>() : null;
+            var actor = ScreenTap.Cube(controller.GameCamera);
             if (!actor || actor.Shooter == null) { Cancel(); return; }
             if (controller.SelectPriority(actor.Shooter)) { Pay(BoosterCatalog.Select); Cancel(); }
             else actor.Shake();

@@ -513,9 +513,9 @@ namespace SandJamTest.Scene3D
             if(Input.GetKeyDown(KeyCode.Escape) && !Popups.Open)Show(Page.Home);
             if(Input.GetMouseButtonDown(0) && !Boosters.PickerOpen)
             {
-                RaycastHit hit;
-                if(!Physics.Raycast((UiCamera?UiCamera:Controller.GameCamera).ScreenPointToRay(Input.mousePosition),out hit,100,1<<9))return;
-                var button=hit.collider.GetComponent<VideoUiButton>();
+                var tapped=ScreenTap.Hit(UiCamera?UiCamera:Controller.GameCamera,ScreenTap.ButtonLayer);
+                if(!tapped)return;
+                var button=tapped.GetComponent<VideoUiButton>();
                 if(button){button.Press();if(!button.Action.StartsWith("booster:"))GameEvents.RaiseButtonClicked(button.Action);}
                 // While a popup is open only its own buttons respond.
                 if(Popups.Open || Feedback.FailureVisible){if(Popups.Owns(button))Popups.Handle(button.Action);return;}
