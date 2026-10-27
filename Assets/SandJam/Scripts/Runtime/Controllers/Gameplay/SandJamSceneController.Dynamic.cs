@@ -231,6 +231,7 @@ namespace SandJamTest.Scene3D
             var view = actor.gameObject.AddComponent<CharacterFreezeView>();
             view.Actor = actor; view.Shell = renderer; view.Counter = label; view.Melting = iceMelting;
             view.Splash = AddIceSplash(actor.transform);
+            if (actor.SourceLane >= 0 && actor.SourceLane < LaneStarts.Length) view.Front = LaneStarts[actor.SourceLane];
         }
 
         // Frost splashed on the ground under a frozen cube (original Freeze gif; Splash texture, tint of "Splash 1").

@@ -2553,3 +2553,14 @@ lấy từ texture (~0,7 giữa mặt, ~1 ở mép). Vệt loang: `Splash.png`, 
 nổ cùng lúc với ổ khoá. Logic mở vùng (`SettledCount`) không đổi.
 
 **Kiểm tra:** quay cảnh mở khoá; luồng booster / thua; tự chơi các màn khoá.
+
+## 27/10/2026 — Băng loé lan từ đầu hàng xuống cuối hàng
+
+**So:** GIF Freeze gốc khung 9, 15, 23 (ngay sau mỗi lần chạm): khối băng cuối hàng còn trắng sáng nhất, khối đầu hàng đã
+loé xong — loé chạy dọc hàng, không đồng loạt. Bản mình loé tất cả cùng lúc.
+
+**Sửa:** `CharacterFreezeView.Front` (= `LaneStarts` của hàng, gán trong `AddFreezeShell`): mỗi khối chờ
+`FlashStagger` 0,07 s cho mỗi đơn vị cách đầu hàng (tối đa 0,3 s) rồi mới loé; băng vẫn tan ngay.
+
+**Kiểm tra:** quay Dance_12 (12 khối băng): hàng đầu loé 0 s, hàng giữa ~0,07 s, hàng cuối ~0,13 s; luồng booster / thua;
+tự chơi các màn băng.

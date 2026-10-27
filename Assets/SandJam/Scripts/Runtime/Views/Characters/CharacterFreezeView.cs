@@ -10,6 +10,11 @@ namespace SandJamTest.Scene3D
         // gif: whole at 5, half at 2, a thin collar at 1, gone at 0). Null: the plain shell just fades out.
         public Mesh Melting;
         public SpriteRenderer Splash; // frost on the ground while frozen
+        // The flash runs down the lane from its front (Freeze gif frames 9, 15, 23: just after a tap the back cube is the
+        // one still white): each cube flashes a little later the further it waits behind Front.
+        public Transform Front;
+        const float FlashStagger = .07f, MaxFlashDelay = .3f; // seconds per world unit behind the front
+        float flashWait = -1;
         // Melt per count gone, fitted on the gif: 4 of 5 left only chips the top, 2 of 5 is half, 1 of 5 a collar.
         const float MeltSpeed = 2.5f, MeltCurve = 1.5f, FlashTime = .3f, FadeSpeed = 3.5f;
         Shooter bound;
@@ -24,10 +29,11 @@ namespace SandJamTest.Scene3D
         void LateUpdate()
         {
             if(Actor.Shooter==null)return;
-            if(bound!=Actor.Shooter){bound=Actor.Shooter;opacity=bound.IsFrozen?1:0;start=lastRemaining=bound.FreezeRemaining;melt=bound.IsFrozen?0:1;flash=0;}
+            if(bound!=Actor.Shooter){bound=Actor.Shooter;opacity=bound.IsFrozen?1:0;start=lastRemaining=bound.FreezeRemaining;melt=bound.IsFrozen?0:1;flash=0;flashWait=-1;}
             float dt=Time.deltaTime;
             int remaining=bound.FreezeRemaining;
-            if(remaining<lastRemaining)flash=1;
+            if(remaining<lastRemaining)flashWait=Front?Mathf.Clamp((Front.position.y-transform.position.y)*FlashStagger,0,MaxFlashDelay):0;
+            if(flashWait>=0){flashWait-=dt;if(flashWait<0)flash=1;}
             lastRemaining=remaining;
             flash=Mathf.MoveTowards(flash,0,dt/FlashTime);
             if(Melting)
