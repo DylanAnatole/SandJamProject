@@ -42,6 +42,7 @@ namespace SandJamTest
             var mesh = new Mesh { name = source.name + " " + Mathf.RoundToInt(weight), hideFlags = HideFlags.DontSave };
             baker.BakeMesh(mesh);
             mesh.RecalculateBounds();
+            mesh.UploadMeshData(true); // only drawn: drops the CPU copy, about half of the ~15 MB the ice and padlock steps take
             return mesh;
         }
     }

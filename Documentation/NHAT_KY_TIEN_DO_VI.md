@@ -2586,3 +2586,23 @@ shadow; 70–90 draw call. Tốn nhất: `SandJamSceneController.Update` 677 µs
   bắn).
 
 **Kiểm tra:** luồng booster / thua; tự chơi level 2, 31, 68, 222 và 4 màn băng / khoá; đo lại nhịp đổ (level 68).
+
+## 27/10/2026 — Mobile: nén texture ASTC, giới hạn độ phân giải render, mesh nướng sẵn không giữ bản CPU
+
+**Đo:** texture không có thiết lập riêng cho Android / iOS và mặc định `textureCompression: 0` → build mobile để ảnh không
+nén (RGBA32 / RGB24: logo 2000×1500, nền 2048×2048, nền popup ~900×1200). Ước tính toàn bộ 236 texture thường: ~301 MB
+không nén. Mesh nướng sẵn của ổ khoá / băng: 40 mesh × 280–500 KB (~15 MB), vẫn giữ bản sao CPU. Âm thanh: 8 SFX ngắn
+(< 90 KB, giải nén khi tải — đúng cho SFX), không sửa.
+
+**Sửa:**
+- `Editor/Tools/MobileTextureImport` (AssetPostprocessor, áp cho mọi texture trong `Assets/SandJam`): Android + iOS dùng
+  ASTC 4×4 (giữ gradient UI sạch, ~1/4 dung lượng) → ước tính ~75 MB. Bỏ qua ảnh pixel-art (lọc Point: bìa gallery, ảnh level)
+  và texture Read/Write; không đè thiết lập đã đặt tay. Bản PC không đổi. Các `.meta` texture của dự án được import lại có
+  thêm phần Android / iPhone; `.meta` trong Resources (gitignore) được tạo lại khi import trên máy.
+- `BlendShapeCache.Bake`: `UploadMeshData(true)` — mesh chỉ để vẽ, bỏ bản CPU (giảm ~một nửa).
+- `Core/Rendering/MobileDisplay.Configure` (thay dòng `targetFrameRate` trong `SandJamSceneController.Awake`): 60 fps; trên
+  điện thoại cạnh ngắn render tối đa 1080 px (giữ tỉ lệ) — màn 1440×3200 bớt ~44% pixel phải vẽ; camera / UI tự căn lại khi
+  kích thước màn đổi.
+
+**Kiểm tra:** import lại logo → Android / iOS ASTC_4x4, Standalone giữ nguyên; quay băng tan (mesh nướng sẵn vẫn vẽ đúng);
+luồng booster / thua; tự chơi level 2, 68 và 3 màn băng / khoá. Giới hạn độ phân giải chỉ chạy trên điện thoại (chưa thử máy thật).

@@ -96,7 +96,7 @@ namespace SandJamTest.Scene3D
         void Awake()
         {
             ConfigureFiveSlots();
-            Application.targetFrameRate = 60;
+            MobileDisplay.Configure();
             FitCamera();
             sound = GetComponent<AudioSource>();
             try
