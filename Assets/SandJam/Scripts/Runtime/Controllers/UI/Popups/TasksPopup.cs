@@ -94,7 +94,7 @@ namespace SandJamTest.Scene3D
                 {
                     float ix = x + (i - (items.Count - 1) / 2f) * step;
                     // Booster icons have wide transparent margins; draw them larger than the coin.
-                    var icon = Art(rewardsPanel, items[i].Key, PanelPos(ix, y - 10, -6.5f), (items[i].Key.StartsWith("Shop") ? 95 : 150) * PanelUnit);
+                    var icon = Art(rewardsPanel, items[i].Key, PanelPos(ix, y - 10, -6.5f), (items[i].Key.StartsWith("Shop", System.StringComparison.Ordinal) ? 95 : 150) * PanelUnit);
                     rewardsDynamic.Add(icon.gameObject);
                     PanelText(rewardsPanel, items[i].Value, ix, y - 95, .03f, -6.6f, rewardsDynamic);
                 }
@@ -154,7 +154,7 @@ namespace SandJamTest.Scene3D
                 var task = TaskBoard.Find(board.ids[i]); int progress = board.progress[i]; bool done = progress >= task.Target;
                 float y = 254.5f - 30 - pitch * (i + .5f), h = 206 * rowScale;
                 PanelArt(p, "DailyTask_TaskBG", 0, y, 955, h, -6.4f, d);
-                float iconSize = (task.Icon.EndsWith("Icon") && task.Icon != "UseExtraSlotIcon" ? 165 : 120) * rowScale; // booster icons carry wide margins
+                float iconSize = (task.Icon.EndsWith("Icon", System.StringComparison.Ordinal) && task.Icon != "UseExtraSlotIcon" ? 165 : 120) * rowScale; // booster icons carry wide margins
                 PanelArt(p, task.Icon, -400, y, iconSize, iconSize, -6.45f, d);
                 PanelText(p, task.Name, -90, y + 45 * rowScale, .034f * Mathf.Max(.8f, rowScale), -6.5f, d, false, new Color(.1f, .3f, .55f));
                 float bx = -90, bw = 560 * (rowScale < 1 ? .95f : 1), bh = 63 * rowScale;
@@ -181,7 +181,7 @@ namespace SandJamTest.Scene3D
 
         public void OpenTasks(TaskBoard.Kind kind) { if (Open) return; shownKind = kind; Show(tasksPanel); RefreshTasksPanel(); }
 
-        public override bool Handles(string action) { return action.StartsWith("daily-") || action.StartsWith("tasks-"); }
+        public override bool Handles(string action) { return action.StartsWith("daily-", System.StringComparison.Ordinal) || action.StartsWith("tasks-", System.StringComparison.Ordinal); }
         public override bool Handle(string action)
         {
             switch (action)

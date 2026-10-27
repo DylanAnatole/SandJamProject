@@ -34,7 +34,7 @@ namespace SandJamTest
         // Level id of a level number (the campaign wraps around after its last entry).
         public static string IdAt(int level) { return Levels[(Math.Max(1, level) - 1) % Levels.Length]; }
         // Picture of a level (LevelRenders/<id>): repeated levels ("<id>_Dupe") share their original's.
-        public static string PictureId(string id) { return id.EndsWith("_Dupe") ? id.Substring(0, id.Length - 5) : id; }
+        public static string PictureId(string id) { return id.EndsWith("_Dupe", StringComparison.Ordinal) ? id.Substring(0, id.Length - 5) : id; }
         public static TextAsset LoadCurrent()
         {
             var asset = LoadLevel(CurrentId);

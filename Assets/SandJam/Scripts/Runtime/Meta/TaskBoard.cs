@@ -164,7 +164,7 @@ namespace SandJamTest
         }
         static void OnCoins(int balance, int delta, string reason)
         {
-            if (delta > 0 && !reason.EndsWith("-tasks") && reason != "refund") Count(Metric.Coins, delta);
+            if (delta > 0 && !reason.EndsWith("-tasks", StringComparison.Ordinal) && reason != "refund") Count(Metric.Coins, delta);
             if (reason == "play-on") Count(Metric.ExtraSlot, 1);
         }
         static void OnWon(int level) { Count(Metric.Levels, 1); }

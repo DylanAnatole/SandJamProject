@@ -100,7 +100,7 @@ namespace SandJamTest.Scene3D
             Tint(Home.transform.Find("Join label"),new Color32(200,146,36,255));
             foreach(Transform child in Home.transform)
             {
-                if(child.name.StartsWith("Hanger")){Tint(child,new Color32(122,186,235,255));var hs=child.localScale;child.localScale=new Vector3(hs.x*1.5f,hs.y,hs.z);}
+                if(child.name.StartsWith("Hanger", System.StringComparison.Ordinal)){Tint(child,new Color32(122,186,235,255));var hs=child.localScale;child.localScale=new Vector3(hs.x*1.5f,hs.y,hs.z);}
                 if(child.name=="Paving joint")Tint(child,new Color32(92,140,182,255));
             }
             // The sign panels go through a shader that darkens them ~30%; plain sprite shading gives the true colours.
@@ -146,7 +146,7 @@ namespace SandJamTest.Scene3D
                 BarStrip(bar,"Top bar edge",barBottom,barBottom+.025f,new Color32(44,100,143,255));
                 // The settings button and the lives / coin counters sit higher on the original's bar (~0.11 units).
                 foreach(Transform child in Home.transform)
-                    if(!child.name.StartsWith("Top bar") && System.Array.IndexOf(PopupScreens.TopBarParts,child.name)>=0)child.position+=Vector3.up*.11f;}
+                    if(!child.name.StartsWith("Top bar", System.StringComparison.Ordinal) && System.Array.IndexOf(PopupScreens.TopBarParts,child.name)>=0)child.position+=Vector3.up*.11f;}
             foreach(var name in new[]{"generalBackground-main","bg-navbar"}){var t=Home.transform.Find(name);if(t){var ls=t.localScale;t.localScale=new Vector3(ls.x*1.12f,ls.y,ls.z);}}
             // Hangers run from the top bar down to the sign.
             var rimNow=Home.transform.Find("Level sign rim");
@@ -234,7 +234,7 @@ namespace SandJamTest.Scene3D
             float top=bar.bounds.min.y+.02f;
             foreach(Transform child in Home.transform)
             {
-                if(!child.name.StartsWith("Hanger"))continue;
+                if(!child.name.StartsWith("Hanger", System.StringComparison.Ordinal))continue;
                 var hr=child.GetComponent<SpriteRenderer>();if(!hr)continue;
                 if(rods){hr.sprite=SpriteFactory.White;hr.drawMode=SpriteDrawMode.Simple;hr.color=new Color32(84,124,172,255);child.localScale=Vector3.one;}
                 var hb=hr.bounds;var ls=child.localScale;
@@ -413,7 +413,7 @@ namespace SandJamTest.Scene3D
         {
             var hud=Gameplay.transform.Find("HUD - visual controls only");if(!hud)return;
             Place(hud.Find("Settings - UI only"),.95f,-6,-19);
-            foreach(Transform t in hud)if(t.name=="Level badge"||t.name.StartsWith("Level ")){t.localScale=Vector3.Scale(t.localScale,new Vector3(1.05f,1,1));t.position+=Vector3.up*23*Px;}
+            foreach(Transform t in hud)if(t.name=="Level badge"||t.name.StartsWith("Level ", System.StringComparison.Ordinal)){t.localScale=Vector3.Scale(t.localScale,new Vector3(1.05f,1,1));t.position+=Vector3.up*23*Px;}
             Place(hud.Find("Coin wallet - UI only"),.95f,10,-21);
         }
         // Original Superb! screen: the coin counter stays bright above the dark veil (the rest of the HUD dims).
@@ -516,7 +516,7 @@ namespace SandJamTest.Scene3D
                 var tapped=ScreenTap.Hit(UiCamera?UiCamera:Controller.GameCamera,ScreenTap.ButtonLayer);
                 if(!tapped)return;
                 var button=tapped.GetComponent<VideoUiButton>();
-                if(button){button.Press();if(!button.Action.StartsWith("booster:"))GameEvents.RaiseButtonClicked(button.Action);}
+                if(button){button.Press();if(!button.Action.StartsWith("booster:", System.StringComparison.Ordinal))GameEvents.RaiseButtonClicked(button.Action);}
                 // While a popup is open only its own buttons respond.
                 if(Popups.Open || Feedback.FailureVisible){if(Popups.Owns(button))Popups.Handle(button.Action);return;}
                 if(button)HandleButton(button.Action);
@@ -525,7 +525,7 @@ namespace SandJamTest.Scene3D
         void NextAfterResult(){if(!Popups.ShowCongrats())Levels.LoadNext();}
         void HandleButton(string action)
         {
-            if(action.StartsWith("booster:")){Boosters.Activate(action.Substring(8));return;}
+            if(action.StartsWith("booster:", System.StringComparison.Ordinal)){Boosters.Activate(action.Substring(8));return;}
             switch(action)
             {
                 case "play":

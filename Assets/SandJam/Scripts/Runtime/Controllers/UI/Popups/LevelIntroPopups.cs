@@ -61,7 +61,7 @@ namespace SandJamTest.Scene3D
             var frameArt = Art(p, folder + frame, new Vector3(0, -.21f, -6.2f), 4.3f);
             frameArt.transform.localScale = new Vector3(frameArt.transform.localScale.x, frameArt.transform.localScale.y * 1.17f, 1);
             var rays = Art(p, "Congrats/light-congrats", new Vector3(0, 3.35f, -6.15f), 5.6f); // behind the frame, around the crest
-            rays.color = name.StartsWith("Hard") ? new Color(1f, .15f, .15f, .75f) : new Color(1f, .85f, .3f, .7f);
+            rays.color = name.StartsWith("Hard", System.StringComparison.Ordinal) ? new Color(1f, .15f, .15f, .75f) : new Color(1f, .85f, .3f, .7f);
             Art(p, folder + mascot, new Vector3(0, -.25f, -6.5f), 3.2f);
             Art(p, folder + crest, new Vector3(0, 3.05f, -6.55f), 3.1f);
             Art(p, folder + ribbon, new Vector3(0, 2.2f, -6.6f), 4.9f);

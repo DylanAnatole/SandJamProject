@@ -261,7 +261,7 @@ namespace SandJamTest.Scene3D
             }
         }
 
-        public override bool Handles(string action) { return action.StartsWith("gallery-"); }
+        public override bool Handles(string action) { return action.StartsWith("gallery-", System.StringComparison.Ordinal); }
         public override bool Handle(string action) { scroll.Hold(action); return true; }
         void RunGalleryAction(string action)
         {
@@ -271,8 +271,8 @@ namespace SandJamTest.Scene3D
             if (action == "gallery-prev") galleryIndex = Mathf.Max(0, galleryIndex - 1);
             else if (action == "gallery-next") galleryIndex = Mathf.Min(galleryList.Count - 1, galleryIndex + 1);
             else if (action == "gallery-claim-all") GalleryCollections.ClaimAllCards(info);
-            else if (action.StartsWith("gallery-card:")) GalleryCollections.ClaimCard(int.Parse(action.Substring(13)));
-            else if (action.StartsWith("gallery-claim:"))
+            else if (action.StartsWith("gallery-card:", System.StringComparison.Ordinal)) GalleryCollections.ClaimCard(int.Parse(action.Substring(13)));
+            else if (action.StartsWith("gallery-claim:", System.StringComparison.Ordinal))
             {
                 int m = int.Parse(action.Substring(14));
                 if (GalleryCollections.ClaimMilestone(info, m)) { Host.ShowGalleryReward(GalleryCollections.MilestoneCoins(info, m), m == 2); return; }
@@ -332,7 +332,7 @@ namespace SandJamTest.Scene3D
         bool StartFlip(string action, GalleryCollections.Info info)
         {
             flipping.Clear();
-            if (action.StartsWith("gallery-card:")) flipping.Add(int.Parse(action.Substring(13)));
+            if (action.StartsWith("gallery-card:", System.StringComparison.Ordinal)) flipping.Add(int.Parse(action.Substring(13)));
             else if (action == "gallery-claim-all")
                 for (int level = info.Start; level < info.Start + info.Count; level++) if (cardPieces.ContainsKey(level) && GalleryCollections.CardWaiting(level)) flipping.Add(level);
             if (flipping.Count == 0) return false;

@@ -103,9 +103,9 @@ namespace SandJamTest.Scene3D
             rigSearched = true;
             foreach (var t in GetComponentsInChildren<Transform>(true))
             {
-                if (t.name.EndsWith("Hips")) hips = t;
-                else if (t.name.EndsWith("LeftUpLeg")) leftThigh = t;
-                else if (t.name.EndsWith("RightUpLeg")) rightThigh = t;
+                if (t.name.EndsWith("Hips", System.StringComparison.Ordinal)) hips = t;
+                else if (t.name.EndsWith("LeftUpLeg", System.StringComparison.Ordinal)) leftThigh = t;
+                else if (t.name.EndsWith("RightUpLeg", System.StringComparison.Ordinal)) rightThigh = t;
             }
             // The walk clip only turns the thighs: their place under the hips is kept here and set back every frame,
             // so the drop below is never added onto the last frame's.

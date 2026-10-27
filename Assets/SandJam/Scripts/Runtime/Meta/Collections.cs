@@ -15,7 +15,7 @@ namespace SandJamTest
             string id = Regex.Replace(levelId, @"^\d+x\d+_", "");
             id = Regex.Replace(id, @"^(New_|NewLevel_|New)", "");
             id = Regex.Replace(id, @"[_ ]?\d+(_[A-Za-z]+)?$", "");
-            if (id.Length < 3 || id.StartsWith("Level")) return null;
+            if (id.Length < 3 || id.StartsWith("Level", System.StringComparison.Ordinal)) return null;
             return id.Replace(" ", "");
         }
 

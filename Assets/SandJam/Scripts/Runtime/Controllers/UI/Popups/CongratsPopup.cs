@@ -136,7 +136,7 @@ namespace SandJamTest.Scene3D
             if (gift) TickGift(0);
         }
 
-        public override bool Handles(string action) { return action == "congrats-continue" || action.StartsWith("reward-"); }
+        public override bool Handles(string action) { return action == "congrats-continue" || action.StartsWith("reward-", System.StringComparison.Ordinal); }
         public override bool Handle(string action)
         {
             if (action == "congrats-continue") { Close(); screen.Levels.LoadNext(); return true; }

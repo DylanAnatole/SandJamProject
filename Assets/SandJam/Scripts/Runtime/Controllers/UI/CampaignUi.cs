@@ -41,7 +41,7 @@ namespace SandJamTest.Scene3D
             }
             // Development shortcuts for the first three prototype levels are replaced by the campaign.
             foreach (Transform child in owner.Home.transform)
-                if (child.name.StartsWith("LV ")) child.gameObject.SetActive(false);
+                if (child.name.StartsWith("LV ", System.StringComparison.Ordinal)) child.gameObject.SetActive(false);
             var x2 = owner.Result.transform.Find("x2");
             if (x2) { doubleButton = x2.gameObject; AddHit(x2, "double"); DecorateDouble(x2); }
             var hud = owner.Gameplay.transform.Find("HUD - visual controls only/Settings - UI only");

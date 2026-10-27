@@ -2633,3 +2633,16 @@ Android) chỉ cần shader đục có `clip` là mất loại bỏ pixel bị c
 `_FillAmount` trong `CharacterDepthStyle`. Hình không đổi.
 
 **Kiểm tra:** so ảnh Dance_12 trước / sau — giống hệt (chỉ khác vệt băng loang xoay ngẫu nhiên); luồng booster / thua; tự chơi.
+
+## 27/10/2026 — Mobile: vào màn lần đầu bớt khựng (so sánh chuỗi Ordinal)
+
+**Đo:** `Resources` ~106 MB (Levels 37 MB = 556 file JSON, chỉ nạp khi chơi tới; không có `LoadAll`). Vào màn lần đầu:
+`VideoScreen.Play` 62 ms, khung đầu sau đó 145 ms — `SceneActorView.LateUpdate` 54 ms: `FindRig` duyệt 55 transform mỗi khối
+với `EndsWith("Hips")` kiểu so theo culture (~2 ms/khối × 26). Còn lại: JIT của Mono (~20 ms, IL2CPP không có), editor,
+dựng phần bình cát cho từng khối (~0,3 ms/khối, mesh đã dùng chung).
+
+**Sửa:** mọi `StartsWith` / `EndsWith` với chuỗi cố định trong code runtime (34 chỗ, 17 file) dùng
+`StringComparison.Ordinal` — kết quả giống hệt (tên, action ASCII), nhanh hơn nhiều và không lệ thuộc ngôn ngữ máy (ví dụ máy
+cài tiếng Thổ Nhĩ Kỳ). `FindRig` 2,05 → 0,10 ms/khối; khung đầu khi vào màn 145 → 86 ms trong editor (phần game ~15 ms).
+
+**Kiểm tra:** luồng booster / thua (đi qua action nút); tự chơi level 2, 31, 68 và 2 màn băng / khoá.

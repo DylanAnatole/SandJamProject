@@ -72,7 +72,7 @@ namespace SandJamTest.Scene3D
             var stash = controller.StashSlots.Length > 0 ? controller.StashSlots[0].parent : null;
             if (stash)
                 foreach (Transform child in stash)
-                    if (child.name.StartsWith("Solid waiting pad"))
+                    if (child.name.StartsWith("Solid waiting pad", System.StringComparison.Ordinal))
                     {
                         // Original pads are tiles lying nearly flat in front of the stand, deep enough to read as
                         // ~0.66 of their width on screen (recording 2: 112 x 75 px), skewed by the perspective.
@@ -236,7 +236,7 @@ namespace SandJamTest.Scene3D
                 var ls = t.localScale; t.localScale = new Vector3(ls.x, ls.y / Mathf.Cos(angle * Mathf.Deg2Rad), ls.z);
                 // Original (recording 2, 888 px wide): the banks start ~54 px lower and stand ~30 px further out from
                 // the cubes than the modelled ones.
-                float side = r.name.StartsWith("Left") ? -1 : 1;
+                float side = r.name.StartsWith("Left", System.StringComparison.Ordinal) ? -1 : 1;
                 t.position += new Vector3(side * LaneWallOut, -LaneWallDown, 0);
             }
         }

@@ -72,7 +72,7 @@ namespace SandJamTest.Scene3D
             var shift = Vector3.left * step * .5f;
             foreach (Transform child in parent) child.position += shift;
             foreach (var t in GetComponentsInChildren<Transform>(true))
-                if (t.name.Contains("unlock counter") || t.name.StartsWith("Fifth waiting slot")) t.position += shift;
+                if (t.name.Contains("unlock counter") || t.name.StartsWith("Fifth waiting slot", StringComparison.Ordinal)) t.position += shift;
             characterQueue.SetStashSlots(StashSlots);
             Synchronize(0);
             return true;

@@ -133,7 +133,7 @@ namespace SandJamTest.Scene3D
             Show(questResult);
         }
 
-        public override bool Handles(string action) { return action.StartsWith("quest-"); }
+        public override bool Handles(string action) { return action.StartsWith("quest-", System.StringComparison.Ordinal); }
         public override bool Handle(string action)
         {
             switch (action)

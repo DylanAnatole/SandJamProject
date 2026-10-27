@@ -201,7 +201,7 @@ namespace SandJamTest.Scene3D
         void RefreshShopCoins() { RefreshPopupCoins(); }
 
         // Shop buttons fire on release without a drag, so scrolling never buys anything by accident.
-        public override bool Handles(string action) { return action.StartsWith("shop-"); }
+        public override bool Handles(string action) { return action.StartsWith("shop-", System.StringComparison.Ordinal); }
         public override bool Handle(string action) { scroll.Hold(action); return true; }
         void RunShopAction(string action)
         {

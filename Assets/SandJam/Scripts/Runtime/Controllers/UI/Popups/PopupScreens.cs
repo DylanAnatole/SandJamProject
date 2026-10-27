@@ -224,7 +224,7 @@ namespace SandJamTest.Scene3D
         // Mini stash: five white pads plus a green sixth one, like the reference illustration.
         void BuildStashPicture(Popup p)
         {
-            var pad = screen.Controller.StashSlots[0].parent.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(r => r.name.StartsWith("Waiting pad"));
+            var pad = screen.Controller.StashSlots[0].parent.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(r => r.name.StartsWith("Waiting pad", System.StringComparison.Ordinal));
             for (int i = 0; i < 6; i++)
             {
                 var r = Child<SpriteRenderer>(p, "Stash picture " + i, new Vector3(-1.25f + i * .5f, .8f, -7.2f));
@@ -392,7 +392,7 @@ namespace SandJamTest.Scene3D
             {
                 stashPicture = Child<SpriteRenderer>(lose, "Stash snapshot", new Vector3(0, .82f, -7.3f));
                 foreach (Transform child in lose.Root.transform)
-                    if (child.name.StartsWith("Stash picture")) child.gameObject.SetActive(false);
+                    if (child.name.StartsWith("Stash picture", System.StringComparison.Ordinal)) child.gameObject.SetActive(false);
             }
             stashPicture.sprite = Sprite.Create(stashShot, new Rect(0, 0, cw, ch), new Vector2(.5f, .5f), 100);
             FillRewardBox(lose, stashPicture);
@@ -711,7 +711,7 @@ namespace SandJamTest.Scene3D
             if (colour)
             {
                 grey = Resources.Load<Sprite>(cover + "-bw");
-                if (cover.StartsWith("Gallery/")) { colour = CoverCrop(colour); if (grey) grey = CoverCrop(grey); }
+                if (cover.StartsWith("Gallery/", System.StringComparison.Ordinal)) { colour = CoverCrop(colour); if (grey) grey = CoverCrop(grey); }
             }
             else colour = Resources.Load<Sprite>("LevelRenders/" + renderId);
             if (!grey) grey = Greyscale(colour);
@@ -873,7 +873,7 @@ namespace SandJamTest.Scene3D
         public bool Handle(string action)
         {
             if (!Open || Time.unscaledTime - shownAt < .15f) return Open;
-            if (action.StartsWith("nav-")) return HandleNav(action);
+            if (action.StartsWith("nav-", System.StringComparison.Ordinal)) return HandleNav(action);
             foreach (var module in modules) if (module.Handles(action)) return module.Handle(action);
             switch (action)
             {

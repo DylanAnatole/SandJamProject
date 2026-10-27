@@ -18,7 +18,7 @@ namespace SandJamTest.Scene3D
         {
             var p = Build(name);
             foreach (Transform child in p.Root.transform)
-                if (System.Array.IndexOf(BlankKeep, child.name) < 0 && !(keepHitAreas && child.name.StartsWith("Hit area"))) child.gameObject.SetActive(false);
+                if (System.Array.IndexOf(BlankKeep, child.name) < 0 && !(keepHitAreas && child.name.StartsWith("Hit area", System.StringComparison.Ordinal))) child.gameObject.SetActive(false);
             return p;
         }
         // Scales the card (everything but the backdrop and coin bar) about the popup centre and moves it up by dyPx

@@ -68,7 +68,7 @@ namespace SandJamTest.Scene3D
                 pageSlideFrom = Mathf.Sign(tab - pageTab) * 888 * VideoScreen.Px; pageSlideAt = Time.unscaledTime;
                 foreach (Transform child in root.transform)
                 {
-                    if (!child.gameObject.activeSelf || System.Array.IndexOf(TopBarParts, child.name) >= 0 || System.Array.IndexOf(NavbarParts, child.name) >= 0 || child.name.StartsWith("Hit area - nav-")) continue;
+                    if (!child.gameObject.activeSelf || System.Array.IndexOf(TopBarParts, child.name) >= 0 || System.Array.IndexOf(NavbarParts, child.name) >= 0 || child.name.StartsWith("Hit area - nav-", System.StringComparison.Ordinal)) continue;
                     sliding.Add(child); slidingX.Add(child.localPosition.x);
                 }
                 TickPageSlide();
