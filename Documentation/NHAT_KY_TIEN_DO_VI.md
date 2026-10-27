@@ -2486,3 +2486,15 @@ luồng booster / thua không lỗi; tự chơi level 5, 31, 68 thắng.
 
 **Kiểm tra:** quay từng khung lúc băng giảm nấc, lúc băng vỡ, lúc khoá mở (so với GIF); tự chơi 8 màn băng / khoá + luồng
 booster / thua + level 2, 68.
+
+## 27/10/2026 — Chân thu ngay khi khối lên ô
+
+**Đo** (video 3, 179,60–180,52 s từng 0,02 s, so với bản mình chụp bước cố định 0,02 s): cú chạy từ hàng lên ô khớp
+(tốc độ trên màn ~0,21 màn/s, to lên ~1,18 lần khi bay, xoay đổ 30° đã có). Khác: gốc tới ô ở 180,22 s thì chân biến mất
+ở ~180,32 s (~0,1 s); bản mình chân còn ~0,3 s (đoạn lùi về sau khi vượt 7% + `LegLinger` 0,15 s) — khối như đứng
+lơ lửng trên ô.
+
+**Sửa** (`SceneActorView`): bỏ `LegLinger` / `landedAge`; chân tắt ngay khi đường chạy kết thúc (còn ~0,12 s gồm đoạn
+lùi về, khớp gốc).
+
+**Kiểm tra:** quay từng khung lúc lên ô; luồng booster / thua không lỗi; tự chơi level 2, 31, 68 thắng.

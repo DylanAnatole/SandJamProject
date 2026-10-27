@@ -192,8 +192,8 @@ namespace SandJamTest.Scene3D
         // Legs only exist while running; sitting in the lane or on a waiting slot the block rests on its base.
         float ExitTarget { get { return Mathf.Sign(destination.x - from.x) * ExitYaw; } }
         void ShowLegs(bool visible) { if (legs && legs.enabled != visible) legs.enabled = visible; }
-        // After running onto its pad the box still stands on its legs a moment (recording 2, 156.0-156.15 s).
-        const float LegLinger = .15f; float landedAge;
+        // Onto its pad the legs fold away as soon as the run (with its small overshoot and step back) ends: recording 3
+        // (180.22-180.32 s, every frame) shows them ~0.1 s after it reaches the pad; lingering on, they were ~0.3 s.
 
         public const float CubeScale = .9f;
         // Original (recording 2, 48.6-52 s): a cube on its waiting pad reads ~0.96 of its size in the lanes, and on
@@ -239,7 +239,7 @@ namespace SandJamTest.Scene3D
             if (Departing || (destination - position).sqrMagnitude < .00001f) return;
             restWritten = false;
             from = transform.position; destination = position;
-            gait = kind; travel = 0; duration = seconds; landedAge = 0;
+            gait = kind; travel = 0; duration = seconds;
             // Picked: a quick stretch as it jumps off.
             if (kind == Gait.Run && !Departing) Punch(.22f);
             if(Motion)Motion.SetWalking(kind == Gait.Run);
@@ -279,7 +279,7 @@ namespace SandJamTest.Scene3D
         bool Resting(bool firing, float targetFill)
         {
             return AtRest && !Departing && !firing && yaw == 0 && aimYaw == 0 && roll == 0 && squash == 0 && squashVelocity == 0
-                && shakeTime == 0 && size == sizeTarget && landedAge >= LegLinger && DisplayedFill == targetFill;
+                && shakeTime == 0 && size == sizeTarget && DisplayedFill == targetFill;
         }
 
         // Path of a run to the pad (fraction of the way against fraction of the time), measured frame by frame on
@@ -357,8 +357,7 @@ namespace SandJamTest.Scene3D
                 aimYaw = Mathf.MoveTowards(aimYaw, pouring ? side * PourYaw : 0, delta * 300);
                 roll = Mathf.MoveTowards(roll, pouring ? -side * PourTilt : 0, delta * 60);
                 ApplyYaw();
-                landedAge += delta;
-                ShowLegs(gait == Gait.Run && !Departing && landedAge < LegLinger);
+                ShowLegs(false);
                 if(!Motion)Visual.localRotation = Quaternion.Euler(firing ? Mathf.Sin(Time.time * 25) * 3 : 0, 0, 0);
                 if(Motion){Motion.SetWalking(false); if(Motion.Animator) Motion.Animator.speed = 1;}
                 if (Departing) { gameObject.SetActive(false); return; }
