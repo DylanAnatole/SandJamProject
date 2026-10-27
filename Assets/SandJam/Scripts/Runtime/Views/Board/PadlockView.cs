@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SandJamTest.Scene3D
 {
     // Padlock animation (original UnlockerGif, 0.14 s frames): every key cube received pops the lock ~20% bigger; at zero
-    // it flashes white while the shackle swings open (the mesh's blend shape), turns gold again and shrinks away with its
+    // it holds its closed "0" a beat (frame 22, the last key sand still landing), then bursts (Burst), flashes white while the shackle swings open (the mesh's blend shape), turns gold again and shrinks away with its
     // count. Runs only while animating.
     public sealed class PadlockView : MonoBehaviour
     {
@@ -12,7 +12,7 @@ namespace SandJamTest.Scene3D
         public Transform Counter;
         public Color Gold;
         const float PopScale = .22f, PopTime = .2f;
-        const float SwingTime = .2f, FlashTime = .4f, OpenPop = .15f, ShrinkStart = .5f, ShrinkTime = .22f;
+        const float Hold = .12f, SwingTime = .2f, FlashTime = .4f, OpenPop = .15f, ShrinkStart = .5f, ShrinkTime = .22f;
         static readonly Color FlashColor = new Color(1.3f, 1.3f, 1.25f);
         float pop = -1, open = -1;
         Vector3 bodyScale, rootScale, counterScale, waitingScale;
@@ -25,11 +25,13 @@ namespace SandJamTest.Scene3D
             if (Body) { bodyScale = Body.transform.localScale; filter = Body.GetComponent<MeshFilter>(); }
             enabled = false;
         }
+        // Past the hold: the lock bursts open (SandFx plays its bubble then).
+        public bool Burst { get { return open >= Hold; } }
         public void Pop() { if (open < 0) { pop = 0; enabled = true; } }
         public void Open(Transform waitingCount)
         {
             if (open >= 0) return;
-            open = 0; pop = -1; enabled = true;
+            open = 0; pop = 0; enabled = true; // the last key sand pops it too, during the hold
             if (Counter) counterScale = Counter.localScale;
             waiting = waitingCount;
             if (waiting) { waitingScale = waiting.localScale; waiting.localScale = Vector3.zero; }
@@ -58,27 +60,33 @@ namespace SandJamTest.Scene3D
             if (open >= 0)
             {
                 open += dt;
+                float o = open - Hold;
+                if (o < 0) { Bounce(dt); return; }
                 if (Body)
                 {
-                    var mesh = BlendShapeCache.At(Closed, Mathf.Clamp01(open / SwingTime));
+                    var mesh = BlendShapeCache.At(Closed, Mathf.Clamp01(o / SwingTime));
                     if (filter.sharedMesh != mesh) filter.sharedMesh = mesh;
-                    Tint(Mathf.Clamp01(1 - open / FlashTime));
-                    Body.transform.localScale = bodyScale * (1 + OpenPop * Mathf.Sin(Mathf.PI * Mathf.Clamp01(open / SwingTime)));
+                    Tint(Mathf.Clamp01(1 - o / FlashTime));
+                    Body.transform.localScale = bodyScale * (1 + OpenPop * Mathf.Sin(Mathf.PI * Mathf.Clamp01(o / SwingTime)));
                 }
-                float t = Mathf.Clamp01((open - ShrinkStart) / ShrinkTime), s = 1 - t * t;
+                float t = Mathf.Clamp01((o - ShrinkStart) / ShrinkTime), s = 1 - t * t;
                 transform.localScale = rootScale * s;
                 if (Counter) Counter.localScale = counterScale * s;
                 if (t >= 1) { gameObject.SetActive(false); if (Counter) Counter.gameObject.SetActive(false); ShowWaiting(); enabled = false; }
                 return;
             }
-            if (pop >= 0 && Body)
-            {
-                pop += dt;
-                float t = Mathf.Clamp01(pop / PopTime);
-                Body.transform.localScale = bodyScale * (1 + PopScale * Mathf.Sin(Mathf.PI * t));
-                if (t >= 1) { pop = -1; enabled = false; }
-            }
-            else enabled = false;
+            if (!Bounce(dt)) enabled = false;
+        }
+
+        // The pop for a key cube received; false once it has settled.
+        bool Bounce(float dt)
+        {
+            if (pop < 0 || !Body) return false;
+            pop += dt;
+            float t = Mathf.Clamp01(pop / PopTime);
+            Body.transform.localScale = bodyScale * (1 + PopScale * Mathf.Sin(Mathf.PI * t));
+            if (t >= 1) pop = -1;
+            return pop >= 0;
         }
     }
 }

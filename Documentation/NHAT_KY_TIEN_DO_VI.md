@@ -2542,3 +2542,14 @@ lấy từ texture (~0,7 giữa mặt, ~1 ở mép). Vệt loang: `Splash.png`, 
 - Local (gitignore): `Resources/Mechanics/Splash.png`.
 
 **Kiểm tra:** chụp khối băng đứng yên, quay cảnh số giảm / băng vỡ; luồng booster / thua; tự chơi màn băng / khoá.
+
+## 27/10/2026 — Ổ khoá giữ số 0 một nhịp rồi mới bung
+
+**So:** UnlockerGif gốc (khung 0,14 s): khung 21 số 1, khung 22 số 0 nhưng ổ khoá vẫn đóng, khung 23 mới bong bóng + vụn +
+ổ khoá trắng. Bản mình bung ngay lúc số về 0 (phát cát cuối còn đang bay), và phát cuối không làm ổ khoá nảy.
+
+**Sửa:** `PadlockView`: `Hold` 0,12 s trước khi loé / mở / thu nhỏ; phát cuối cũng nảy (chạy tiếp trong lúc giữ, tách
+`Bounce`); `Burst` báo đã qua lúc giữ. `SceneRegionView.IsSettled` (chế độ khoá) chờ `Burst` nên bong bóng của `SandFx`
+nổ cùng lúc với ổ khoá. Logic mở vùng (`SettledCount`) không đổi.
+
+**Kiểm tra:** quay cảnh mở khoá; luồng booster / thua; tự chơi các màn khoá.

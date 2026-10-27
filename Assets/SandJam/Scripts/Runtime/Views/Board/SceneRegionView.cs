@@ -45,7 +45,7 @@ namespace SandJamTest.Scene3D
         static Material lockMaterial;
         public int SettledCount { get { return LockMode?(lockDone?lockCells:0):sand==null?0:sand.Settled; } }
         public Transform Padlock { get { return lockIcon ? lockIcon.transform : null; } }
-        public bool IsSettled { get { return LockMode?lockDone:sand!=null && sand.Complete; } }
+        public bool IsSettled { get { return LockMode?lockDone && (!padlock || padlock.Burst):sand!=null && sand.Complete; } }
         public SandBoardTextureView Board { get; private set; }
         public Texture2D FlowMask { get; private set; }
         BurstSandSimulation sand;
