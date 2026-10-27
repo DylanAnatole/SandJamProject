@@ -34,7 +34,8 @@ namespace SandJamTest.Scene3D
         // Padlock (unlocker part): receives key-cube sand as a counter only. While locked it draws its
         // colour as diagonal stripes with a lock icon (original UnlockerGif); it never pours visible sand.
         public bool LockMode;
-        bool lockDone; int lockCells; GameObject lockIcon;
+        public SceneRegionView Unlocks; // the part this padlock opens (its count waits until the padlock has gone)
+        bool lockDone; int lockCells; GameObject lockIcon; PadlockView padlock;
         // Original padlock (UnlockerGif, PaintablePart "Lock"): the gold 3D lock (mesh Lock, texture Lock_Color) on the
         // locked part, its count in a white bubble at the lock's top right with dark digits. Sizes as fractions of the
         // board's width, measured on the gif: lock ~11% tall, bubble ~5.5% across, ~6% right of and ~5% above its centre.
@@ -43,6 +44,7 @@ namespace SandJamTest.Scene3D
         static readonly Color BubbleInk = new Color(.24f, .17f, .14f);
         static Material lockMaterial;
         public int SettledCount { get { return LockMode?(lockDone?lockCells:0):sand==null?0:sand.Settled; } }
+        public Transform Padlock { get { return lockIcon ? lockIcon.transform : null; } }
         public bool IsSettled { get { return LockMode?lockDone:sand!=null && sand.Complete; } }
         public SandBoardTextureView Board { get; private set; }
         public Texture2D FlowMask { get; private set; }
@@ -88,21 +90,22 @@ namespace SandJamTest.Scene3D
         }
         public void ResetFlow()
         {
-            advancing=false; idleSteps=0; revealGlow=0; seenHidden=false; lastSettleStep=0; freshPainted=false; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0; lockDone=false;
+            advancing=false; idleSteps=0; revealGlow=0; seenHidden=false; lastSettleStep=0; freshPainted=false; ClearMoving(); ReleaseColors(); if(sand!=null)sand.Dispose(); sand=null; lastRemaining=-1; stepTime=0; lockDone=false; if(padlock){padlock.ResetClosed();lockIcon.SetActive(LockMode);}
         }
         void ApplyLock(Region region)
         {
             lockCells=region.Data.rows.Length;
             bool done=region.Remaining==0;
             if(done==lockDone && region.Remaining==lastRemaining) return;
-            bool justDone=done && !lockDone;
+            bool justDone=done && !lockDone, received=lastRemaining>=0 && region.Remaining<lastRemaining;
             lockDone=done; lastRemaining=region.Remaining;
             Target.position=Counter.transform.position;
             if(!lockIcon) BuildPadlock();
-            if(lockIcon) lockIcon.SetActive(!done);
-            Counter.gameObject.SetActive(!done);
+            // The padlock opens and hides itself and its count (PadlockView); a key cube received pops it.
+            if(justDone){ if(padlock) padlock.Open(Unlocks && Unlocks.Counter ? Unlocks.Counter.transform : null); else Counter.gameObject.SetActive(false); }
+            else if(!done){ Counter.gameObject.SetActive(true); if(received && padlock) padlock.Pop(); }
             var backing=Backing(); if(backing) backing.gameObject.SetActive(false);
-            int shown=done?-1:DisplayAmount.Units(region.Remaining,Divider);
+            int shown=DisplayAmount.Units(region.Remaining,Divider);
             if(shown!=shownLock){shownLock=shown;Counter.text=shown<0?"":DisplayAmount.Text(shown);}
             if(done || !Board) return;
             // Diagonal stripes in the region colour, like the locked areas in the reference gif.
@@ -119,6 +122,8 @@ namespace SandJamTest.Scene3D
             var centre=Counter.transform.position;
             lockIcon=new GameObject("Padlock"){layer=Counter.gameObject.layer};
             lockIcon.transform.SetParent(Counter.transform.parent,true);
+            lockIcon.transform.position=centre; // it shrinks away about its centre
+            padlock=lockIcon.AddComponent<PadlockView>();
             if(mesh)
             {
                 if(!lockMaterial)
@@ -131,8 +136,8 @@ namespace SandJamTest.Scene3D
                 var body=new GameObject("Padlock mesh"){layer=lockIcon.layer};
                 body.transform.SetParent(lockIcon.transform,false);
                 body.AddComponent<MeshFilter>().sharedMesh=mesh;
-                body.AddComponent<MeshRenderer>().sharedMaterial=lockMaterial;
-                body.GetComponent<MeshRenderer>().NoShadows();
+                var bodyRenderer=body.AddComponent<MeshRenderer>(); bodyRenderer.sharedMaterial=lockMaterial; bodyRenderer.NoShadows();
+                padlock.Body=bodyRenderer; padlock.Closed=mesh; padlock.Gold=lockMaterial.GetColor("_Color");
                 float k=width*LockHeight/Mathf.Max(.01f,mesh.bounds.size.y);
                 body.transform.rotation=Quaternion.Euler(0,0,LockTilt);
                 body.transform.localScale=Vector3.one*k/Mathf.Max(.0001f,lockIcon.transform.lossyScale.y);
@@ -150,6 +155,7 @@ namespace SandJamTest.Scene3D
 
             Counter.color=BubbleInk;
             var outline=Counter.GetComponent<SandJamTest.Scene3D.OutlinedText>(); if(outline) outline.SetInk(Color.white);
+            padlock.Counter=Counter.transform; padlock.Init();
         }
         // The counter's backing plate, found once (a name lookup every frame for every locked region).
         Transform backingPlate; bool backingSearched; int shownLock=-2;

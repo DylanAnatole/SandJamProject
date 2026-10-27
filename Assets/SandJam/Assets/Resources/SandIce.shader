@@ -1,6 +1,6 @@
 Shader "SandJamTest/IceShell"
 {
-    Properties { _MainTex("Recovered ice",2D)="white"{} _Opacity("Opacity",Range(0,1))=1 }
+    Properties { _MainTex("Recovered ice",2D)="white"{} _Opacity("Opacity",Range(0,1))=1 _Flash("Crack flash",Range(0,1))=0 }
     SubShader
     {
         Tags {"Queue"="Transparent" "RenderType"="Transparent"}
@@ -11,7 +11,7 @@ Shader "SandJamTest/IceShell"
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
-            sampler2D _MainTex;float _Opacity;
+            sampler2D _MainTex;float _Opacity,_Flash;
             struct v2f {float4 pos:SV_POSITION;float2 uv:TEXCOORD0;float3 normal:TEXCOORD1;float3 world:TEXCOORD2;};
             v2f vert(appdata_base v){v2f o;o.pos=UnityObjectToClipPos(v.vertex);o.uv=v.texcoord.xy+float2(.5,.5);o.normal=UnityObjectToWorldNormal(v.normal);o.world=mul(unity_ObjectToWorld,v.vertex).xyz;return o;}
             fixed4 frag(v2f i):SV_Target
@@ -26,6 +26,7 @@ Shader "SandJamTest/IceShell"
                 float3 ice=lerp(float3(.16,.55,1),float3(.66,.92,1),saturate((lum-.45)*2.2)); // frost streaks on the sides
                 ice=lerp(ice,float3(.72,.94,1)*(.85+.3*lum),saturate(n.y*1.6-.2)); // lighter top face
                 ice=lerp(ice,float3(.92,1,1),edge*.75);
+                ice=lerp(ice,float3(.95,1,1),_Flash*.85); // each count down flashes the ice white (Freeze gif)
                 return fixed4(ice,(.9+edge*.1)*_Opacity);
             }
             ENDCG

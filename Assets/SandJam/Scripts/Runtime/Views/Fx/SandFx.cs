@@ -11,7 +11,7 @@ namespace SandJamTest.Scene3D
     {
         const float Front = -.45f; // towards the camera so effects draw over the board
         SandJamSceneController controller;
-        ParticleSystem sparkle, puff, voxels, spray;
+        ParticleSystem sparkle, puff, voxels, spray, snow;
         readonly Dictionary<SceneActorView, ActorState> actors = new Dictionary<SceneActorView, ActorState>();
         bool[] regionShown;
         int[] slotLocked = new int[0];
@@ -19,7 +19,7 @@ namespace SandJamTest.Scene3D
         Material bubbleMaterial;
         static Texture2D softDot, ring, voxel;
 
-        sealed class ActorState { public int Ammo; public bool Hidden; public Vector3 BaseScale; public SceneActorView Partner; public Renderer[] Box; }
+        sealed class ActorState { public int Ammo, Freeze; public bool Hidden; public Vector3 BaseScale; public SceneActorView Partner; public Renderer[] Box; }
         sealed class Bubble { public Transform Root; public SpriteRenderer Disc, Glow; public float Age, Life, Size; }
         // Region-open bubbles of the original (recording 2, 153.05-153.35 s): one per region that just opened, on its
         // counter: nearly clear (the region and its number show through), a thin bright rim, gone in ~0.3 s. Around it
@@ -54,6 +54,11 @@ namespace SandJamTest.Scene3D
             // The cubes burst out and then slow to a float (air drag), instead of falling straight away.
             var vlimit = voxels.limitVelocityOverLifetime; vlimit.enabled = true; vlimit.limit = 100; vlimit.drag = VoxelDrag;
             bubbleMaterial = new Material(Shader.Find("Sprites/Default"));
+            // Freeze gif: snowflakes drift around a cube whose ice just broke (original snowflake texture when present).
+            var flake = Resources.Load<Texture2D>("Mechanics/Snowflake");
+            snow = MakeSystem("Ice snowflakes", flake ? flake : softDot, 200, SnowLife, .1f, .2f);
+            var snm = snow.main; snm.gravityModifier = SnowGravity; snm.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
+            var srot = snow.rotationOverLifetime; srot.enabled = true; srot.z = new ParticleSystem.MinMaxCurve(-2, 2);
         }
 
         static void BuildTextures()
@@ -168,6 +173,25 @@ namespace SandJamTest.Scene3D
                 Emit(puff, p + new Vector3(offset.x * 1.3f, offset.y, 0), v, new Color(1, 1, 1, RevealAlpha), RevealPuffSize * Random.Range(.75f, 1.15f), RevealLife * Random.Range(.8f, 1.1f));
             }
         }
+        // Frozen cube counting down (Freeze gif, frames 9, 15, 23): a white glow over the ice and white streaks flying
+        // off it; when the ice breaks, snowflakes drift around the cube for about a second (frames 31-35).
+        const int CrackNeedles = 8, SnowFlakes = 14;
+        const float CrackSpeed = 5f, SnowLife = 1.5f, SnowGravity = .03f;
+        void IceCracks(Vector3 p, bool broken)
+        {
+            SpawnFlash(p, 1.3f);
+            for (int i = 0; i < CrackNeedles; i++)
+            {
+                float a = (i + Random.value * .6f) * Mathf.PI * 2 / CrackNeedles;
+                Emit(spray, p, new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0) * CrackSpeed * Random.Range(.7f, 1.1f), Color.white, SprayWidth, Random.Range(.1f, .16f));
+            }
+            if (!broken) return;
+            for (int i = 0; i < SnowFlakes; i++)
+            {
+                var offset = Random.insideUnitCircle * .5f;
+                Emit(snow, p + (Vector3)offset, new Vector3(offset.x * .8f, offset.y * .5f + .25f, 0), new Color(.8f, .95f, 1f), Random.Range(.1f, .2f), SnowLife * Random.Range(.7f, 1f));
+            }
+        }
         void ChainSnap(Vector3 p)
         {
             Emit(sparkle, p, Vector3.zero, new Color(1, 1, .85f, 1), 1.4f, .22f); // the glow
@@ -217,13 +241,13 @@ namespace SandJamTest.Scene3D
             lastGame = game;
             // Regions open at the start show no burst.
             regionShown = new bool[controller.Regions.Length];
-            for (int i = 0; i < regionShown.Length; i++) regionShown[i] = controller.Regions[i] && game.Regions[controller.Regions[i].PartIndex].InformationVisible;
+            for (int i = 0; i < regionShown.Length; i++) regionShown[i] = controller.Regions[i] && Shown(controller.Regions[i], game);
             slotLocked = new int[game.Slots.Length];
             for (int i = 0; i < slotLocked.Length; i++) slotLocked[i] = game.SlotRemaining(i);
             foreach (var pair in actors) if (pair.Key) pair.Key.transform.localScale = pair.Value.BaseScale;
             actors.Clear();
             bubblePool.ReleaseAll();
-            sparkle.Clear(); puff.Clear(); voxels.Clear();
+            sparkle.Clear(); puff.Clear(); voxels.Clear(); snow.Clear();
             flashPool.ReleaseAll();
         }
 
@@ -235,14 +259,16 @@ namespace SandJamTest.Scene3D
             {
                 var view = controller.Regions[i];
                 if (!view) continue;
-                bool shown = game.Regions[view.PartIndex].InformationVisible;
+                bool shown = Shown(view, game);
                 if (shown && !regionShown[i]) RegionOpens(view);
                 regionShown[i] = shown;
             }
         }
+        // A padlock bursts the same way where it opens (UnlockerGif frame 23: bubble, cubes in its colour, confetti).
+        static bool Shown(SceneRegionView view, SandGame game) { return view.LockMode ? view.IsSettled : game.Regions[view.PartIndex].InformationVisible; }
         void RegionOpens(SceneRegionView view)
         {
-            var center = view.Counter ? view.Counter.transform.position : view.Target.position;
+            var center = view.Padlock ? view.Padlock.position : view.Counter ? view.Counter.transform.position : view.Target.position;
             center.z = view.Board.transform.position.z + Front;
             Color color = view.SolidColor;
             SpawnFlash(center, 1.6f);
@@ -352,7 +378,7 @@ namespace SandJamTest.Scene3D
                 ActorState state;
                 if (!actors.TryGetValue(actor, out state))
                 {
-                    state = new ActorState { Ammo = actor.Shooter.Ammo, BaseScale = actor.transform.localScale };
+                    state = new ActorState { Ammo = actor.Shooter.Ammo, Freeze = actor.Shooter.FreezeRemaining, BaseScale = actor.transform.localScale };
                     state.Hidden = game.IsHidden(actor.Shooter, actor.SourceLane);
                     actors.Add(actor, state);
                 }
@@ -370,6 +396,9 @@ namespace SandJamTest.Scene3D
                     if (actor.GetInstanceID() < state.Partner.GetInstanceID()) ChainSnap((actor.transform.position + state.Partner.transform.position) * .5f + new Vector3(0, .45f, Front));
                     state.Partner = null;
                 }
+                int freeze = actor.Shooter.FreezeRemaining;
+                if (freeze < state.Freeze && actor.gameObject.activeInHierarchy) IceCracks(actor.transform.position + new Vector3(0, .45f, Front), freeze == 0);
+                state.Freeze = freeze;
                 if (!actor.gameObject.activeInHierarchy) continue;
                 Color color = ColorPalette.Of(actor.Shooter.Color);
                 // Recoil / landing squash now live in SceneActorView (Punch); only particles here.
@@ -385,7 +414,7 @@ namespace SandJamTest.Scene3D
             if (bubbleMaterial) Destroy(bubbleMaterial);
             if (flashSprite) Destroy(flashSprite); if (bubbleSprite) Destroy(bubbleSprite);
             flashPoolValue?.Dispose(); bubblePoolValue?.Dispose();
-            foreach (var ps in new[] { sparkle, puff, voxels, spray }) if (ps) Destroy(ps.GetComponent<ParticleSystemRenderer>().material);
+            foreach (var ps in new[] { sparkle, puff, voxels, spray, snow }) if (ps) Destroy(ps.GetComponent<ParticleSystemRenderer>().material);
         }
     }
 }

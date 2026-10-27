@@ -2460,3 +2460,29 @@ booster / thua không lỗi; tự chơi level 2, 68 thắng.
 
 **Kiểm tra:** nạp tạm từng màn vào ô level 68 (chỉ trong bộ nhớ), tự chơi cả 39 màn: **39/39 thắng**, không exception;
 luồng booster / thua không lỗi; tự chơi level 5, 31, 68 thắng.
+
+## 27/10/2026 — Băng vỡ dần và ổ khoá mở như gốc
+
+**Tìm trong game gốc:** cả khối băng (`CharacterFreeze`) lẫn ổ khoá (`PaintablePart.LockMeshRenderer`) đều là
+`SkinnedMeshRenderer` có 1 blend shape: mesh `Ice_Cube` mòn từ trên xuống (9 khung), mesh `Lock` bật quai và xoay mở
+(4 khung). Mesh + `snowflake.png` chép vào `Resources/Mechanics` (local, gitignore; bật Read/Write để bake).
+
+**Đo theo GIF** (khung 0,14 s):
+- Băng: mỗi lần đếm lùi loé trắng, tia nứt trắng bắn ra, băng mòn bớt (4/5 chỉ sứt đỉnh, 2/5 còn nửa, 1/5 còn vành); về
+  0 tan hết, bông tuyết bay quanh khối ~1 s.
+- Khoá: mỗi khối chìa nhận vào làm khoá nảy to ~20%; về 0: bong bóng + hạt màu vùng + confetti, khoá trắng bừng trong lúc
+  quai bật mở, vàng lại, rồi thu nhỏ biến mất cùng số "0" (~0,7 s).
+
+**Sửa:**
+- `BlendShapeCache` (mới, Core/Rendering): bake blend shape đầu tiên ở 20 mức, mỗi mức 1 lần, dùng chung — chỉ đổi
+  `sharedMesh`, không dùng SkinnedMeshRenderer (đỡ skin mỗi khung trên mobile). Mesh không Read/Write thì bỏ qua.
+- `CharacterFreezeView`: vỏ băng là mesh gốc, mòn theo `(1 - còn/ban đầu)^1,5` (khớp GIF); `_Flash` mới trong
+  `SandIce.shader` loé trắng mỗi nấc. Thiếu mesh gốc (repo) thì vẫn là vỏ bo tròn mờ dần như cũ.
+- `AddFreezeShell`: khớp mesh gốc theo khung bao đỉnh (`mesh.bounds` gồm cả phạm vi blend shape nên nhỏ sai), đáy đặt tại gốc.
+- `PadlockView` (mới): nảy khi nhận khối, mở / loé / thu nhỏ khi xong; chỉ chạy khi đang có animation. Số đếm của vùng
+  vừa mở (`SceneRegionView.Unlocks`) chờ khoá biến mất mới hiện (chữ GUI/Text luôn vẽ đè lên khoá).
+- `SandFx`: vụ nổ mở vùng dùng lại cho ổ khoá (tại ổ khoá); `IceCracks` (loé + tia nứt bằng hệ hạt `spray` sẵn có) và
+  bông tuyết khi băng vỡ.
+
+**Kiểm tra:** quay từng khung lúc băng giảm nấc, lúc băng vỡ, lúc khoá mở (so với GIF); tự chơi 8 màn băng / khoá + luồng
+booster / thua + level 2, 68.

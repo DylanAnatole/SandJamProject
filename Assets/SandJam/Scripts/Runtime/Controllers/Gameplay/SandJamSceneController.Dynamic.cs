@@ -42,6 +42,8 @@ namespace SandJamTest.Scene3D
                 // must always colour by the JSON ColorType.
                 views[i].OverrideSandColor = false;
                 views[i].LockMode = part.IsUnlockerPart;
+                views[i].Unlocks = null;
+                if (part.IsUnlockerPart) { int target = System.Array.FindIndex(data.parts, o => o.IsUnlockedPart && o.name == part.unlockerPartName); if (target >= 0 && target < views.Length) views[i].Unlocks = views[target]; }
                 var cell = LabelCell(part.rows, part.cols);
                 // Board texture sits at (-3.15, 0.4) in the board root with one cell per CellSize.
                 float gx = cell.x + .5f, gy = cell.y + .5f;
@@ -183,13 +185,17 @@ namespace SandJamTest.Scene3D
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
-        static Mesh iceMesh;
+        static Mesh iceMesh, iceMelting;
         Material iceMaterial, keyMaterial;
 
         // Ice shell over a frozen cube (original Freeze gif): slightly larger than the block, with a count.
         void AddFreezeShell(SceneActorView actor)
         {
-            if (!iceMesh) iceMesh = CharacterSandVessel.RoundedBlock(CharacterSandVessel.BlockSize + new Vector3(.08f, .08f, .08f), .09f);
+            var size = CharacterSandVessel.BlockSize + new Vector3(.08f, .08f, .08f);
+            // The original ice cube (it melts step by step); without it a plain rounded shell.
+            if (!iceMelting) iceMelting = Resources.Load<Mesh>("Mechanics/IceCube");
+            if (iceMelting && !iceMelting.isReadable) iceMelting = null; // it melts through baked copies (Read/Write)
+            if (!iceMesh && !iceMelting) iceMesh = CharacterSandVessel.RoundedBlock(size, .09f);
             if (!iceMaterial)
             {
                 iceMaterial = Track(new Material(Shader.Find("SandJamTest/IceShell")) { name = "Ice shell" });
@@ -199,7 +205,15 @@ namespace SandJamTest.Scene3D
             var shell = new GameObject("Frozen shell");
             shell.transform.SetParent(actor.Visual, false);
             shell.transform.localPosition = new Vector3(0, .195f, 0); shell.transform.localRotation = pitch;
-            shell.AddComponent<MeshFilter>().sharedMesh = iceMesh;
+            shell.AddComponent<MeshFilter>().sharedMesh = iceMelting ? iceMelting : iceMesh;
+            if (iceMelting)
+            {
+                // mesh.bounds also spans the melted shape; fit the whole cube itself.
+                var b = GeometryUtility.CalculateBounds(iceMelting.vertices, Matrix4x4.identity);
+                shell.transform.localScale = new Vector3(size.x / b.size.x, size.y / b.size.y, size.z / b.size.z);
+                // Its bottom on the pivot, like the rounded shell (built standing on its origin).
+                shell.transform.localPosition -= pitch * Vector3.Scale(b.center - new Vector3(0, b.extents.y, 0), shell.transform.localScale);
+            }
             var renderer = shell.AddComponent<MeshRenderer>(); renderer.sharedMaterial = iceMaterial;
             renderer.NoShadows();
             var label = Instantiate(actor.AmmoLabel, actor.AmmoLabel.transform.parent);
@@ -214,7 +228,7 @@ namespace SandJamTest.Scene3D
             foreach (Transform child in label.transform) if (child.name == "Text outline") Destroy(child.gameObject);
             OutlinedText.Add(label, new Color(.1f, .36f, .78f));
             var view = actor.gameObject.AddComponent<CharacterFreezeView>();
-            view.Actor = actor; view.Shell = renderer; view.Counter = label;
+            view.Actor = actor; view.Shell = renderer; view.Counter = label; view.Melting = iceMelting;
         }
 
         // Golden key lying on top of a key cube (original UnlockerGif).
