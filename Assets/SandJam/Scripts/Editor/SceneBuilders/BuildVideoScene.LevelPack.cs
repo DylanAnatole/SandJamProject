@@ -28,7 +28,7 @@ namespace SandJamTest.Editor
         }
         static void ConfigureLevelPack(Transform root,VideoScreen screen,SandJamSceneController controller)
         {
-            controller.GameCamera.backgroundColor=ColorPalette.Hex("32333E");controller.AmmoPerShot=packEntry.Json?LevelDataManager.Load(packEntry.Json).uiDivider:20;
+            controller.GameCamera.backgroundColor=ColorPalette.Hex("32333E");
             foreach(var actor in controller.Characters)actor.Visual.localScale=Vector3.one*.86f;
             foreach(var label in root.GetComponentsInChildren<TextMesh>(true))
             {

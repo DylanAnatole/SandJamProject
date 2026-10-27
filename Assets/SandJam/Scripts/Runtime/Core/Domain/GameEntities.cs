@@ -15,6 +15,8 @@ namespace SandJamTest
         // Set on the half that was absorbed by a merge (its view walks into the partner and disappears).
         public Shooter MergedInto { get; internal set; }
         public int Ammo;
+        // Fraction of a sand unit owed by the steady pour (SandGame.Tick share), carried to the next tick.
+        internal float PourCarry;
         public int FreezeRemaining { get; internal set; }
         public bool IsFrozen { get { return FreezeRemaining > 0; } }
         public Shooter Partner { get; internal set; }

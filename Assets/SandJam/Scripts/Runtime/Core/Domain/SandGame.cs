@@ -234,11 +234,12 @@ namespace SandJamTest
             }
         }
 
-        // The returned list is reused by the next call: callers consume it right away.
-        public List<Shot> Tick(int ammoPerShooter = 20, Func<int, bool> canShoot = null)
+        // Each pouring cube gives `share` of its starting sand per tick, so every cube empties in the same time whatever
+        // its size (original: a 20 and a 40 cube both pour out in about 2 s). The returned list is reused by the next call.
+        public List<Shot> Tick(float share, Func<int, bool> canShoot = null)
         {
             shots.Clear();
-            if (State != GameState.Playing || ammoPerShooter <= 0) return shots;
+            if (State != GameState.Playing || share <= 0) return shots;
             OpenNeighbours();
             for (int slot = 0; slot < Slots.Length; slot++)
             {
@@ -247,7 +248,11 @@ namespace SandJamTest
                 int target = Target(shooter);
                 if (target < 0) continue;
                 var region = Regions[target];
-                int amount = Math.Min(ammoPerShooter, Math.Min(shooter.Ammo, region.Remaining));
+                shooter.PourCarry += shooter.InitialAmmo * share;
+                int give = (int)shooter.PourCarry;
+                if (give == 0) continue;
+                shooter.PourCarry -= give;
+                int amount = Math.Min(give, Math.Min(shooter.Ammo, region.Remaining));
                 shooter.Ammo -= amount;
                 region.Remaining -= amount;
                 SpentAmmo += amount;

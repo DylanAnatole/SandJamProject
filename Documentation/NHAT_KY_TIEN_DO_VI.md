@@ -2510,3 +2510,15 @@ lùi về, khớp gốc).
 
 **Kiểm tra:** đo bước cố định 0,02 s (tới ô 0,49 s, phát đầu 0,68 s); luồng booster / thua; tự chơi level 2, 31, 68, 222
 và 2 màn băng / khoá.
+
+## 27/10/2026 — Mỗi khối đổ hết trong ~2,1 s, khối to đổ nhanh hơn
+
+**Đo:** video 2 khối 20: 20 → 0 trong 156,0 → 158,05 s (~2,05 s); video 3 (màn 361) khối 40: 40 → 0 trong
+83,9 → 86,1 s (~2,2 s), khối đỏ 24 → 1 trong 1,4 s. Gốc đổ mỗi khối trong thời gian gần như cố định, không theo tốc độ
+cố định. Bản mình đổ đều 9,5 đơn vị/s nên khối 40 mất ~4,2 s — chậm gấp đôi gốc.
+
+**Sửa:** `SandGame.Tick(share)` — mỗi tick khối đang đổ cho `share` lượng cát ban đầu của nó, phần lẻ cộng dồn
+(`Shooter.PourCarry`) nên khối nhỏ vẫn đổ đều. `SandJamSceneController`: `PourSeconds` 2,1 s, tick 0,02 s; bỏ
+`AmmoPerShot` / `ShotInterval` (và các dòng gán trong scene builder). `LevelReplaySolver` tick cùng kiểu (`.01`).
+
+**Kiểm tra:** đo bước cố định 0,02 s ở level 68 (khối 40): đổ 0,68 → 2,76 s (2,08 s); luồng booster / thua; tự chơi.

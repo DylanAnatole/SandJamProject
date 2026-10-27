@@ -32,7 +32,6 @@ namespace SandJamTest.Editor
             {var t=root.Find(child);if(t)t.SetParent(play,true);}
             screen.Gameplay=play.gameObject;
             // Original ordinary JSON supplies the playable model; secret flags drive covers only.
-            controller.AmmoPerShot=10;
             controller.EnableSlotUnlocks=true;
             var slotLock=Group("Fifth waiting slot - locked until 300",play);screen.FifthSlotLock=slotLock.gameObject;
             Image("Locked pad",pad,slotLock,371,687,63,43,ColorPalette.Hex("828387"),-.5f,true);

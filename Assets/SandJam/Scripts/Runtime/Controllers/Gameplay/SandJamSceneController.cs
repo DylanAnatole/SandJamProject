@@ -22,8 +22,6 @@ namespace SandJamTest.Scene3D
         public Font InterfaceFont;
         [Header("Gameplay tuning")]
         public float QueueSpacing = 1.20f;
-        public float ShotInterval = .08f;
-        public int AmmoPerShot = 20;
         [Header("Original sounds")]
         public AudioClip SelectSound;
         public AudioClip VictorySound;
@@ -130,13 +128,11 @@ namespace SandJamTest.Scene3D
             if (error == null) Synchronize(0);
         }
 
-        // Original (recording 2, 152.5 s and 156 s): a cube counts down about one unit every 0.1 s (20 -> 1 in 2 s).
-        const float PourUnitsPerSecond = 9.5f, PourTick = .02f;
+        // Original: every cube pours out in about 2.1 s whatever its size (recording 2, 156-158 s: 20 -> 0 in 2.05 s;
+        // recording 3, 83.9-86.1 s: 40 -> 0 in 2.2 s), in small steady ticks.
+        const float PourSeconds = 2.1f, PourTick = .02f;
         public void Restart()
         {
-            // Pour speed per cube in shown units (AmmoPerShot sand each), split into small steady ticks.
-            // Done here because the dynamic level sets AmmoPerShot from the level data while it builds.
-            if (ShotInterval > .03f) { ShotInterval = PourTick; AmmoPerShot = Mathf.Max(1, Mathf.RoundToInt(AmmoPerShot * PourUnitsPerSecond * PourTick)); }
             Game = new SandGame(level, StashSlots.Length, r => Regions[Array.IndexOf(level.parts, r.Data)].SettledCount == r.Data.rows.Length, EnableSlotUnlocks);
             foreach (var region in Regions) { region.Divider = level.uiDivider; region.ResetFlow(); }
             regionReported = new bool[Game.Regions.Length];
@@ -237,14 +233,14 @@ namespace SandJamTest.Scene3D
             if (Game.State == GameState.Playing)
             {
                 accumulator += delta;
-                while (accumulator >= ShotInterval)
+                while (accumulator >= PourTick)
                 {
-                    accumulator -= ShotInterval;
+                    accumulator -= PourTick;
                     // Allocation-free per tick (runs ~50 times a second): reused arrays and plain loops.
                     if (shooters == null || shooters.Length != Game.Slots.Length) shooters = new SceneActorView[Game.Slots.Length];
                     for (int s = 0; s < shooters.Length; s++) shooters[s] = Game.Slots[s] == null ? null : characterQueue.ViewFor(Game.Slots[s]);
                     var previousState = Game.State;
-                    foreach (var shot in Game.Tick(AmmoPerShot, canShootCheck ?? (canShootCheck = CanShoot)))
+                    foreach (var shot in Game.Tick(PourTick / PourSeconds, canShootCheck ?? (canShootCheck = CanShoot)))
                     {
                         if(Game.Regions[shot.Region].Data.ColorType!=shot.Color)throw new InvalidOperationException("Shot colour does not match receiving region");
                         projectiles.Spawn(shooters[shot.Slot], Regions[shot.Region], shot.Color, shot.Slot);

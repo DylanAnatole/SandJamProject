@@ -16,7 +16,6 @@ namespace SandJamTest.Scene3D
 
         void BuildLevelViews(LevelData data)
         {
-            AmmoPerShot = data.uiDivider;
             BuildRegions(data);
             BuildCharacters(data);
             var colors = data.parts.Select(p => p.ColorType).Concat(data.laneData.SelectMany(l => l.ColorAmmoDatas).Select(c => c.ColorType)).Distinct().ToArray();

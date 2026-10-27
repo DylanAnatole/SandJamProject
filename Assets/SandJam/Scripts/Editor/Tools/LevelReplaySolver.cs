@@ -25,7 +25,7 @@ namespace SandJamTest
             foreach(int lane in path)
             {
                 if(!game.SelectLane(lane))throw new InvalidOperationException("Invalid search prefix");
-                int count=0;while(game.State==GameState.Playing && game.Tick(20).Count>0)if(++count>50000)throw new InvalidOperationException("Replay drain budget exceeded");
+                int count=0;while(game.State==GameState.Playing && game.Tick(.01f).Count>0)if(++count>50000)throw new InvalidOperationException("Replay drain budget exceeded");
             }
             return game;
         }
