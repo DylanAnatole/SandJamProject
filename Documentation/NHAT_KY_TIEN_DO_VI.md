@@ -2711,4 +2711,19 @@ trễ của tick); giữ miệng rót lúc bắn (`To`); bay 0,13 s giảm tốc
 Kèm: `LevelReplaySolver` (editor) tick `DrainShare` 0,05 — tick 0,01 làm solver chậm ~5 lần, level 250 quá 60 s không giải xong.
 
 **Kiểm tra:** đo lại — khoảng cách đều 0,115 s, khung trống 26 → 3 /96 (chỉ lúc khối vừa tới ô); ảnh từng bước: viên trên đường
-bay ở mọi khung; luồng booster / thua; tự chơi level 2, 68, 250 và 2 màn băng / khoá.
+bay ở mọi khung; tự chơi level 2, 68, 250 (musicians_10) và 2 màn băng / khoá — chạy bằng script test mới chờ game sẵn sàng và đúng màn (script cũ ngủ cố định nên đôi khi nạp nhầm màn).
+
+## 28/10/2026 — Khối đang đổ không còn nhảy ngang (Animator ghi đè vị trí sau Update)
+
+**Đo theo thời gian thực** (ép vòng lặp game chạy mỗi khung editor bằng `QueuePlayerLoopUpdate`, tự chơi ở tốc độ thường, ghi
+vị trí / góc phần thân `pose` của mọi khối đang đổ mỗi khung): khối giữ góc 30° nhưng cứ ~0,12–0,16 s lại có một khung `pose` về
+vị trí chưa xoay (x −1,3460 → −1,4650 → −1,3460), tức nhảy ngang ~0,12 đơn vị rồi về — đúng cái "giật giật". Các lần đo trước gọi
+`Advance` theo bước cố định, không chạy Animator, nên không thấy.
+
+**Nguyên nhân:** `pose` là object mang Animator; clip gốc có khoá vị trí của nó. Thứ tự trong khung: `Update` (`ApplyYaw` xoay
+`pose` quanh tâm khối) → Animator → `LateUpdate`. Khung nào Animator đánh giá lại clip thì vị trí bị đặt về gốc, góc giữ nguyên.
+
+**Sửa (`SceneActorView.LateUpdate`):** khi khối đang xoay (`yaw` / `aimYaw` / `roll` / `Rock` ≠ 0) áp lại `ApplyYaw` sau Animator.
+
+**Kiểm tra:** đo lại thời gian thực — 0 lần nhảy (còn 3 bước > 0,03 là lúc khối quay mềm sang vùng phía bên kia, khung dài 30 ms);
+tự chơi level 2, 68, 250 (musicians_10) và 2 màn băng / khoá — chạy bằng script test mới chờ game sẵn sàng và đúng màn (script cũ ngủ cố định nên đôi khi nạp nhầm màn).

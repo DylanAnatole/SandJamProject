@@ -118,6 +118,10 @@ namespace SandJamTest.Scene3D
         }
         void LateUpdate()
         {
+            // The pose root carries the Animator, and its clips key the root's position: whenever the Animator evaluated
+            // after Update, it put the turned box back at its unturned place for that frame (a pouring box held at 30
+            // deg jumped ~0.12 sideways every few frames). The turn is laid on again after the Animator.
+            if (pose && Shooter != null && (yaw != 0 || aimYaw != 0 || roll != 0 || Rock != 0)) ApplyYaw();
             if (!rigSearched) FindRig();
             if (!hips || !leftThigh || !rightThigh || Shooter == null) return;
             bool running = gait == Gait.Run && (!AtRest || (Departing && exitDelay > 0));
