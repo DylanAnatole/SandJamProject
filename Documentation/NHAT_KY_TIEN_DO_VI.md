@@ -2674,3 +2674,15 @@ ghi chú "chỉ lưu trên máy". Giữ: scripts, shader, font, scene, prefab, `
 `ProjectSettings`, `Packages/manifest.json`, tài liệu thiết kế / nhật ký.
 
 **Lưu ý:** các file này vẫn còn trong lịch sử các commit cũ; xoá khỏi lịch sử cần viết lại lịch sử và force-push (chưa làm).
+
+## 28/10/2026 — Chốt bản: khoá màn dọc, rà cảnh báo / code chết
+
+**Rà:** biên dịch lại cả `Assembly-CSharp` và `Assembly-CSharp-Editor` bằng Roslyn của Unity với đúng file `.rsp` của dự án —
+0 cảnh báo, 0 lỗi. Quét type / member / static không dùng và code trùng: chỉ còn báo nhầm (menu item, callback Unity, lớp
+extension). Cấu hình build: 1 scene (`SandJamGame`); hướng màn hình đang tự xoay, cho cả ngang.
+
+**Sửa:** khoá màn dọc (`defaultScreenOrientation` Portrait, tắt xoay ngược / ngang) — game thiết kế dọc, xoay ngang thì bố cục bị
+ép vào giữa với hai dải viền.
+
+**Còn để bạn quyết:** tên app (`productName` đang là `sandjamproject`) và bundle ID (chưa đặt → Unity dùng
+`com.GameplayLab.sandjamproject`).
