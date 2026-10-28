@@ -2727,3 +2727,18 @@ vị trí chưa xoay (x −1,3460 → −1,4650 → −1,3460), tức nhảy nga
 
 **Kiểm tra:** đo lại thời gian thực — 0 lần nhảy (còn 3 bước > 0,03 là lúc khối quay mềm sang vùng phía bên kia, khung dài 30 ms);
 tự chơi level 2, 68, 250 (musicians_10) và 2 màn băng / khoá — chạy bằng script test mới chờ game sẵn sàng và đúng màn (script cũ ngủ cố định nên đôi khi nạp nhầm màn).
+
+## 28/10/2026 — Hai màn không thắng được (level 58 Celebs_5, 156 Flower_2): đổ vào vùng có miệng thấp nhất trước
+
+**Phát hiện:** test toàn bộ sau bản sửa Animator — level 361 (= Celebs_5, vòng lại từ level 58) không có lời giải. Chạy solver trên
+cả 916 màn chiến dịch: 2 màn hỏng, Celebs_5 và Flower_2 (level 156). Đã thử cả cách đổ cát cũ (20 / tick) và mọi bước tick: vẫn
+không giải được → không phải do đổi luật đổ cát hôm qua.
+
+**Nguyên nhân:** hai vùng cùng màu cùng mở, quy tắc chọn vùng "thấp nhất" lấy theo hàng pixel thấp nhất. Flower_2: vùng 600 và 120
+cùng chạm hàng 0 → hoà, chọn theo thứ tự file → khối đầu đổ hết vào vùng 600, không vùng nào đầy, không mở thêm gì, 5 ô chật trước
+khi đào tới khối màu đó. Celebs_5: vùng 1900 (chạm hàng 0) được chọn trước vùng 80 (miệng đổ thấp hơn) → kẹt y như vậy.
+
+**Sửa (`Region.MouthRow`, `SandGame.Target`):** thứ tự trong cùng lượt mở tính theo **độ cao miệng đổ** (vị trí đặt tay `cnvPos` của
+màn, đổi ra hàng pixel; vùng không đặt tay vẫn dùng hàng thấp nhất). Cả hai màn: vùng nhỏ ở dưới đi trước → thắng được.
+
+**Kiểm tra:** solver trên 916 màn chiến dịch: 0 màn hỏng (trước 2); tự chơi trong game level 58, 156 và một số màn khác / băng / khoá.

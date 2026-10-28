@@ -33,7 +33,7 @@ namespace SandJamTest
             useSlotUnlocks = enableSlotUnlocks;
             if (capacity < 1) throw new ArgumentOutOfRangeException("capacity");
             Data = data; isCovered = coverageCheck;
-            Regions = data.parts.Select(p => new Region(p)).ToArray();
+            Regions = data.parts.Select(p => new Region(p, data.gridSlotScale)).ToArray();
             Lanes = data.laneData.Select(l => new Queue<Shooter>(l.ColorAmmoDatas.Select(c => new Shooter(c)))).ToArray();
             var shooters = Lanes.Select(l => l.ToArray()).ToArray();
             foreach (var pair in ChainPairing.Resolve(data))
@@ -202,7 +202,8 @@ namespace SandJamTest
             // Sleeping halves never pour; key cubes pour only into padlocks, ordinary cubes never do.
             if (shooter == null || shooter.IsFrozen || shooter.Ammo <= 0 || shooter.Half) return -1;
             // Pour order seen in the current build (level 268 recording): the region that opened first is painted
-            // first; regions that opened together are painted from the bottom of the picture upwards.
+            // first; regions that opened together are painted from the lowest pour mouth upwards (Flower_2 and Celebs_5 are
+            // only winnable when the small region whose mouth sits lower goes before the big one reaching the bottom row).
             int best = -1;
             for (int i = 0; i < Regions.Length; i++)
             {
@@ -210,7 +211,7 @@ namespace SandJamTest
                 if (!p.Open || p.Remaining <= 0 || p.Data.ColorType != shooter.Color || p.Data.IsUnlockerPart != shooter.Key) continue;
                 if (best < 0) { best = i; continue; }
                 var b = Regions[best];
-                if (p.OpenedOrder < b.OpenedOrder || (p.OpenedOrder == b.OpenedOrder && p.LowestRow < b.LowestRow)) best = i;
+                if (p.OpenedOrder < b.OpenedOrder || (p.OpenedOrder == b.OpenedOrder && p.MouthRow < b.MouthRow)) best = i;
             }
             return best;
         }

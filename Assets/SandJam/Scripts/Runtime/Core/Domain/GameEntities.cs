@@ -35,8 +35,9 @@ namespace SandJamTest
         public bool Revealed;
         // Order in which regions opened (0 = open at start); used to pick which region a cube pours into.
         public int OpenedOrder { get; private set; }
-        // Lowest grid row of the region (row 0 = bottom of the picture).
-        public readonly int LowestRow;
+        // Height of the region's pour mouth in grid rows (row 0 = bottom of the picture): the hand-placed counter when
+        // the level has one, else the region's lowest row. Regions opened together are painted from the lowest mouth up.
+        public readonly float MouthRow;
         // Regions opened during the same game step share one stamp (SandGame advances it every step).
         public static int OpenStamp;
         public bool Open
@@ -45,10 +46,11 @@ namespace SandJamTest
             set { if (value && !open) OpenedOrder = OpenStamp; open = value; }
         }
         public bool InformationVisible { get { return Open || Revealed; } }
-        public Region(PartData data)
+        public Region(PartData data, float gridSlotScale)
         {
             Data = data; Remaining = data.amount; open = data.isOpenedAtStart;
-            LowestRow = data.rows != null && data.rows.Length > 0 ? System.Linq.Enumerable.Min(data.rows) : 0;
+            MouthRow = data.isManualPosition && gridSlotScale > 0 ? data.cnvPos.y / gridSlotScale
+                : data.rows != null && data.rows.Length > 0 ? System.Linq.Enumerable.Min(data.rows) : 0;
         }
     }
     public struct Shot
