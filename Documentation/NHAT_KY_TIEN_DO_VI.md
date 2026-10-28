@@ -2686,3 +2686,29 @@ extension). Cấu hình build: 1 scene (`SandJamGame`); hướng màn hình đan
 
 **Còn để bạn quyết:** tên app (`productName` đang là `sandjamproject`) và bundle ID (chưa đặt → Unity dùng
 `com.GameplayLab.sandjamproject`).
+
+## 28/10/2026 — Khối đổ cát không còn giật khi xoay
+
+**Đo (level 68, bước cố định 0,02 s, góc `aimYaw` mỗi bước):** khối đổ cát xoay 30° về phía ngược vùng nhận, chiều xoay theo
+điểm đích bên trái / phải. Hai cú giật: (1) lúc bắt đầu đổ, khối xoay theo điểm đích cũ còn sót từ lần dùng trước (+24°) rồi
+phát đầu tiên đổi đích → quay ngoắt về −30° (ô 1, 5,22–5,48 s); (2) đổi sang vùng ở phía bên kia → quay 60° đều 300°/s trong
+0,2 s (ô 3, 10,14–10,34 s). Bản thân khối không rung (vị trí, góc đứng yên khi chụp từng bước).
+
+**Sửa (`SceneActorView`):** chiều xoay chỉ lấy từ các phát của lần đổ này (`aimed`, xoá khi chạy / ngừng bắn); chỉ đổi chiều khi
+đích lệch quá `SideDeadZone` 0,3 sang phía kia; xoay bằng `SmoothDamp` (0,09 s) thay cho tốc độ đều.
+
+**Kiểm tra:** đo lại — không còn lần đảo chiều nào ở cả 4 ô, đổi vùng tối đa 10°/bước có tăng / giảm tốc; luồng booster / thua;
+tự chơi level 2, 68, 250, 361 và 2 màn băng / khoá.
+
+## 28/10/2026 — Dòng cát bắn lên chảy đều, không còn chớp giật
+
+**Đo (level 68, bước 1/60 s, đếm viên đang bay):** khoảng cách giữa các viên xen kẽ 0,12 / 0,14 s (mốc bắn lấy theo tick 0,02 s
+thay vì nhịp 0,115 s); viên nhắm lại miệng rót mỗi khung, mà miệng rót chạy theo cột cát → viên bị kéo ngang giữa đường; bay 0,08 s
+đều tốc trong nhịp 0,115 s → 26/96 khung đang đổ không có viên nào (chớp tắt), mỗi khung nhảy ~1 đơn vị.
+
+**Sửa (`ProjectileManager`):** nhịp riêng cộng dồn đúng 0,115 s (lần đổ mới bắt đầu nhịp mới); tuổi viên tính từ nhịp (bù vài ms
+trễ của tick); giữ miệng rót lúc bắn (`To`); bay 0,13 s giảm tốc vào miệng rót (ease-out) — viên sau đã ra trước khi viên trước tới.
+Kèm: `LevelReplaySolver` (editor) tick `DrainShare` 0,05 — tick 0,01 làm solver chậm ~5 lần, level 250 quá 60 s không giải xong.
+
+**Kiểm tra:** đo lại — khoảng cách đều 0,115 s, khung trống 26 → 3 /96 (chỉ lúc khối vừa tới ô); ảnh từng bước: viên trên đường
+bay ở mọi khung; luồng booster / thua; tự chơi level 2, 68, 250 và 2 màn băng / khoá.

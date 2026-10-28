@@ -11,6 +11,9 @@ namespace SandJamTest
         readonly int capacity;
         readonly HashSet<string> visited=new HashSet<string>();
         int[] solution;
+        // Each pour tick gives a cube 1/20 of its sand (the game uses ~1/105 per 0.02 s tick for the look; the outcome is
+        // the same and the search replays every prefix, so coarser ticks keep big levels solvable in seconds).
+        const float DrainShare=.05f;
         LevelReplaySolver(LevelData definition,int slots){data=definition;capacity=slots;}
         // slots = 5 normally; 6 = after one "Play on" (extra waiting slot).
         public static int[] Solve(LevelData data,int slots=5)
@@ -25,7 +28,7 @@ namespace SandJamTest
             foreach(int lane in path)
             {
                 if(!game.SelectLane(lane))throw new InvalidOperationException("Invalid search prefix");
-                int count=0;while(game.State==GameState.Playing && game.Tick(.01f).Count>0)if(++count>50000)throw new InvalidOperationException("Replay drain budget exceeded");
+                int count=0;while(game.State==GameState.Playing && game.Tick(DrainShare).Count>0)if(++count>50000)throw new InvalidOperationException("Replay drain budget exceeded");
             }
             return game;
         }

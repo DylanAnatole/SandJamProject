@@ -86,10 +86,14 @@ namespace SandJamTest.Scene3D
         // Recording 2 (58.30-59.26 s, every 0.04 s, zoomed): a pouring box turns ~30 deg about the vertical through
         // its centre, its front toward the side away from the region it fills (its other side and top show), and
         // holds that turn while it pours, tipping only very slightly; it turns back when it stops.
-        Vector3 pourTarget; float roll, aimYaw; Camera viewCamera;
-        const float PourYaw = 30f, PourTilt = 3f;
+        // The side is taken from this pour's own shots only (a reused box kept its last target and first turned the
+        // wrong way, then snapped back), changes only once the target is well over on the other side (a pour column
+        // near the box's own x flipped it back and forth), and the turn eases in and out instead of a 300 deg/s snap
+        // (a box moving on to a region on its other side swung 60 deg in 0.2 s).
+        Vector3 pourTarget; bool aimed; float pourSide, roll, aimYaw, aimVelocity; Camera viewCamera;
+        const float PourYaw = 30f, PourTilt = 3f, SideDeadZone = .3f, AimSmooth = .09f;
         static readonly Vector3 PourPivot = new Vector3(0, .42f, 0); // block centre in Visual space
-        public void Pour(Vector3 target) { pourTarget = target; }
+        public void Pour(Vector3 target) { pourTarget = target; aimed = true; }
         // Side-to-side rock in degrees (on screen), set from outside, e.g. while the Select booster waits for a pick.
         public float Rock;
         // Recording 2 (155.6-155.9 s and 48.6-49.3 s) and recording 3 (84.3-84.6 s, every frame): both legs come out
@@ -243,7 +247,7 @@ namespace SandJamTest.Scene3D
             if (Departing || (destination - position).sqrMagnitude < .00001f) return;
             restWritten = false;
             from = transform.position; destination = position;
-            gait = kind; travel = 0; duration = seconds; restAge = 0;
+            gait = kind; travel = 0; duration = seconds; restAge = 0; aimed = false;
             // Picked: a quick stretch as it jumps off.
             if (kind == Gait.Run && !Departing) Punch(.22f);
             if(Motion)Motion.SetWalking(kind == Gait.Run);
@@ -356,11 +360,17 @@ namespace SandJamTest.Scene3D
                 transform.position = destination;
                 restAge += delta;
                 // Pouring from its pad: tipped toward the region it fills (positive = counter-clockwise on screen).
-                bool pouring = firing && !Departing;
-                float side = pourTarget.x >= transform.position.x ? 1 : -1; // region to the right / left
+                bool pouring = firing && !Departing && aimed;
+                if (!firing) aimed = false;
+                float dx = pourTarget.x - transform.position.x; // region to the right / left
+                if (pouring && (pourSide == 0 || Mathf.Abs(dx) > SideDeadZone)) pourSide = dx >= 0 ? 1 : -1;
                 yaw = Mathf.MoveTowards(yaw, 0, delta * 420);
-                aimYaw = Mathf.MoveTowards(aimYaw, pouring ? side * PourYaw : 0, delta * 300);
-                roll = Mathf.MoveTowards(roll, pouring ? -side * PourTilt : 0, delta * 60);
+                if (delta > 0)
+                {
+                    aimYaw = Mathf.SmoothDamp(aimYaw, pouring ? pourSide * PourYaw : 0, ref aimVelocity, AimSmooth, Mathf.Infinity, delta);
+                    if (!pouring && Mathf.Abs(aimYaw) < .05f) { aimYaw = 0; aimVelocity = 0; pourSide = 0; }
+                }
+                roll = Mathf.MoveTowards(roll, pouring ? -pourSide * PourTilt : 0, delta * 60);
                 ApplyYaw();
                 ShowLegs(false);
                 if(!Motion)Visual.localRotation = Quaternion.Euler(firing ? Mathf.Sin(Time.time * 25) * 3 : 0, 0, 0);

@@ -6,10 +6,15 @@ namespace SandJamTest.Scene3D
 {
     // Sand shots as in the original (54 fps recording of level 268): while a cube pours it fires a small square
     // pellet of its colour about every 0.115 s (recording 2, 57.64-58.33 s: seven pellets 0.11-0.12 s apart); each
-    // pellet flies straight from the cube top to the region's pour mouth in ~0.08 s, trailing a short pale streak. The falling thread inside the region is drawn by the region.
+    // pellet flies straight from the cube top to the region's pour mouth, trailing a short pale streak. The falling thread inside the region is drawn by the region.
+    // Read as one steady stream, not a stutter: the cadence keeps its own beat (pours tick every 0.02 s, so timing
+    // each pellet from the tick that fired it gave 0.12 / 0.14 s gaps), each pellet keeps the mouth it was fired at
+    // (the mouth follows the pour column and dragged pellets sideways in flight), and it eases into the
+    // mouth over 0.13 s, a little longer than a beat, so the next one is already out before it lands (0.08 s at an
+    // even speed left 30% of every beat empty and jumped ~1 unit a frame).
     public sealed class ProjectileManager
     {
-        const float FireInterval = .115f, FlightTime = .08f, PelletSize = .075f, TrailLength = .9f;
+        const float FireInterval = .115f, FlightTime = .13f, PelletSize = .075f, TrailLength = .9f;
         readonly Transform root;
         readonly Color[] colors;
         readonly int[] colorIds;
@@ -22,7 +27,7 @@ namespace SandJamTest.Scene3D
         sealed class Pellet
         {
             public GameObject Root; public SpriteRenderer Body; public LineRenderer Trail;
-            public SceneRegionView Region; public Vector3 From; public float Age;
+            public SceneRegionView Region; public Vector3 From, To; public float Age;
         }
 
         public ProjectileManager(Transform root, GameObject prefab, Material[] materials, int[] colorIds)
@@ -60,10 +65,14 @@ namespace SandJamTest.Scene3D
         public void Spawn(SceneActorView actor, SceneRegionView region, int color, int slot = 0)
         {
             float last;
-            if (lastFire.TryGetValue(slot, out last) && clock - last < FireInterval) return;
-            lastFire[slot] = clock;
+            bool pouring = lastFire.TryGetValue(slot, out last) && clock - last < FireInterval * 2;
+            if (pouring && clock - last < FireInterval) return;
+            // On the beat while the pour goes on; a new pour starts its own beat now.
+            float beat = pouring ? last + FireInterval : clock;
+            lastFire[slot] = beat;
             var p = pool.Get();
-            p.Region = region; p.From = actor.AimPoint; p.Age = 0;
+            // Already as far along as its beat (pours tick every 0.02 s, a little after the beat).
+            p.Region = region; p.From = actor.AimPoint; p.To = region.Target.position; p.Age = clock - beat;
             int index = Array.IndexOf(colorIds, color);
             p.Body.color = index >= 0 ? colors[index] : Color.white;
             p.Root.SetActive(true);
@@ -72,8 +81,9 @@ namespace SandJamTest.Scene3D
 
         void Place(Pellet p)
         {
-            var to = p.Region.Target.position;
+            var to = p.To;
             float t = Mathf.Clamp01(p.Age / FlightTime);
+            t = 1 - (1 - t) * (1 - t); // eases into the mouth
             var pos = Vector3.Lerp(p.From, to, t);
             pos.z = Mathf.Min(p.From.z, to.z) - .4f; // in front of the board and the cubes
             p.Body.transform.position = pos;
